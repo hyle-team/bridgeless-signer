@@ -4,3 +4,9 @@ log:
 
 db:
   url: db_url
+
+listener:
+  addr: :8910
+
+http_gateway:
+  addr: :8911

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "github.com/hyle-team/bridgeless-signer/pkg/types";
+import "google/api/annotations.proto";
+
+message StringMessage {
+  string value = 1;
+}
+
+service Service {
+  rpc Echo(StringMessage) returns (StringMessage) {
+      option (google.api.http) = {
+        post: "/v1/example/echo"
+        body: "*"
+      };
+  }
+}

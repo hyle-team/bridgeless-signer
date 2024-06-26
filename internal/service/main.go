@@ -7,6 +7,7 @@ import (
 
 type service struct {
 	log *logan.Entry
+	cfg config.Config
 }
 
 func (s *service) run() error {
@@ -17,6 +18,7 @@ func (s *service) run() error {
 func newService(cfg config.Config) *service {
 	return &service{
 		log: cfg.Log(),
+		cfg: cfg,
 	}
 }
 
