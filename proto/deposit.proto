@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option go_package = "github.com/hyle-team/bridgeless-signer/pkg/types";
+
+message Deposit {
+  string tx_hash = 1;
+  int64 tx_event_index = 2;
+  string chain_id = 3;
+}
