@@ -8,7 +8,6 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hyle-team/bridgeless-signer/docs"
-	"github.com/hyle-team/bridgeless-signer/internal/config"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/ignite/cli/ignite/pkg/openapiconsole"
 	"github.com/pkg/errors"
@@ -17,16 +16,22 @@ import (
 
 var _ types.ServiceServer = &Server{}
 
-// Server is used to implement types.ServiceServer GRPC server.
+type ServiceHandler interface {
+	SubmitWithdraw(ctx context.Context, request *types.WithdrawRequest) error
+	CheckWithdraw(ctx context.Context, request *types.WithdrawRequest) (*types.CheckWithdrawResponse, error)
+}
+
+// Server is a GRPC and HTTP gateway application server.
 type Server struct {
 	listener    net.Listener
 	gatewayAddr string
+	handler     ServiceHandler
 }
 
 // NewServer creates a new GRPC server.
 func NewServer(
 	listener net.Listener,
-	gatewayCfg config.HTTPGatewayConfig,
+	gatewayCfg HTTPGatewayConfig,
 ) *Server {
 	return &Server{
 		listener:    listener,
@@ -64,6 +69,10 @@ func (s *Server) RunHTTPGateway(ctx context.Context) error {
 	return srv.ListenAndServe()
 }
 
-func (s *Server) Echo(ctx context.Context, message *types.StringMessage) (*types.StringMessage, error) {
-	return message, nil
+func (s *Server) SubmitWithdraw(ctx context.Context, request *types.WithdrawRequest) (*types.Empty, error) {
+	return nil, s.handler.SubmitWithdraw(ctx, request)
+}
+
+func (s *Server) CheckWithdraw(ctx context.Context, request *types.WithdrawRequest) (*types.CheckWithdrawResponse, error) {
+	return s.handler.CheckWithdraw(ctx, request)
 }

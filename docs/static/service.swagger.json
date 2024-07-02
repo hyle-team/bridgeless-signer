@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/v1/example/echo": {
-      "post": {
-        "operationId": "Service_Echo",
+    "/check": {
+      "get": {
+        "operationId": "Service_CheckWithdraw",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/StringMessage"
+              "$ref": "#/definitions/CheckWithdrawResponse"
             }
           },
           "default": {
@@ -35,12 +35,66 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
+            "name": "deposit.txHash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "deposit.txEventIndex",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "deposit.chainId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Service"
+        ]
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "Service_SubmitWithdraw",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/StringMessage"
+              "$ref": "#/definitions/Empty"
             }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deposit.txHash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "deposit.txEventIndex",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "deposit.chainId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -50,13 +104,59 @@
     }
   },
   "definitions": {
-    "StringMessage": {
+    "CheckWithdrawResponse": {
       "type": "object",
       "properties": {
-        "value": {
+        "status": {
+          "$ref": "#/definitions/WithdrawStatus"
+        },
+        "resultTransaction": {
+          "$ref": "#/definitions/Transaction"
+        }
+      }
+    },
+    "Deposit": {
+      "type": "object",
+      "properties": {
+        "txHash": {
+          "type": "string"
+        },
+        "txEventIndex": {
+          "type": "string",
+          "format": "int64"
+        },
+        "chainId": {
           "type": "string"
         }
       }
+    },
+    "Empty": {
+      "type": "object"
+    },
+    "Transaction": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "chainId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "WithdrawStatus": {
+      "type": "string",
+      "enum": [
+        "PROCESSING",
+        "INVALID",
+        "FAILED",
+        "PROCESSED",
+        "TX_PENDING",
+        "TX_FAILED",
+        "TX_SUCCESSFUL"
+      ],
+      "default": "PROCESSING"
     },
     "protobufAny": {
       "type": "object",

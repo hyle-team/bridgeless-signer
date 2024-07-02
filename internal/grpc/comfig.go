@@ -1,6 +1,8 @@
-package config
+package grpc
 
 import (
+	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
 )
@@ -29,14 +31,12 @@ func (c *gatewayConfigurer) HTTPGatewayConfig() HTTPGatewayConfig {
 		const yamlKey = "http_gateway"
 		var conf HTTPGatewayConfig
 
-		conf.Address = ":9000"
-
-		//if err := figure.
-		//	Out(conf).
-		//	From(kv.MustGetStringMap(c.getter, yamlKey)).
-		//	Please(); err != nil {
-		//	panic(errors.Wrap(err, "failed to configure http gateway"))
-		//}
+		if err := figure.
+			Out(conf).
+			From(kv.MustGetStringMap(c.getter, yamlKey)).
+			Please(); err != nil {
+			panic(errors.Wrap(err, "failed to configure http gateway"))
+		}
 
 		return conf
 	}).(HTTPGatewayConfig)

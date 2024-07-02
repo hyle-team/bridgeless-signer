@@ -2,16 +2,40 @@ syntax = "proto3";
 
 option go_package = "github.com/hyle-team/bridgeless-signer/pkg/types";
 import "google/api/annotations.proto";
+import "deposit.proto";
+import "transaction.proto";
 
-message StringMessage {
-  string value = 1;
+message WithdrawRequest {
+  Deposit deposit = 1;
 }
 
+enum WithdrawStatus {
+  PROCESSING = 0;
+  INVALID = 1;
+  FAILED = 2;
+  PROCESSED = 3;
+  TX_PENDING = 4;
+  TX_FAILED = 5;
+  TX_SUCCESSFUL = 6;
+}
+
+message CheckWithdrawResponse {
+  WithdrawStatus status = 1;
+  optional Transaction result_transaction = 2;
+}
+
+message Empty {}
+
 service Service {
-  rpc Echo(StringMessage) returns (StringMessage) {
-      option (google.api.http) = {
-        post: "/v1/example/echo"
-        body: "*"
-      };
+  rpc SubmitWithdraw(WithdrawRequest) returns (Empty) {
+    option (google.api.http) = {
+      post: "/submit"
+    };
+  }
+
+  rpc CheckWithdraw(WithdrawRequest) returns (CheckWithdrawResponse) {
+    option (google.api.http) = {
+      get: "/check"
+    };
   }
 }
