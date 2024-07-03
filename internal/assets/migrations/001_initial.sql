@@ -8,7 +8,7 @@ CREATE TABLE deposits
     chain_id            text        not null,
     status              int         not null,
     withdrawal_tx_hash  VARCHAR(66),
-    withdrawal_chain_id BIGINT,
+    withdrawal_chain_id text,
     CONSTRAINT unique_deposit UNIQUE (tx_hash, tx_event_id, chain_id)
 )
 

@@ -31,7 +31,7 @@ type Deposit struct {
 	DepositIdentifier
 	Status            types.WithdrawStatus `structs:"status" db:"status"`
 	WithdrawalTxHash  *string              `structs:"withdrawal_tx_hash" db:"withdrawal_tx_hash"`
-	WithdrawalChainId *int64               `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
+	WithdrawalChainId *string              `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
 }
 
 func (d Deposit) Reprocessable() bool {

@@ -10,7 +10,7 @@ import (
 
 var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
 
-func ValidateWithdrawRequest(request *types.WithdrawRequest) error {
+func (h *ServiceHandler) ValidateWithdrawRequest(request *types.WithdrawRequest) error {
 	if request == nil {
 		return errors.New("request is nil")
 	}
@@ -20,9 +20,17 @@ func ValidateWithdrawRequest(request *types.WithdrawRequest) error {
 		return errors.New("deposit is nil")
 	}
 
-	return validation.Errors{
+	err := validation.Errors{
 		"tx_hash":     validation.Validate(deposit.TxHash, validation.Required, validation.Match(txHashPattern)),
 		"tx_event_id": validation.Validate(deposit.TxEventIndex, validation.Required, validation.Min(0)),
 		"chain_id":    validation.Validate(deposit.ChainId, validation.Required),
+	}.Filter()
+
+	if err == nil {
+		if !h.proxyRepo.SupportsChain(deposit.ChainId) {
+			return ErrChainNotSupported
+		}
 	}
+
+	return err
 }

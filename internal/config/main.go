@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/hyle-team/bridgeless-signer/internal/evm/chain"
-	"github.com/hyle-team/bridgeless-signer/internal/evm/signature"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/signature"
 	"github.com/hyle-team/bridgeless-signer/internal/grpc"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"

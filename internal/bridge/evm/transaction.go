@@ -5,25 +5,25 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
 
-func (p *bridgeProxy) GetTransactionReceipt(txHash common.Hash, chainId string) (*types.Receipt, error) {
-	chain, ok := p.chains[chainId]
-	if !ok {
-		return nil, ErrChainNotSupported
-	}
-
+func (p *bridgeProxy) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, error) {
 	ctx := context.Background()
-	tx, pending, err := chain.Rpc.TransactionByHash(ctx, txHash)
+	tx, pending, err := p.chain.Rpc.TransactionByHash(ctx, txHash)
 	if err != nil {
+		if err.Error() == "not found" {
+			return nil, bridgeTypes.ErrTxNotFound
+		}
+
 		return nil, errors.Wrap(err, "failed to get transaction by hash")
 	}
 	if pending {
-		return nil, ErrTxPending
+		return nil, bridgeTypes.ErrTxPending
 	}
 
-	receipt, err := chain.Rpc.TransactionReceipt(context.Background(), tx.Hash())
+	receipt, err := p.chain.Rpc.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tx receipt")
 	}

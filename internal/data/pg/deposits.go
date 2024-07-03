@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/fatih/structs"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -32,7 +31,12 @@ func (d *depositsQ) New() data.DepositsQ {
 func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {
 	stmt := squirrel.
 		Insert(depositsTable).
-		SetMap(structs.Map(deposit)).
+		SetMap(map[string]interface{}{
+			depositsTxHash:    deposit.TxHash,
+			depositsTxEventId: deposit.TxEventId,
+			depositsChainId:   deposit.ChainId,
+			depositsStatus:    deposit.Status,
+		}).
 		Suffix("RETURNING id")
 
 	var id int64
