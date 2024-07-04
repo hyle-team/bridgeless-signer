@@ -36,6 +36,10 @@ func (c *chainer) Chains() []Chain {
 			panic(errors.Wrap(err, "failed to figure out chains"))
 		}
 
+		if len(cfg.Chains) == 0 {
+			panic(errors.New("no chains were configured"))
+		}
+
 		return cfg.Chains
 	}).([]Chain)
 }

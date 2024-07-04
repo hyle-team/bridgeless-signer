@@ -7,6 +7,8 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
+const OriginTxIdPattern = "%s-%d-%s"
+
 var ErrAlreadySubmitted = errors.New("transaction already submitted")
 
 type DepositsQ interface {
@@ -23,7 +25,7 @@ type DepositIdentifier struct {
 }
 
 func (d DepositIdentifier) String() string {
-	return fmt.Sprintf("%s-%d-%s", d.TxHash, d.TxEventId, d.ChainId)
+	return fmt.Sprintf(OriginTxIdPattern, d.TxHash, d.TxEventId, d.ChainId)
 }
 
 type Deposit struct {

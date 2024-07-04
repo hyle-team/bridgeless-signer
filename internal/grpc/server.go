@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 
@@ -18,7 +17,7 @@ var _ types.ServiceServer = &Server{}
 
 type ServiceHandler interface {
 	SubmitWithdraw(ctx context.Context, request *types.WithdrawRequest) error
-	CheckWithdraw(ctx context.Context, request *types.WithdrawRequest) (*types.CheckWithdrawResponse, error)
+	CheckWithdraw(ctx context.Context, request *types.CheckWithdrawRequest) (*types.CheckWithdrawResponse, error)
 }
 
 // Server is a GRPC and HTTP gateway application server.
@@ -31,11 +30,13 @@ type Server struct {
 // NewServer creates a new GRPC server.
 func NewServer(
 	listener net.Listener,
-	gatewayCfg HTTPGatewayConfig,
+	gatewayCfg RESTGatewayConfig,
+	handler ServiceHandler,
 ) *Server {
 	return &Server{
 		listener:    listener,
 		gatewayAddr: gatewayCfg.Address,
+		handler:     handler,
 	}
 }
 
@@ -46,12 +47,12 @@ func (s *Server) RunGRPC(_ context.Context) error {
 	return grpcServer.Serve(s.listener)
 }
 
-// RunHTTPGateway starts the HTTP gateway server.
-func (s *Server) RunHTTPGateway(ctx context.Context) error {
+// RunRESTGateway starts the REST gateway server.
+func (s *Server) RunRESTGateway(ctx context.Context) (err error) {
 	grpcGatewayRouter := runtime.NewServeMux()
 	httpRouter := http.NewServeMux()
 
-	if err := types.RegisterServiceHandlerServer(context.Background(), grpcGatewayRouter, s); err != nil {
+	if err = types.RegisterServiceHandlerServer(context.Background(), grpcGatewayRouter, s); err != nil {
 		return errors.Wrap(err, "failed to register service handler")
 	}
 
@@ -61,8 +62,8 @@ func (s *Server) RunHTTPGateway(ctx context.Context) error {
 
 	srv := &http.Server{Addr: s.gatewayAddr, Handler: httpRouter}
 	defer func() {
-		if err := srv.Shutdown(ctx); err != nil {
-			fmt.Println("failed to shutdown HTTP server", err)
+		if tmpErr := srv.Shutdown(ctx); tmpErr != nil {
+			err = errors.Wrap(tmpErr, "failed to shutdown rest server")
 		}
 	}()
 
@@ -70,9 +71,9 @@ func (s *Server) RunHTTPGateway(ctx context.Context) error {
 }
 
 func (s *Server) SubmitWithdraw(ctx context.Context, request *types.WithdrawRequest) (*types.Empty, error) {
-	return nil, s.handler.SubmitWithdraw(ctx, request)
+	return &types.Empty{}, s.handler.SubmitWithdraw(ctx, request)
 }
 
-func (s *Server) CheckWithdraw(ctx context.Context, request *types.WithdrawRequest) (*types.CheckWithdrawResponse, error) {
+func (s *Server) CheckWithdraw(ctx context.Context, request *types.CheckWithdrawRequest) (*types.CheckWithdrawResponse, error) {
 	return s.handler.CheckWithdraw(ctx, request)
 }

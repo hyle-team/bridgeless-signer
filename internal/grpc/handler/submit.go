@@ -5,11 +5,13 @@ import (
 
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (h *ServiceHandler) SubmitWithdraw(_ context.Context, request *types.WithdrawRequest) error {
 	if err := h.ValidateWithdrawRequest(request); err != nil {
-		return err
+		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	dbconn := h.db.New()

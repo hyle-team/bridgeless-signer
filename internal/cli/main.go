@@ -1,11 +1,8 @@
 package cli
 
 import (
-	"context"
-
 	"github.com/alecthomas/kingpin"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
-	"github.com/hyle-team/bridgeless-signer/internal/grpc"
 	"gitlab.com/distributed_lab/kit/kv"
 	"gitlab.com/distributed_lab/logan/v3"
 )
@@ -41,18 +38,7 @@ func Run(args []string) bool {
 
 	switch cmd {
 	case serviceCmd.FullCommand():
-		srv := grpc.NewServer(cfg.Listener(), cfg.HTTPGatewayConfig())
-
-		go func() {
-			if err = srv.RunHTTPGateway(context.Background()); err != nil {
-				return
-			}
-		}()
-
-		if err = srv.RunGRPC(context.Background()); err != nil {
-			return false
-		}
-
+		err = RunService(cfg)
 	case migrateUpCmd.FullCommand():
 		err = MigrateUp(cfg)
 	case migrateDownCmd.FullCommand():

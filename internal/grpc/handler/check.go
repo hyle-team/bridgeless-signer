@@ -14,28 +14,29 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (h *ServiceHandler) CheckWithdraw(_ context.Context, request *types.WithdrawRequest) (*types.CheckWithdrawResponse, error) {
-	if err := h.ValidateWithdrawRequest(request); err != nil {
-		return nil, err
+func (h *ServiceHandler) CheckWithdraw(_ context.Context, request *types.CheckWithdrawRequest) (*types.CheckWithdrawResponse, error) {
+	wr, err := h.CheckWithdrawRequest(request)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	dbconn := h.db.New()
 	depositIdentifier := data.DepositIdentifier{
-		TxHash:    request.Deposit.TxHash,
-		TxEventId: int(request.Deposit.TxEventIndex),
-		ChainId:   request.Deposit.ChainId,
+		TxHash:    wr.Deposit.TxHash,
+		TxEventId: int(wr.Deposit.TxEventIndex),
+		ChainId:   wr.Deposit.ChainId,
 	}
 	tx, err := dbconn.Get(depositIdentifier)
 	if err != nil {
-		h.logger.WithError(err).Error("failed to get transaction")
+		h.logger.WithError(err).Error("failed to get deposit")
 		return nil, ErrInternal
 	}
 	if tx == nil {
-		return nil, status.Error(codes.NotFound, "transaction not found")
+		return nil, status.Error(codes.NotFound, "deposit not found")
 	}
 
 	if tx.Status == types.WithdrawStatus_TX_PENDING && tx.WithdrawalTxHash != nil {
-		proxy, err := h.proxyRepo.Proxy(*tx.WithdrawalChainId)
+		proxy, err := h.proxies.Proxy(*tx.WithdrawalChainId)
 		if err != nil {
 			h.logger.WithError(err).Error("failed to get proxy")
 			return nil, ErrInternal // should not happen if the chain is supported, but just in case

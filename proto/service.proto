@@ -19,6 +19,10 @@ enum WithdrawStatus {
   TX_SUCCESSFUL = 6;
 }
 
+message CheckWithdrawRequest {
+  string origin_tx_id = 1;
+}
+
 message CheckWithdrawResponse {
   WithdrawStatus status = 1;
   optional Transaction result_transaction = 2;
@@ -30,12 +34,13 @@ service Service {
   rpc SubmitWithdraw(WithdrawRequest) returns (Empty) {
     option (google.api.http) = {
       post: "/submit"
+      body: "*"
     };
   }
 
-  rpc CheckWithdraw(WithdrawRequest) returns (CheckWithdrawResponse) {
+  rpc CheckWithdraw(CheckWithdrawRequest) returns (CheckWithdrawResponse) {
     option (google.api.http) = {
-      get: "/check"
+      get: "/check/{origin_tx_id}"
     };
   }
 }

@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
 	SubmitWithdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*Empty, error)
-	CheckWithdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*CheckWithdrawResponse, error)
+	CheckWithdraw(ctx context.Context, in *CheckWithdrawRequest, opts ...grpc.CallOption) (*CheckWithdrawResponse, error)
 }
 
 type serviceClient struct {
@@ -43,7 +43,7 @@ func (c *serviceClient) SubmitWithdraw(ctx context.Context, in *WithdrawRequest,
 	return out, nil
 }
 
-func (c *serviceClient) CheckWithdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*CheckWithdrawResponse, error) {
+func (c *serviceClient) CheckWithdraw(ctx context.Context, in *CheckWithdrawRequest, opts ...grpc.CallOption) (*CheckWithdrawResponse, error) {
 	out := new(CheckWithdrawResponse)
 	err := c.cc.Invoke(ctx, "/Service/CheckWithdraw", in, out, opts...)
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *serviceClient) CheckWithdraw(ctx context.Context, in *WithdrawRequest, 
 // for forward compatibility
 type ServiceServer interface {
 	SubmitWithdraw(context.Context, *WithdrawRequest) (*Empty, error)
-	CheckWithdraw(context.Context, *WithdrawRequest) (*CheckWithdrawResponse, error)
+	CheckWithdraw(context.Context, *CheckWithdrawRequest) (*CheckWithdrawResponse, error)
 }
 
 // UnimplementedServiceServer should be embedded to have forward compatible implementations.
@@ -67,7 +67,7 @@ type UnimplementedServiceServer struct {
 func (UnimplementedServiceServer) SubmitWithdraw(context.Context, *WithdrawRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitWithdraw not implemented")
 }
-func (UnimplementedServiceServer) CheckWithdraw(context.Context, *WithdrawRequest) (*CheckWithdrawResponse, error) {
+func (UnimplementedServiceServer) CheckWithdraw(context.Context, *CheckWithdrawRequest) (*CheckWithdrawResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckWithdraw not implemented")
 }
 
@@ -101,7 +101,7 @@ func _Service_SubmitWithdraw_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _Service_CheckWithdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WithdrawRequest)
+	in := new(CheckWithdrawRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func _Service_CheckWithdraw_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/Service/CheckWithdraw",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).CheckWithdraw(ctx, req.(*WithdrawRequest))
+		return srv.(ServiceServer).CheckWithdraw(ctx, req.(*CheckWithdrawRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

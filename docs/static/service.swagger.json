@@ -16,7 +16,7 @@
     "application/json"
   ],
   "paths": {
-    "/check": {
+    "/check/{originTxId}": {
       "get": {
         "operationId": "Service_CheckWithdraw",
         "responses": {
@@ -35,22 +35,9 @@
         },
         "parameters": [
           {
-            "name": "deposit.txHash",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "deposit.txEventIndex",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "deposit.chainId",
-            "in": "query",
-            "required": false,
+            "name": "originTxId",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
@@ -78,23 +65,12 @@
         },
         "parameters": [
           {
-            "name": "deposit.txHash",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "deposit.txEventIndex",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "deposit.chainId",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WithdrawRequest"
+            }
           }
         ],
         "tags": [
@@ -141,6 +117,14 @@
         },
         "chainId": {
           "type": "string"
+        }
+      }
+    },
+    "WithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "deposit": {
+          "$ref": "#/definitions/Deposit"
         }
       }
     },

@@ -7,15 +7,15 @@ import (
 	"gitlab.com/distributed_lab/kit/kv"
 )
 
-type HTTPGatewayConfigurer interface {
-	HTTPGatewayConfig() HTTPGatewayConfig
+type RESTGatewayConfigurer interface {
+	RESTGatewayConfig() RESTGatewayConfig
 }
 
-type HTTPGatewayConfig struct {
+type RESTGatewayConfig struct {
 	Address string `fig:"addr,required"`
 }
 
-func NewHTTPGatewayConfigurer(getter kv.Getter) HTTPGatewayConfigurer {
+func NewRESTGatewayConfigurer(getter kv.Getter) RESTGatewayConfigurer {
 	return &gatewayConfigurer{
 		getter: getter,
 	}
@@ -26,18 +26,18 @@ type gatewayConfigurer struct {
 	once   comfig.Once
 }
 
-func (c *gatewayConfigurer) HTTPGatewayConfig() HTTPGatewayConfig {
+func (c *gatewayConfigurer) RESTGatewayConfig() RESTGatewayConfig {
 	return c.once.Do(func() interface{} {
-		const yamlKey = "http_gateway"
-		var conf HTTPGatewayConfig
+		const yamlKey = "rest_gateway"
+		var conf RESTGatewayConfig
 
 		if err := figure.
-			Out(conf).
+			Out(&conf).
 			From(kv.MustGetStringMap(c.getter, yamlKey)).
 			Please(); err != nil {
-			panic(errors.Wrap(err, "failed to configure http gateway"))
+			panic(errors.Wrap(err, "failed to configure REST gateway"))
 		}
 
 		return conf
-	}).(HTTPGatewayConfig)
+	}).(RESTGatewayConfig)
 }

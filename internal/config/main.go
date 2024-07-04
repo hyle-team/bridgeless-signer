@@ -13,7 +13,7 @@ type Config interface {
 	comfig.Logger
 	pgdb.Databaser
 	comfig.Listenerer
-	grpc.HTTPGatewayConfigurer
+	grpc.RESTGatewayConfigurer
 	signature.Signerer
 	chain.Chainer
 }
@@ -23,7 +23,7 @@ type config struct {
 	pgdb.Databaser
 	comfig.Listenerer
 	getter kv.Getter
-	grpc.HTTPGatewayConfigurer
+	grpc.RESTGatewayConfigurer
 	signature.Signerer
 	chain.Chainer
 }
@@ -34,7 +34,7 @@ func New(getter kv.Getter) Config {
 		Databaser:             pgdb.NewDatabaser(getter),
 		Listenerer:            comfig.NewListenerer(getter),
 		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		HTTPGatewayConfigurer: grpc.NewHTTPGatewayConfigurer(getter),
+		RESTGatewayConfigurer: grpc.NewRESTGatewayConfigurer(getter),
 		Signerer:              signature.NewSignerer(getter),
 		Chainer:               chain.NewChainer(getter),
 	}

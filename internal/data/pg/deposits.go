@@ -25,7 +25,7 @@ type depositsQ struct {
 }
 
 func (d *depositsQ) New() data.DepositsQ {
-	return d.NewDepositsQ(d.db.Clone())
+	return NewDepositsQ(d.db.Clone())
 }
 
 func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {
@@ -73,7 +73,7 @@ func (d *depositsQ) UpdateStatus(id int64, status types.WithdrawStatus) error {
 	return d.db.Exec(stmt)
 }
 
-func (d *depositsQ) NewDepositsQ(db *pgdb.DB) data.DepositsQ {
+func NewDepositsQ(db *pgdb.DB) data.DepositsQ {
 	return &depositsQ{
 		db:       db,
 		selector: squirrel.Select("*").From(depositsTable),

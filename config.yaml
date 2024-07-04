@@ -3,7 +3,14 @@ log:
   disable_sentry: true
 
 db:
-  url: db_url
+  url: postgres://tss:tss@localhost:20000/tss?sslmode=disable
+
+chains:
+  list:
+    - id: "11155111"
+      rpc:
+      bridge_address: "0xB4C4736D411eE984F0956771a724526E637E2058"
+      confirmations: 1
 
 listener:
   addr: :8910

@@ -1,7 +1,7 @@
 .SILENT: gen-proto run test
 
 TESTING_PACKAGES = ./internal/bridge/evm...
-VIPER_FILE=config.yaml
+VIPER_FILE=config.local.yaml
 
 # set the rpc url for the sepolia network
 export SEPOLIA_RPC_URL=https://warmhearted-green-...
@@ -11,6 +11,7 @@ gen-proto:
 	cd proto && buf generate
 
 run:
+	KV_VIPER_FILE=$(VIPER_FILE) go run main.go migrate up
 	KV_VIPER_FILE=$(VIPER_FILE) go run main.go run service
 
 test:
