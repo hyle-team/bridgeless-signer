@@ -12,6 +12,9 @@ chains:
       bridge_address: "0xB4C4736D411eE984F0956771a724526E637E2058"
       confirmations: 1
 
+signer:
+  eth_signer:
+
 listener:
   addr: :8910
 

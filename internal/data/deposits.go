@@ -16,6 +16,7 @@ type DepositsQ interface {
 	Insert(Deposit) (id int64, err error)
 	Get(identifier DepositIdentifier) (*Deposit, error)
 	UpdateStatus(id int64, status types.WithdrawStatus) error
+	SetWithdrawalTx(depositId int64, txHash, chainId string) error
 }
 
 type DepositIdentifier struct {

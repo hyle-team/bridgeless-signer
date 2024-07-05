@@ -1,10 +1,7 @@
 .SILENT: gen-proto run test
 
-TESTING_PACKAGES = ./internal/bridge/evm...
-VIPER_FILE=config.local.yaml
-
-# set the rpc url for the sepolia network
-export SEPOLIA_RPC_URL=https://warmhearted-green-...
+TESTING_PACKAGES = ./internal/bridge/processor/...
+VIPER_FILE="${GOPATH}/src/github.com/hyle-team/bridgeless-signer/config.local.yaml"
 
 
 gen-proto:
@@ -15,4 +12,4 @@ run:
 	KV_VIPER_FILE=$(VIPER_FILE) go run main.go run service
 
 test:
-	go test -count=1 $(TESTING_PACKAGES)
+	KV_VIPER_FILE=$(VIPER_FILE) go test -count=1 $(TESTING_PACKAGES)

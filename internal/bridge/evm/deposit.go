@@ -2,7 +2,6 @@ package evm
 
 import (
 	"context"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -42,9 +41,8 @@ func (p *bridgeProxy) GetDepositData(id data.DepositIdentifier) (*bridgeTypes.De
 	event.Token = common.HexToAddress(log.Topics[1].Hex())
 
 	return &bridgeTypes.DepositData{
-		DepositIdentifier: id,
-		// TODO: change uint8 to uint256
-		DestinationChainId: big.NewInt(int64(event.ChainId)),
+		DepositIdentifier:  id,
+		DestinationChainId: event.ChainId,
 		DestinationAddress: event.DstAddress,
 		SourceAddress:      event.SrcAddress,
 		Amount:             event.Amount,

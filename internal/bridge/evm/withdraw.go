@@ -2,6 +2,8 @@ package evm
 
 import (
 	"context"
+	"math/big"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,7 +24,7 @@ func (p *bridgeProxy) FormWithdrawalTransaction(data bridgeTypes.DepositData) (*
 	// transact opts prevent the transaction from being sent to
 	// the network, returning the transaction object only
 	return p.bridgeContract.BridgeOut(
-		bridgeOutTransactOpts(),
+		bridgeOutTransactOpts(p.getTransactionNonce()),
 		data.TokenAddress,
 		common.HexToAddress(data.DestinationAddress),
 		data.Amount,
@@ -37,11 +39,22 @@ func (p *bridgeProxy) SendWithdrawalTransaction(signedTx *types.Transaction) err
 	)
 }
 
-func bridgeOutTransactOpts() *bind.TransactOpts {
+func (p *bridgeProxy) getTransactionNonce() *big.Int {
+	// getting the current pending nonce
+	nonce := big.NewInt(0).SetUint64(p.signerNonce)
+
+	// atomically incrementing the nonce
+	atomic.AddUint64(&p.signerNonce, 1)
+
+	return nonce
+}
+
+func bridgeOutTransactOpts(nonce *big.Int) *bind.TransactOpts {
 	const gasLimit = 300000
 
 	return &bind.TransactOpts{
 		GasLimit: gasLimit,
+		Nonce:    nonce,
 		// prevent the transaction from being sent to the network
 		NoSend: true,
 		Signer: func(address common.Address, transaction *types.Transaction) (*types.Transaction, error) {

@@ -3,6 +3,7 @@ package evm
 import (
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
@@ -12,11 +13,11 @@ type proxiesRepository struct {
 	proxies map[string]bridgeTypes.Proxy
 }
 
-func NewProxiesRepository(chains []chain.Chain) (bridgeTypes.ProxiesRepository, error) {
+func NewProxiesRepository(chains []chain.Chain, signer common.Address) (bridgeTypes.ProxiesRepository, error) {
 	proxiesMap := make(map[string]bridgeTypes.Proxy)
 
 	for _, c := range chains {
-		proxy, err := NewBridgeProxy(c)
+		proxy, err := NewBridgeProxy(c, signer)
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("failed to create proxy for chain %s", c.Id.String()))
 		}

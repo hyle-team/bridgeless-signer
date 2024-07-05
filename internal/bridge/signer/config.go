@@ -1,4 +1,4 @@
-package signature
+package signer
 
 import (
 	"crypto/ecdsa"
@@ -10,7 +10,7 @@ import (
 )
 
 type Signerer interface {
-	Signer() Signer
+	Signer() *Signer
 }
 
 type config struct {
@@ -28,7 +28,7 @@ func NewSignerer(getter kv.Getter) Signerer {
 	}
 }
 
-func (s *signerer) Signer() Signer {
+func (s *signerer) Signer() *Signer {
 	return s.signerOnce.Do(func() interface{} {
 		var cfg config
 
@@ -42,5 +42,5 @@ func (s *signerer) Signer() Signer {
 		}
 
 		return NewSigner(cfg.PrivKey)
-	}).(Signer)
+	}).(*Signer)
 }

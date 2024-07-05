@@ -11,12 +11,14 @@ import (
 )
 
 const (
-	depositsTable     = "deposits"
-	depositsTxHash    = "tx_hash"
-	depositsTxEventId = "tx_event_id"
-	depositsChainId   = "chain_id"
-	depositsStatus    = "status"
-	depositsId        = "id"
+	depositsTable             = "deposits"
+	depositsTxHash            = "tx_hash"
+	depositsTxEventId         = "tx_event_id"
+	depositsChainId           = "chain_id"
+	depositsStatus            = "status"
+	depositsId                = "id"
+	depositsWithdrawalTxHash  = "withdrawal_tx_hash"
+	depositsWithdrawalChainId = "withdrawal_chain_id"
 )
 
 type depositsQ struct {
@@ -26,6 +28,16 @@ type depositsQ struct {
 
 func (d *depositsQ) New() data.DepositsQ {
 	return NewDepositsQ(d.db.Clone())
+}
+
+func (d *depositsQ) SetWithdrawalTx(depositId int64, txHash, chainId string) error {
+	stmt := squirrel.Update(depositsTable).
+		Set(depositsStatus, types.WithdrawStatus_TX_PENDING).
+		Set(depositsWithdrawalTxHash, txHash).
+		Set(depositsWithdrawalChainId, chainId).
+		Where(squirrel.Eq{depositsId: depositId})
+
+	return d.db.Exec(stmt)
 }
 
 func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {

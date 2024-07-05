@@ -31,7 +31,7 @@ var (
 
 // BridgeMetaData contains all meta data concerning the Bridge contract.
 var BridgeMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"chainId\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"dstAddress\",\"type\":\"string\"}],\"name\":\"BridgeIn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dstAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"originTxId\",\"type\":\"string\"}],\"name\":\"BridgeOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"addToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"_chainId\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"_dst\",\"type\":\"string\"}],\"name\":\"bridgeIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_originTxId\",\"type\":\"string\"}],\"name\":\"bridgeOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"removeToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"sendToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"}],\"name\":\"setOperator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"dstAddress\",\"type\":\"string\"}],\"name\":\"BridgeIn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dstAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"originTxId\",\"type\":\"string\"}],\"name\":\"BridgeOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"addToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_chainId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_dst\",\"type\":\"string\"}],\"name\":\"bridgeIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_originTxId\",\"type\":\"string\"}],\"name\":\"bridgeOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"removeToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"sendToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"}],\"name\":\"setOperator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // BridgeABI is the input ABI used to generate the binding from.
@@ -263,24 +263,24 @@ func (_Bridge *BridgeTransactorSession) AddToken(_token common.Address) (*types.
 	return _Bridge.Contract.AddToken(&_Bridge.TransactOpts, _token)
 }
 
-// BridgeIn is a paid mutator transaction binding the contract method 0x5b7145e3.
+// BridgeIn is a paid mutator transaction binding the contract method 0x3a678fc5.
 //
-// Solidity: function bridgeIn(address _token, uint256 _amount, uint8 _chainId, string _dst) returns()
-func (_Bridge *BridgeTransactor) BridgeIn(opts *bind.TransactOpts, _token common.Address, _amount *big.Int, _chainId uint8, _dst string) (*types.Transaction, error) {
+// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst) returns()
+func (_Bridge *BridgeTransactor) BridgeIn(opts *bind.TransactOpts, _token common.Address, _amount *big.Int, _chainId *big.Int, _dst string) (*types.Transaction, error) {
 	return _Bridge.contract.Transact(opts, "bridgeIn", _token, _amount, _chainId, _dst)
 }
 
-// BridgeIn is a paid mutator transaction binding the contract method 0x5b7145e3.
+// BridgeIn is a paid mutator transaction binding the contract method 0x3a678fc5.
 //
-// Solidity: function bridgeIn(address _token, uint256 _amount, uint8 _chainId, string _dst) returns()
-func (_Bridge *BridgeSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId uint8, _dst string) (*types.Transaction, error) {
+// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst) returns()
+func (_Bridge *BridgeSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId *big.Int, _dst string) (*types.Transaction, error) {
 	return _Bridge.Contract.BridgeIn(&_Bridge.TransactOpts, _token, _amount, _chainId, _dst)
 }
 
-// BridgeIn is a paid mutator transaction binding the contract method 0x5b7145e3.
+// BridgeIn is a paid mutator transaction binding the contract method 0x3a678fc5.
 //
-// Solidity: function bridgeIn(address _token, uint256 _amount, uint8 _chainId, string _dst) returns()
-func (_Bridge *BridgeTransactorSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId uint8, _dst string) (*types.Transaction, error) {
+// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst) returns()
+func (_Bridge *BridgeTransactorSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId *big.Int, _dst string) (*types.Transaction, error) {
 	return _Bridge.Contract.BridgeIn(&_Bridge.TransactOpts, _token, _amount, _chainId, _dst)
 }
 
@@ -482,14 +482,14 @@ type BridgeBridgeIn struct {
 	Token      common.Address
 	SrcAddress common.Address
 	Amount     *big.Int
-	ChainId    uint8
+	ChainId    *big.Int
 	DstAddress string
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterBridgeIn is a free log retrieval operation binding the contract event 0x579dc69a14982605d124579b5f8dc2d22bda0ac7cc5d13faf997f738669c327d.
+// FilterBridgeIn is a free log retrieval operation binding the contract event 0xb682b0d4c459c3870ca6b0531dfa5ed978c7136fcafb37aaf1a123edb44ccd4f.
 //
-// Solidity: event BridgeIn(address indexed token, address srcAddress, uint256 amount, uint8 chainId, string dstAddress)
+// Solidity: event BridgeIn(address indexed token, address srcAddress, uint256 amount, uint256 chainId, string dstAddress)
 func (_Bridge *BridgeFilterer) FilterBridgeIn(opts *bind.FilterOpts, token []common.Address) (*BridgeBridgeInIterator, error) {
 
 	var tokenRule []interface{}
@@ -504,9 +504,9 @@ func (_Bridge *BridgeFilterer) FilterBridgeIn(opts *bind.FilterOpts, token []com
 	return &BridgeBridgeInIterator{contract: _Bridge.contract, event: "BridgeIn", logs: logs, sub: sub}, nil
 }
 
-// WatchBridgeIn is a free log subscription operation binding the contract event 0x579dc69a14982605d124579b5f8dc2d22bda0ac7cc5d13faf997f738669c327d.
+// WatchBridgeIn is a free log subscription operation binding the contract event 0xb682b0d4c459c3870ca6b0531dfa5ed978c7136fcafb37aaf1a123edb44ccd4f.
 //
-// Solidity: event BridgeIn(address indexed token, address srcAddress, uint256 amount, uint8 chainId, string dstAddress)
+// Solidity: event BridgeIn(address indexed token, address srcAddress, uint256 amount, uint256 chainId, string dstAddress)
 func (_Bridge *BridgeFilterer) WatchBridgeIn(opts *bind.WatchOpts, sink chan<- *BridgeBridgeIn, token []common.Address) (event.Subscription, error) {
 
 	var tokenRule []interface{}
@@ -546,9 +546,9 @@ func (_Bridge *BridgeFilterer) WatchBridgeIn(opts *bind.WatchOpts, sink chan<- *
 	}), nil
 }
 
-// ParseBridgeIn is a log parse operation binding the contract event 0x579dc69a14982605d124579b5f8dc2d22bda0ac7cc5d13faf997f738669c327d.
+// ParseBridgeIn is a log parse operation binding the contract event 0xb682b0d4c459c3870ca6b0531dfa5ed978c7136fcafb37aaf1a123edb44ccd4f.
 //
-// Solidity: event BridgeIn(address indexed token, address srcAddress, uint256 amount, uint8 chainId, string dstAddress)
+// Solidity: event BridgeIn(address indexed token, address srcAddress, uint256 amount, uint256 chainId, string dstAddress)
 func (_Bridge *BridgeFilterer) ParseBridgeIn(log types.Log) (*BridgeBridgeIn, error) {
 	event := new(BridgeBridgeIn)
 	if err := _Bridge.contract.UnpackLog(event, "BridgeIn", log); err != nil {
