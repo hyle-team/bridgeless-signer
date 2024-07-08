@@ -1,23 +1,42 @@
 services:
-  db:
+  signer-db:
     image: tokend/postgres-ubuntu:9.6
-    hostname: tss-db
-    container_name: tss-db
+    hostname: signer-db
+    container_name: signer-db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=tss
-      - POSTGRES_PASSWORD=tss
-      - POSTGRES_DB=tss
+      - POSTGRES_USER=signer
+      - POSTGRES_PASSWORD=signer
+      - POSTGRES_DB=signer
       - PGDATA=/pgdata
     volumes:
-      - tss-data:/pgdata
+      - signer-data:/pgdata
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U tss" ]
+      test: [ "CMD-SHELL", "pg_isready -U signer" ]
       interval: 5s
       timeout: 5s
       retries: 5
     ports:
       - 20000:5432
 
+  signer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: signer
+    container_name: signer
+    restart: unless-stopped
+    depends_on:
+      signer-db:
+        condition: service_healthy
+    environment:
+      KV_VIPER_FILE: '/config.yaml'
+    volumes:
+      - ./config.local.yaml:/config.yaml
+    ports:
+      - 8111:8111
+      - 8222:8222
+    entrypoint: sh -c "bridgeless-signer migrate up && bridgeless-signer run service"
+
 volumes:
-  tss-data:
+  signer-data:

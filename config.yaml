@@ -2,21 +2,32 @@ log:
   level: debug
   disable_sentry: true
 
+## PostgreSQL connection
 db:
-  url: postgres://tss:tss@localhost:20000/tss?sslmode=disable
+  url: postgres://signer:signer@signer-db/signer?sslmode=disable
 
+## Port to listen for incoming GRPC requests
+listener:
+  addr: :8111
+
+## Port to listen for incoming HTTP requests
+rest_gateway:
+  addr: :8222
+
+
+## Available chains configuration
 chains:
   list:
-    - id: "11155111"
+      ## Chain ID
+    - id: "80002"
+      ## RPC endpoint
       rpc:
-      bridge_address: "0xB4C4736D411eE984F0956771a724526E637E2058"
+      ## Bridge contract address
+      bridge_address: "0x9c9b83Ed9dd4cF8A385b6e318Fb97Cdfc320b627"
+      ## Number of confirmations required for the deposit to be considered final
       confirmations: 1
 
+
+## Service signer private key
 signer:
-  eth_signer:
-
-listener:
-  addr: :8910
-
-http_gateway:
-  addr: :8911
+  eth_signer: "8a8b8c...."

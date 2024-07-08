@@ -42,6 +42,9 @@ func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.P
 	}
 
 	nonce, err := chain.Rpc.PendingNonceAt(context.Background(), signerAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get signer nonce")
+	}
 
 	return &bridgeProxy{
 		chain:          chain,
@@ -54,7 +57,7 @@ func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.P
 }
 
 func (p *bridgeProxy) IsDepositLog(log *types.Log) bool {
-	if log == nil {
+	if log == nil || log.Topics == nil {
 		return false
 	}
 

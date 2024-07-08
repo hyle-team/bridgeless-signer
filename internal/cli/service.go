@@ -12,8 +12,10 @@ import (
 )
 
 func RunService(cfg config.Config) error {
+	// TODO: add proper ctx configuration
 	ctx := context.Background()
 	signer := cfg.Signer()
+
 	proxies, err := evm.NewProxiesRepository(cfg.Chains(), signer.Address())
 	if err != nil {
 		panic(errors.Wrap(err, "failed to create proxies repository"))
