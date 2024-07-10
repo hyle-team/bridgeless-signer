@@ -18,12 +18,12 @@
   "paths": {
     "/check/{originTxId}": {
       "get": {
-        "operationId": "Service_CheckWithdraw",
+        "operationId": "Service_CheckWithdrawal",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/CheckWithdrawResponse"
+              "$ref": "#/definitions/CheckWithdrawalResponse"
             }
           },
           "default": {
@@ -48,7 +48,7 @@
     },
     "/submit": {
       "post": {
-        "operationId": "Service_SubmitWithdraw",
+        "operationId": "Service_SubmitWithdrawal",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -69,7 +69,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/WithdrawRequest"
+              "$ref": "#/definitions/WithdrawalRequest"
             }
           }
         ],
@@ -80,11 +80,11 @@
     }
   },
   "definitions": {
-    "CheckWithdrawResponse": {
+    "CheckWithdrawalResponse": {
       "type": "object",
       "properties": {
         "status": {
-          "$ref": "#/definitions/WithdrawStatus"
+          "$ref": "#/definitions/WithdrawalStatus"
         },
         "resultTransaction": {
           "$ref": "#/definitions/Transaction"
@@ -120,7 +120,7 @@
         }
       }
     },
-    "WithdrawRequest": {
+    "WithdrawalRequest": {
       "type": "object",
       "properties": {
         "deposit": {
@@ -128,13 +128,12 @@
         }
       }
     },
-    "WithdrawStatus": {
+    "WithdrawalStatus": {
       "type": "string",
       "enum": [
         "PROCESSING",
         "INVALID",
         "FAILED",
-        "PROCESSED",
         "TX_PENDING",
         "TX_FAILED",
         "TX_SUCCESSFUL"

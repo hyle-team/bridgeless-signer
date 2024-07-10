@@ -16,8 +16,8 @@ import (
 var _ types.ServiceServer = &Server{}
 
 type ServiceHandler interface {
-	SubmitWithdraw(ctx context.Context, request *types.WithdrawRequest) error
-	CheckWithdraw(ctx context.Context, request *types.CheckWithdrawRequest) (*types.CheckWithdrawResponse, error)
+	SubmitWithdraw(ctx context.Context, request *types.WithdrawalRequest) error
+	CheckWithdraw(ctx context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error)
 }
 
 // Server is a GRPC and HTTP gateway application server.
@@ -70,10 +70,10 @@ func (s *Server) RunRESTGateway(ctx context.Context) (err error) {
 	return srv.ListenAndServe()
 }
 
-func (s *Server) SubmitWithdraw(ctx context.Context, request *types.WithdrawRequest) (*types.Empty, error) {
+func (s *Server) SubmitWithdrawal(ctx context.Context, request *types.WithdrawalRequest) (*types.Empty, error) {
 	return &types.Empty{}, s.handler.SubmitWithdraw(ctx, request)
 }
 
-func (s *Server) CheckWithdraw(ctx context.Context, request *types.CheckWithdrawRequest) (*types.CheckWithdrawResponse, error) {
+func (s *Server) CheckWithdrawal(ctx context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error) {
 	return s.handler.CheckWithdraw(ctx, request)
 }

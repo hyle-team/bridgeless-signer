@@ -14,8 +14,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (h *ServiceHandler) CheckWithdraw(_ context.Context, request *types.CheckWithdrawRequest) (*types.CheckWithdrawResponse, error) {
-	wr, err := h.CheckWithdrawRequest(request)
+func (h *ServiceHandler) CheckWithdrawal(_ context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error) {
+	wr, err := h.CheckWithdrawalRequest(request)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -35,7 +35,7 @@ func (h *ServiceHandler) CheckWithdraw(_ context.Context, request *types.CheckWi
 		return nil, status.Error(codes.NotFound, "deposit not found")
 	}
 
-	if tx.Status == types.WithdrawStatus_TX_PENDING && tx.WithdrawalTxHash != nil {
+	if tx.Status == types.WithdrawalStatus_TX_PENDING && tx.WithdrawalTxHash != nil {
 		proxy, err := h.proxies.Proxy(*tx.WithdrawalChainId)
 		if err != nil {
 			h.logger.WithError(err).Error("failed to get proxy")
@@ -54,9 +54,9 @@ func (h *ServiceHandler) CheckWithdraw(_ context.Context, request *types.CheckWi
 		} else {
 			switch receipt.Status {
 			case ethTypes.ReceiptStatusFailed:
-				tx.Status = types.WithdrawStatus_FAILED
+				tx.Status = types.WithdrawalStatus_TX_FAILED
 			case ethTypes.ReceiptStatusSuccessful:
-				tx.Status = types.WithdrawStatus_TX_SUCCESSFUL
+				tx.Status = types.WithdrawalStatus_TX_SUCCESSFUL
 			}
 
 			// updating in the db

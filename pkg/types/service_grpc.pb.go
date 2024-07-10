@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
-	SubmitWithdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*Empty, error)
-	CheckWithdraw(ctx context.Context, in *CheckWithdrawRequest, opts ...grpc.CallOption) (*CheckWithdrawResponse, error)
+	SubmitWithdrawal(ctx context.Context, in *WithdrawalRequest, opts ...grpc.CallOption) (*Empty, error)
+	CheckWithdrawal(ctx context.Context, in *CheckWithdrawalRequest, opts ...grpc.CallOption) (*CheckWithdrawalResponse, error)
 }
 
 type serviceClient struct {
@@ -34,18 +34,18 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 	return &serviceClient{cc}
 }
 
-func (c *serviceClient) SubmitWithdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *serviceClient) SubmitWithdrawal(ctx context.Context, in *WithdrawalRequest, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Service/SubmitWithdraw", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/Service/SubmitWithdrawal", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serviceClient) CheckWithdraw(ctx context.Context, in *CheckWithdrawRequest, opts ...grpc.CallOption) (*CheckWithdrawResponse, error) {
-	out := new(CheckWithdrawResponse)
-	err := c.cc.Invoke(ctx, "/Service/CheckWithdraw", in, out, opts...)
+func (c *serviceClient) CheckWithdrawal(ctx context.Context, in *CheckWithdrawalRequest, opts ...grpc.CallOption) (*CheckWithdrawalResponse, error) {
+	out := new(CheckWithdrawalResponse)
+	err := c.cc.Invoke(ctx, "/Service/CheckWithdrawal", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,19 +56,19 @@ func (c *serviceClient) CheckWithdraw(ctx context.Context, in *CheckWithdrawRequ
 // All implementations should embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
-	SubmitWithdraw(context.Context, *WithdrawRequest) (*Empty, error)
-	CheckWithdraw(context.Context, *CheckWithdrawRequest) (*CheckWithdrawResponse, error)
+	SubmitWithdrawal(context.Context, *WithdrawalRequest) (*Empty, error)
+	CheckWithdrawal(context.Context, *CheckWithdrawalRequest) (*CheckWithdrawalResponse, error)
 }
 
 // UnimplementedServiceServer should be embedded to have forward compatible implementations.
 type UnimplementedServiceServer struct {
 }
 
-func (UnimplementedServiceServer) SubmitWithdraw(context.Context, *WithdrawRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SubmitWithdraw not implemented")
+func (UnimplementedServiceServer) SubmitWithdrawal(context.Context, *WithdrawalRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SubmitWithdrawal not implemented")
 }
-func (UnimplementedServiceServer) CheckWithdraw(context.Context, *CheckWithdrawRequest) (*CheckWithdrawResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CheckWithdraw not implemented")
+func (UnimplementedServiceServer) CheckWithdrawal(context.Context, *CheckWithdrawalRequest) (*CheckWithdrawalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckWithdrawal not implemented")
 }
 
 // UnsafeServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -82,38 +82,38 @@ func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
 	s.RegisterService(&Service_ServiceDesc, srv)
 }
 
-func _Service_SubmitWithdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WithdrawRequest)
+func _Service_SubmitWithdrawal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawalRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).SubmitWithdraw(ctx, in)
+		return srv.(ServiceServer).SubmitWithdrawal(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Service/SubmitWithdraw",
+		FullMethod: "/Service/SubmitWithdrawal",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).SubmitWithdraw(ctx, req.(*WithdrawRequest))
+		return srv.(ServiceServer).SubmitWithdrawal(ctx, req.(*WithdrawalRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Service_CheckWithdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckWithdrawRequest)
+func _Service_CheckWithdrawal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckWithdrawalRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).CheckWithdraw(ctx, in)
+		return srv.(ServiceServer).CheckWithdrawal(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Service/CheckWithdraw",
+		FullMethod: "/Service/CheckWithdrawal",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).CheckWithdraw(ctx, req.(*CheckWithdrawRequest))
+		return srv.(ServiceServer).CheckWithdrawal(ctx, req.(*CheckWithdrawalRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -126,12 +126,12 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SubmitWithdraw",
-			Handler:    _Service_SubmitWithdraw_Handler,
+			MethodName: "SubmitWithdrawal",
+			Handler:    _Service_SubmitWithdrawal_Handler,
 		},
 		{
-			MethodName: "CheckWithdraw",
-			Handler:    _Service_CheckWithdraw_Handler,
+			MethodName: "CheckWithdrawal",
+			Handler:    _Service_CheckWithdrawal_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

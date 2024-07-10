@@ -30,9 +30,9 @@ var ErrorMaxResendReached = errors.New("max resend count reached")
 
 type Producer interface {
 	SendGetDepositRequest(request bridgeTypes.GetDepositRequest) error
-	SendFormWithdrawRequest(request bridgeTypes.FormWithdrawRequest) error
-	SendSignWithdrawRequest(request bridgeTypes.WithdrawRequest) error
-	SendSubmitWithdrawRequest(request bridgeTypes.WithdrawRequest) error
+	SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalRequest) error
+	SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
 	DeliveryResender
 }
 

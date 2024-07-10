@@ -15,7 +15,7 @@ type DepositsQ interface {
 	New() DepositsQ
 	Insert(Deposit) (id int64, err error)
 	Get(identifier DepositIdentifier) (*Deposit, error)
-	UpdateStatus(id int64, status types.WithdrawStatus) error
+	UpdateStatus(id int64, status types.WithdrawalStatus) error
 	SetWithdrawalTx(depositId int64, txHash, chainId string) error
 }
 
@@ -32,17 +32,17 @@ func (d DepositIdentifier) String() string {
 type Deposit struct {
 	Id int64 `structs:"-" db:"id"`
 	DepositIdentifier
-	Status            types.WithdrawStatus `structs:"status" db:"status"`
-	WithdrawalTxHash  *string              `structs:"withdrawal_tx_hash" db:"withdrawal_tx_hash"`
-	WithdrawalChainId *string              `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
+	Status            types.WithdrawalStatus `structs:"status" db:"status"`
+	WithdrawalTxHash  *string                `structs:"withdrawal_tx_hash" db:"withdrawal_tx_hash"`
+	WithdrawalChainId *string                `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
 }
 
 func (d Deposit) Reprocessable() bool {
-	return d.Status == types.WithdrawStatus_FAILED
+	return d.Status == types.WithdrawalStatus_FAILED
 }
 
-func (d Deposit) ToStatusResponse() *types.CheckWithdrawResponse {
-	result := &types.CheckWithdrawResponse{
+func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
+	result := &types.CheckWithdrawalResponse{
 		Status: d.Status,
 	}
 

@@ -5,40 +5,39 @@ import "google/api/annotations.proto";
 import "deposit.proto";
 import "transaction.proto";
 
-message WithdrawRequest {
+message WithdrawalRequest {
   Deposit deposit = 1;
 }
 
-enum WithdrawStatus {
+enum WithdrawalStatus {
   PROCESSING = 0;
   INVALID = 1;
   FAILED = 2;
-  PROCESSED = 3;
   TX_PENDING = 4;
   TX_FAILED = 5;
   TX_SUCCESSFUL = 6;
 }
 
-message CheckWithdrawRequest {
+message CheckWithdrawalRequest {
   string origin_tx_id = 1;
 }
 
-message CheckWithdrawResponse {
-  WithdrawStatus status = 1;
+message CheckWithdrawalResponse {
+  WithdrawalStatus status = 1;
   optional Transaction result_transaction = 2;
 }
 
 message Empty {}
 
 service Service {
-  rpc SubmitWithdraw(WithdrawRequest) returns (Empty) {
+  rpc SubmitWithdrawal(WithdrawalRequest) returns (Empty) {
     option (google.api.http) = {
       post: "/submit"
       body: "*"
     };
   }
 
-  rpc CheckWithdraw(CheckWithdrawRequest) returns (CheckWithdrawResponse) {
+  rpc CheckWithdrawal(CheckWithdrawalRequest) returns (CheckWithdrawalResponse) {
     option (google.api.http) = {
       get: "/check/{origin_tx_id}"
     };

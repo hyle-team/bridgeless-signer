@@ -18,7 +18,7 @@ func New(proxies bridgeTypes.ProxiesRepository, db data.DepositsQ, signer *signe
 	return &Processor{proxies: proxies, db: db, signer: signer}
 }
 
-func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) (data *bridgeTypes.FormWithdrawRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) (data *bridgeTypes.FormWithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(req.DepositDbId, err, reprocessable) }()
 
 	proxy, err := p.proxies.Proxy(req.DepositIdentifier.ChainId)
@@ -32,7 +32,7 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 	depositData, err := proxy.GetDepositData(req.DepositIdentifier)
 	switch {
 	case err == nil:
-		data = &bridgeTypes.FormWithdrawRequest{
+		data = &bridgeTypes.FormWithdrawalRequest{
 			DepositDbId: req.DepositDbId,
 			Data:        *depositData,
 		}
@@ -53,7 +53,7 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 	return
 }
 
-func (p *Processor) ProcessFormWithdrawRequest(req bridgeTypes.FormWithdrawRequest) (request *bridgeTypes.WithdrawRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessFormWithdrawalRequest(req bridgeTypes.FormWithdrawalRequest) (request *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(req.DepositDbId, err, reprocessable) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId.String())
@@ -67,7 +67,7 @@ func (p *Processor) ProcessFormWithdrawRequest(req bridgeTypes.FormWithdrawReque
 	tx, err := proxy.FormWithdrawalTransaction(req.Data)
 	switch {
 	case err == nil:
-		request = &bridgeTypes.WithdrawRequest{
+		request = &bridgeTypes.WithdrawalRequest{
 			Data:        req.Data,
 			DepositDbId: req.DepositDbId,
 			Transaction: tx,
@@ -83,7 +83,7 @@ func (p *Processor) ProcessFormWithdrawRequest(req bridgeTypes.FormWithdrawReque
 	return
 }
 
-func (p *Processor) ProcessSendWithdrawRequest(req bridgeTypes.WithdrawRequest) (reprocessable bool, err error) {
+func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(req.DepositDbId, err, reprocessable) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId.String())
@@ -105,12 +105,12 @@ func (p *Processor) ProcessSendWithdrawRequest(req bridgeTypes.WithdrawRequest) 
 	return true, err
 }
 
-func (p *Processor) ProcessSignWithdrawRequest(req bridgeTypes.WithdrawRequest) (res *bridgeTypes.WithdrawRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(req.DepositDbId, err, reprocessable) }()
 
 	tx, err := p.signer.SignTx(req.Transaction, req.Data.DestinationChainId)
 	if err == nil {
-		res = &bridgeTypes.WithdrawRequest{
+		res = &bridgeTypes.WithdrawalRequest{
 			Data:        req.Data,
 			DepositDbId: req.DepositDbId,
 			Transaction: tx,
@@ -122,7 +122,7 @@ func (p *Processor) ProcessSignWithdrawRequest(req bridgeTypes.WithdrawRequest) 
 }
 
 func (p *Processor) SetWithdrawStatusFailed(id int64) error {
-	return errors.Wrap(p.db.UpdateStatus(id, types.WithdrawStatus_FAILED), "failed to update deposit status")
+	return errors.Wrap(p.db.UpdateStatus(id, types.WithdrawalStatus_FAILED), "failed to update deposit status")
 }
 
 func (p *Processor) updateInvalidDepositStatus(id int64, err error, reprocessable bool) error {
@@ -130,7 +130,7 @@ func (p *Processor) updateInvalidDepositStatus(id int64, err error, reprocessabl
 		return err
 	}
 
-	if tempErr := p.db.UpdateStatus(id, types.WithdrawStatus_INVALID); tempErr != nil {
+	if tempErr := p.db.UpdateStatus(id, types.WithdrawalStatus_INVALID); tempErr != nil {
 		return errors.Wrap(tempErr, "failed to update deposit status")
 	}
 

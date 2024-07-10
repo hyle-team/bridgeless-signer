@@ -39,7 +39,7 @@ func TestProcessor_HappyPath(t *testing.T) {
 			TxEventId: depositTxEventId,
 			ChainId:   amoyChainId,
 		},
-		Status: types.WithdrawStatus_PROCESSING,
+		Status: types.WithdrawalStatus_PROCESSING,
 	}
 
 	deposit.Id, err = db.Insert(deposit)
@@ -64,17 +64,17 @@ func TestProcessor_HappyPath(t *testing.T) {
 	// modify the amount to send a different amount
 	formWithdrawRequest.Data.Amount.SetString("123456", 10)
 
-	formedWithRequest, _, err := processor.ProcessFormWithdrawRequest(*formWithdrawRequest)
+	formedWithRequest, _, err := processor.ProcessFormWithdrawalRequest(*formWithdrawRequest)
 	if err != nil {
 		t.Fatal(errors.Wrap(err, "failed to process form withdraw request"))
 	}
 
-	signedRequest, _, err := processor.ProcessSignWithdrawRequest(*formedWithRequest)
+	signedRequest, _, err := processor.ProcessSignWithdrawalRequest(*formedWithRequest)
 	if err != nil {
 		t.Fatal(errors.Wrap(err, "failed to process sign withdraw request"))
 	}
 
-	_, err = processor.ProcessSendWithdrawRequest(*signedRequest)
+	_, err = processor.ProcessSendWithdrawalRequest(*signedRequest)
 	if err != nil {
 		t.Fatal(errors.Wrap(err, "failed to process send withdraw request"))
 	}

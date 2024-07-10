@@ -26,7 +26,7 @@ func NewSubmitWithdrawalHandler(
 }
 
 func (h *SubmitWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
-	var request bridgeTypes.WithdrawRequest
+	var request bridgeTypes.WithdrawalRequest
 	if err = json.Unmarshal(delivery.Body, &request); err != nil {
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
 	}
@@ -43,7 +43,7 @@ func (h *SubmitWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (repro
 
 	}()
 
-	reprocessable, err = h.processor.ProcessSendWithdrawRequest(request)
+	reprocessable, err = h.processor.ProcessSendWithdrawalRequest(request)
 	if err != nil {
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
 	}

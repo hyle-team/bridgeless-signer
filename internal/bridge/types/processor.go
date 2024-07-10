@@ -5,7 +5,7 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 )
 
-type WithdrawRequest struct {
+type WithdrawalRequest struct {
 	DepositDbId int64
 	Data        DepositData
 	Transaction *types.Transaction
@@ -16,7 +16,7 @@ type GetDepositRequest struct {
 	DepositIdentifier data.DepositIdentifier
 }
 
-type FormWithdrawRequest struct {
+type FormWithdrawalRequest struct {
 	DepositDbId int64
 	Data        DepositData
 }

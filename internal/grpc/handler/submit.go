@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (h *ServiceHandler) SubmitWithdraw(_ context.Context, request *types.WithdrawRequest) error {
-	if err := h.ValidateWithdrawRequest(request); err != nil {
+func (h *ServiceHandler) SubmitWithdrawal(_ context.Context, request *types.WithdrawalRequest) error {
+	if err := h.ValidateWithdrawalRequest(request); err != nil {
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -33,7 +33,7 @@ func (h *ServiceHandler) SubmitWithdraw(_ context.Context, request *types.Withdr
 			return ErrTxAlreadySubmitted
 		}
 
-		deposit.Status = types.WithdrawStatus_PROCESSING
+		deposit.Status = types.WithdrawalStatus_PROCESSING
 		if err = dbconn.UpdateStatus(deposit.Id, deposit.Status); err != nil {
 			h.logger.WithError(err).Error("failed to update transaction status")
 			return ErrInternal
@@ -41,7 +41,7 @@ func (h *ServiceHandler) SubmitWithdraw(_ context.Context, request *types.Withdr
 	} else {
 		deposit = &data.Deposit{
 			DepositIdentifier: depositIdentifier,
-			Status:            types.WithdrawStatus_PROCESSING,
+			Status:            types.WithdrawalStatus_PROCESSING,
 		}
 
 		if deposit.Id, err = dbconn.Insert(*deposit); err != nil {

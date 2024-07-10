@@ -12,7 +12,7 @@ import (
 
 var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
 
-func (h *ServiceHandler) ValidateWithdrawRequest(request *types.WithdrawRequest) error {
+func (h *ServiceHandler) ValidateWithdrawalRequest(request *types.WithdrawalRequest) error {
 	if request == nil {
 		return errors.New("request is not provided")
 	}
@@ -37,7 +37,7 @@ func (h *ServiceHandler) ValidateWithdrawRequest(request *types.WithdrawRequest)
 	return err
 }
 
-func (h *ServiceHandler) CheckWithdrawRequest(request *types.CheckWithdrawRequest) (*types.WithdrawRequest, error) {
+func (h *ServiceHandler) CheckWithdrawalRequest(request *types.CheckWithdrawalRequest) (*types.WithdrawalRequest, error) {
 	if request == nil {
 		return nil, errors.New("request is not provided")
 	}
@@ -47,10 +47,10 @@ func (h *ServiceHandler) CheckWithdrawRequest(request *types.CheckWithdrawReques
 		return nil, err
 	}
 
-	return result, h.ValidateWithdrawRequest(result)
+	return result, h.ValidateWithdrawalRequest(result)
 }
 
-func toWithdrawRequest(originTxId string) (*types.WithdrawRequest, error) {
+func toWithdrawRequest(originTxId string) (*types.WithdrawalRequest, error) {
 	params := strings.Split(originTxId, "-")
 	if len(params) != 3 {
 		return nil, ErrInvalidOriginTxId
@@ -61,7 +61,7 @@ func toWithdrawRequest(originTxId string) (*types.WithdrawRequest, error) {
 		return nil, ErrInvalidOriginTxId
 	}
 
-	return &types.WithdrawRequest{
+	return &types.WithdrawalRequest{
 		Deposit: &types.Deposit{
 			TxHash:       params[0],
 			TxEventIndex: txEventIndex,

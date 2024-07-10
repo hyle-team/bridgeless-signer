@@ -77,7 +77,7 @@ func (p *Producer) SendGetDepositRequest(request bridgeTypes.GetDepositRequest) 
 	return p.channel.Publish("", rabbitTypes.GetDepositQueue, false, false, amqp.Publishing{Body: raw})
 }
 
-func (p *Producer) SendFormWithdrawRequest(request bridgeTypes.FormWithdrawRequest) error {
+func (p *Producer) SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalRequest) error {
 	raw, err := json.Marshal(request)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal form withdraw request")
@@ -86,7 +86,7 @@ func (p *Producer) SendFormWithdrawRequest(request bridgeTypes.FormWithdrawReque
 	return p.channel.Publish("", rabbitTypes.FormWithdrawQueue, false, false, amqp.Publishing{Body: raw})
 }
 
-func (p *Producer) SendSignWithdrawRequest(request bridgeTypes.WithdrawRequest) error {
+func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
 	raw, err := json.Marshal(request)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal sign withdraw request")
@@ -95,7 +95,7 @@ func (p *Producer) SendSignWithdrawRequest(request bridgeTypes.WithdrawRequest) 
 	return p.channel.Publish("", rabbitTypes.SignWithdrawQueue, false, false, amqp.Publishing{Body: raw})
 }
 
-func (p *Producer) SendSubmitWithdrawRequest(request bridgeTypes.WithdrawRequest) error {
+func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
 	raw, err := json.Marshal(request)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal submit withdraw request")

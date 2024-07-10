@@ -48,7 +48,7 @@ func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessab
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
 	}
 
-	if err = h.producer.SendFormWithdrawRequest(*withdrawReq); err != nil {
+	if err = h.producer.SendFormWithdrawalRequest(*withdrawReq); err != nil {
 		return true, rprFailCallback, errors.Wrap(err, "failed to send form withdraw request")
 	}
 
