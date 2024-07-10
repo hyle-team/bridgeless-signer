@@ -11,12 +11,12 @@ import (
 )
 
 type SubmitWithdrawalHandler struct {
-	processor processor.Processor
+	processor *processor.Processor
 	producer  rabbitTypes.Producer
 }
 
 func NewSubmitWithdrawalHandler(
-	processor processor.Processor,
+	processor *processor.Processor,
 	producer rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
 	return &SubmitWithdrawalHandler{

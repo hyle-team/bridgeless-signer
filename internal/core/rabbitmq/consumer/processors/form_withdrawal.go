@@ -11,12 +11,12 @@ import (
 )
 
 type FormWithdrawalHandler struct {
-	processor processor.Processor
+	processor *processor.Processor
 	producer  rabbitTypes.Producer
 }
 
 func NewFormWithdrawalHandler(
-	processor processor.Processor,
+	processor *processor.Processor,
 	producer rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
 	return &FormWithdrawalHandler{

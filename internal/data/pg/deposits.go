@@ -88,7 +88,7 @@ func (d *depositsQ) UpdateStatus(id int64, status types.WithdrawalStatus) error 
 
 func NewDepositsQ(db *pgdb.DB) data.DepositsQ {
 	return &depositsQ{
-		db:       db,
+		db:       db.Clone(),
 		selector: squirrel.Select("*").From(depositsTable),
 	}
 }

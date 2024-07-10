@@ -1,6 +1,10 @@
 package cli
 
 import (
+	"context"
+	"os/signal"
+	"syscall"
+
 	"github.com/alecthomas/kingpin"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
 	"gitlab.com/distributed_lab/kit/kv"
@@ -36,9 +40,11 @@ func Run(args []string) bool {
 		return false
 	}
 
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+
 	switch cmd {
 	case serviceCmd.FullCommand():
-		err = RunService(cfg)
+		err = RunService(ctx, cfg)
 	case migrateUpCmd.FullCommand():
 		err = MigrateUp(cfg)
 	case migrateDownCmd.FullCommand():

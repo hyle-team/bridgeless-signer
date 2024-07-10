@@ -1,4 +1,4 @@
-package grpc
+package config
 
 import (
 	"github.com/pkg/errors"

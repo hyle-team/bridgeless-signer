@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/pkg/errors"
@@ -10,10 +11,10 @@ import (
 )
 
 const (
-	GetDepositConsumerPrefix     = "get_deposit_consumer"
-	FormWithdrawConsumerPrefix   = "form_withdraw_consumer"
-	SignWithdrawConsumerPrefix   = "sign_withdraw_consumer"
-	SubmitWithdrawConsumerPrefix = "submit_withdraw_consumer"
+	GetDepositConsumerPrefix       = "get_deposit_consumer"
+	FormWithdrawalConsumerPrefix   = "form_withdrawal_consumer"
+	SignWithdrawalConsumerPrefix   = "sign_withdrawal_consumer"
+	SubmitWithdrawalConsumerPrefix = "submit_withdrawal_consumer"
 )
 
 type Consumer struct {
@@ -34,7 +35,7 @@ func New(
 	return &Consumer{
 		channel:           channel,
 		name:              name,
-		logger:            logger.WithField("consumer", name),
+		logger:            logger,
 		deliveryProcessor: deliveryProcessor,
 		deliveryResender:  deliveryResender,
 	}
@@ -47,6 +48,8 @@ func (c *Consumer) Consume(ctx context.Context, queue string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get consumer channel")
 	}
+
+	c.logger.Info("consuming started")
 
 	for {
 		select {
@@ -68,6 +71,7 @@ func (c *Consumer) Consume(ctx context.Context, queue string) error {
 
 			logger.WithError(err).Error("failed to process delivery")
 			if !reprocessable {
+				c.nack(logger, delivery, false)
 				continue
 			}
 
@@ -108,4 +112,8 @@ func (c *Consumer) nack(logger *logan.Entry, delivery amqp.Delivery, requeue boo
 	} else {
 		logger.Debug("delivery nacked")
 	}
+}
+
+func GetName(prefix string, index uint) string {
+	return fmt.Sprintf("%s_%d", prefix, index)
 }

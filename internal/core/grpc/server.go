@@ -7,6 +7,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hyle-team/bridgeless-signer/docs"
+	"github.com/hyle-team/bridgeless-signer/internal/core/grpc/config"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/ignite/cli/ignite/pkg/openapiconsole"
 	"github.com/pkg/errors"
@@ -16,8 +17,8 @@ import (
 var _ types.ServiceServer = &Server{}
 
 type ServiceHandler interface {
-	SubmitWithdraw(ctx context.Context, request *types.WithdrawalRequest) error
-	CheckWithdraw(ctx context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error)
+	SubmitWithdrawal(ctx context.Context, request *types.WithdrawalRequest) error
+	CheckWithdrawal(ctx context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error)
 }
 
 // Server is a GRPC and HTTP gateway application server.
@@ -30,7 +31,7 @@ type Server struct {
 // NewServer creates a new GRPC server.
 func NewServer(
 	listener net.Listener,
-	gatewayCfg RESTGatewayConfig,
+	gatewayCfg config.RESTGatewayConfig,
 	handler ServiceHandler,
 ) *Server {
 	return &Server{
@@ -71,9 +72,9 @@ func (s *Server) RunRESTGateway(ctx context.Context) (err error) {
 }
 
 func (s *Server) SubmitWithdrawal(ctx context.Context, request *types.WithdrawalRequest) (*types.Empty, error) {
-	return &types.Empty{}, s.handler.SubmitWithdraw(ctx, request)
+	return &types.Empty{}, s.handler.SubmitWithdrawal(ctx, request)
 }
 
 func (s *Server) CheckWithdrawal(ctx context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error) {
-	return s.handler.CheckWithdraw(ctx, request)
+	return s.handler.CheckWithdrawal(ctx, request)
 }

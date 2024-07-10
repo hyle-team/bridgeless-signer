@@ -4,51 +4,35 @@ import (
 	"context"
 
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm"
+	bridgeProcessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
-	"github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/producer"
+	"github.com/hyle-team/bridgeless-signer/internal/core"
+	rabbitProducer "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/producer"
 	"github.com/hyle-team/bridgeless-signer/internal/data/pg"
-	"github.com/hyle-team/bridgeless-signer/internal/grpc"
-	"github.com/hyle-team/bridgeless-signer/internal/grpc/handler"
 	"github.com/pkg/errors"
 )
 
-func RunService(cfg config.Config) error {
-	// TODO: add proper ctx configuration
-	ctx := context.Background()
-	signer := cfg.Signer()
+func RunService(ctx context.Context, cfg config.Config) error {
+	var (
+		serviceSigner = cfg.Signer()
+		rabbitCfg     = cfg.RabbitMQConfig()
+	)
 
-	proxies, err := evm.NewProxiesRepository(cfg.Chains(), signer.Address())
+	proxiesRepo, err := evm.NewProxiesRepository(cfg.Chains(), serviceSigner.Address())
 	if err != nil {
-		return errors.Wrap(err, "failed to create proxies repository")
+		return errors.Wrap(err, "failed to create proxiesRepo repository")
 	}
 
-	pbl, err := producer.New(cfg.RabbitMQConfig())
+	producer, err := rabbitProducer.New(rabbitCfg.NewChannel(), rabbitCfg.ResendParams)
 	if err != nil {
 		return errors.Wrap(err, "failed to create publisher")
 	}
 
-	srv := grpc.NewServer(
-		cfg.Listener(),
-		cfg.RESTGatewayConfig(),
-		handler.NewServiceHandler(
-			pg.NewDepositsQ(cfg.DB()),
-			cfg.Log().WithField("service", "REST handler"),
-			proxies,
-			pbl,
-		),
-	)
+	processor := bridgeProcessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), serviceSigner)
 
-	go func() {
-		if err = srv.RunRESTGateway(ctx); err != nil {
-			cfg.Log().WithError(err).Fatal("rest gateway error occurred")
-		}
-	}()
+	go core.RunServer(ctx, cfg, proxiesRepo, producer)
+	go core.RunConsumers(ctx, cfg, producer, processor)
 
-	cfg.Log().Info("service started")
-
-	if err = srv.RunGRPC(context.Background()); err != nil {
-		return err
-	}
-
-	return nil
+	<-ctx.Done()
+	return ctx.Err()
 }

@@ -25,9 +25,9 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Produc
 	// Queues is bound to the default exchange
 	var consumerQueues = []string{
 		rabbitTypes.GetDepositQueue,
-		rabbitTypes.FormWithdrawQueue,
-		rabbitTypes.SignWithdrawQueue,
-		rabbitTypes.SubmitWithdrawQueue,
+		rabbitTypes.FormWithdrawalQueue,
+		rabbitTypes.SignWithdrawalQueue,
+		rabbitTypes.SubmitWithdrawalQueue,
 	}
 
 	for _, queue := range consumerQueues {
@@ -83,7 +83,7 @@ func (p *Producer) SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalR
 		return errors.Wrap(err, "failed to marshal form withdraw request")
 	}
 
-	return p.channel.Publish("", rabbitTypes.FormWithdrawQueue, false, false, amqp.Publishing{Body: raw})
+	return p.channel.Publish("", rabbitTypes.FormWithdrawalQueue, false, false, amqp.Publishing{Body: raw})
 }
 
 func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
@@ -92,7 +92,7 @@ func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalReque
 		return errors.Wrap(err, "failed to marshal sign withdraw request")
 	}
 
-	return p.channel.Publish("", rabbitTypes.SignWithdrawQueue, false, false, amqp.Publishing{Body: raw})
+	return p.channel.Publish("", rabbitTypes.SignWithdrawalQueue, false, false, amqp.Publishing{Body: raw})
 }
 
 func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
@@ -101,7 +101,7 @@ func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalReq
 		return errors.Wrap(err, "failed to marshal submit withdraw request")
 	}
 
-	return p.channel.Publish("", rabbitTypes.SubmitWithdrawQueue, false, false, amqp.Publishing{Body: raw})
+	return p.channel.Publish("", rabbitTypes.SubmitWithdrawalQueue, false, false, amqp.Publishing{Body: raw})
 }
 
 func (p *Producer) ResendDelivery(queue string, msg amqp.Delivery) error {
@@ -143,6 +143,8 @@ func (p *Producer) getDelay(retry uint) int64 {
 	if int(retry) >= len(p.delays) {
 		return p.delays[len(p.delays)-1]
 	}
+
+	fmt.Println(p.delays)
 
 	return p.delays[retry]
 }

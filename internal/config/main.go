@@ -3,8 +3,8 @@ package config
 import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
+	grpc "github.com/hyle-team/bridgeless-signer/internal/core/grpc/config"
 	rabbit "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/config"
-	"github.com/hyle-team/bridgeless-signer/internal/grpc"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
 	"gitlab.com/distributed_lab/kit/pgdb"

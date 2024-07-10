@@ -20,10 +20,10 @@ const (
 	HeaderDelayKey      = "x-delay"
 	HeaderRetryCountKey = "x-retry-count"
 
-	GetDepositQueue     = "get-deposit-queue"
-	FormWithdrawQueue   = "form-withdraw-queue"
-	SignWithdrawQueue   = "sign-withdraw-queue"
-	SubmitWithdrawQueue = "submit-withdraw-queue"
+	GetDepositQueue       = "get-deposit-queue"
+	FormWithdrawalQueue   = "form-withdrawal-queue"
+	SignWithdrawalQueue   = "sign-withdrawal-queue"
+	SubmitWithdrawalQueue = "submit-withdrawal-queue"
 )
 
 var ErrorMaxResendReached = errors.New("max resend count reached")
