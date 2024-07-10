@@ -20,7 +20,7 @@ require (
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/ethereum/go-ethereum v1.10.25
-	github.com/fatih/structs v1.1.0
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/stretchr/testify v1.8.4
 	gitlab.com/distributed_lab/figure/v3 v3.1.4
 )

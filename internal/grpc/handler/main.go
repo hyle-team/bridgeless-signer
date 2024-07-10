@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
 	"google.golang.org/grpc/codes"
@@ -21,19 +22,22 @@ var (
 
 // ServiceHandler is an implementation of the API interface.
 type ServiceHandler struct {
-	db      data.DepositsQ
-	logger  *logan.Entry
-	proxies bridgeTypes.ProxiesRepository
+	db        data.DepositsQ
+	logger    *logan.Entry
+	proxies   bridgeTypes.ProxiesRepository
+	publisher rabbitTypes.Producer
 }
 
 func NewServiceHandler(
 	db data.DepositsQ,
 	logger *logan.Entry,
 	proxies bridgeTypes.ProxiesRepository,
+	publisher rabbitTypes.Producer,
 ) *ServiceHandler {
 	return &ServiceHandler{
-		db:      db,
-		logger:  logger,
-		proxies: proxies,
+		db:        db,
+		logger:    logger,
+		proxies:   proxies,
+		publisher: publisher,
 	}
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
+	"github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/producer"
 	"github.com/hyle-team/bridgeless-signer/internal/data/pg"
 	"github.com/hyle-team/bridgeless-signer/internal/grpc"
 	"github.com/hyle-team/bridgeless-signer/internal/grpc/handler"
@@ -18,7 +19,12 @@ func RunService(cfg config.Config) error {
 
 	proxies, err := evm.NewProxiesRepository(cfg.Chains(), signer.Address())
 	if err != nil {
-		panic(errors.Wrap(err, "failed to create proxies repository"))
+		return errors.Wrap(err, "failed to create proxies repository")
+	}
+
+	pbl, err := producer.New(cfg.RabbitMQConfig())
+	if err != nil {
+		return errors.Wrap(err, "failed to create publisher")
 	}
 
 	srv := grpc.NewServer(
@@ -28,6 +34,7 @@ func RunService(cfg config.Config) error {
 			pg.NewDepositsQ(cfg.DB()),
 			cfg.Log().WithField("service", "REST handler"),
 			proxies,
+			pbl,
 		),
 	)
 

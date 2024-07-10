@@ -3,8 +3,10 @@ package handler
 import (
 	"context"
 
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -43,7 +45,7 @@ func (h *ServiceHandler) SubmitWithdraw(_ context.Context, request *types.Withdr
 		}
 
 		if deposit.Id, err = dbconn.Insert(*deposit); err != nil {
-			if err == data.ErrAlreadySubmitted {
+			if errors.Is(err, data.ErrAlreadySubmitted) {
 				return ErrTxAlreadySubmitted
 			}
 			h.logger.WithError(err).Error("failed to insert transaction")
@@ -51,7 +53,13 @@ func (h *ServiceHandler) SubmitWithdraw(_ context.Context, request *types.Withdr
 		}
 	}
 
-	//TODO add message to the  AMQP queue
+	if err = h.publisher.SendGetDepositRequest(bridgeTypes.GetDepositRequest{
+		DepositDbId:       deposit.Id,
+		DepositIdentifier: depositIdentifier,
+	}); err != nil {
+		h.logger.WithError(err).Error("failed to publish message")
+		return ErrInternal
+	}
 
 	return nil
 }
