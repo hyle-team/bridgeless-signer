@@ -38,7 +38,7 @@ type Deposit struct {
 }
 
 func (d Deposit) Reprocessable() bool {
-	return d.Status == types.WithdrawalStatus_FAILED
+	return d.Status == types.WithdrawalStatus_FAILED || d.Status == types.WithdrawalStatus_TX_FAILED
 }
 
 func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {

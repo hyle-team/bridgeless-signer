@@ -28,7 +28,7 @@ func (p *bridgeProxy) FormWithdrawalTransaction(data bridgeTypes.DepositData) (*
 		data.TokenAddress,
 		common.HexToAddress(data.DestinationAddress),
 		data.Amount,
-		data.String(),
+		data.OriginTxId(),
 	)
 }
 

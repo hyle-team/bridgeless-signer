@@ -41,21 +41,37 @@ listener:
 rest_gateway:
   addr: :8222
 
+
 ## Available chains configuration
 chains:
   list:
-      ## Chain ID
+    ## Chain ID
     - id: "80002"
       ## RPC endpoint
-      rpc:
+      rpc: "your_rpc_endpoint_here"
       ## Bridge contract address
       bridge_address: "0x9c9b83Ed9dd4cF8A385b6e318Fb97Cdfc320b627"
       ## Number of confirmations required for the deposit to be considered final
       confirmations: 1
 
+## RabbitMQ configuration
+rabbitmq:
+  ## RabbitMQ connection URL
+  url: amqp://guest:guest@localhost:5672/
+  ## Number of instances per each consumer
+  consumer_instances: 2
+  ## Delivery resend parameters
+  resend_params:
+    ## Maximum number of retries
+    max_retry_count: 5
+    ## delivery resend delays
+    delays: [1000, 2000, 5000, 10000, 20000, 60000]
+
+
 ## Service signer private key
 signer:
-  eth_signer: "8a8b8c...."
+  eth_signer: "signer_private_key_here"
+
 ```
 
 ### Host environment:
@@ -122,6 +138,14 @@ services:
       - 8111:8111
       - 8222:8222
     entrypoint: sh -c "bridgeless-signer migrate up && bridgeless-signer run service"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
 
 volumes:
   signer-data:

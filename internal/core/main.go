@@ -7,8 +7,8 @@ import (
 	bridgeProcessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
-	"github.com/hyle-team/bridgeless-signer/internal/core/grpc"
-	"github.com/hyle-team/bridgeless-signer/internal/core/grpc/handler"
+	"github.com/hyle-team/bridgeless-signer/internal/core/api"
+	"github.com/hyle-team/bridgeless-signer/internal/core/api/handler"
 	"github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/consumer"
 	consumerProcessors "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/consumer/processors"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
@@ -69,7 +69,7 @@ func RunConsumers(
 					).Consume(ctx, queue)
 
 					if err != nil {
-						panic(errors.Wrap(err, fmt.Sprintf("failed to run consumer %s", consumerName)))
+						panic(errors.Wrap(err, fmt.Sprintf("failed to consume for %s", consumerName)))
 					}
 				}(queue, consumerCfg)
 			}
@@ -86,7 +86,7 @@ func RunServer(
 ) {
 	logger := cfg.Log()
 
-	server := grpc.NewServer(
+	server := api.NewServer(
 		cfg.Listener(),
 		cfg.RESTGatewayConfig(),
 		handler.NewServiceHandler(

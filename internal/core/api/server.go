@@ -1,4 +1,4 @@
-package grpc
+package api
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hyle-team/bridgeless-signer/docs"
-	"github.com/hyle-team/bridgeless-signer/internal/core/grpc/config"
+	"github.com/hyle-team/bridgeless-signer/internal/core/api/config"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/ignite/cli/ignite/pkg/openapiconsole"
 	"github.com/pkg/errors"

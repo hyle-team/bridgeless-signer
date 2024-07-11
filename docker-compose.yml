@@ -37,10 +37,12 @@ services:
     depends_on:
       signer-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     environment:
       KV_VIPER_FILE: '/config.yaml'
     volumes:
-      - ./config.local.yaml:/config.yaml
+      - ./config.docker.local.yaml:/config.yaml
     ports:
       - 8111:8111
       - 8222:8222

@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
-	grpc "github.com/hyle-team/bridgeless-signer/internal/core/grpc/config"
+	api "github.com/hyle-team/bridgeless-signer/internal/core/api/config"
 	rabbit "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/config"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
@@ -14,7 +14,7 @@ type Config interface {
 	comfig.Logger
 	pgdb.Databaser
 	comfig.Listenerer
-	grpc.RESTGatewayConfigurer
+	api.RESTGatewayConfigurer
 	signer.Signerer
 	chain.Chainer
 	rabbit.Rabbitter
@@ -25,7 +25,7 @@ type config struct {
 	pgdb.Databaser
 	comfig.Listenerer
 	getter kv.Getter
-	grpc.RESTGatewayConfigurer
+	api.RESTGatewayConfigurer
 	signer.Signerer
 	chain.Chainer
 	rabbit.Rabbitter
@@ -37,7 +37,7 @@ func New(getter kv.Getter) Config {
 		Databaser:             pgdb.NewDatabaser(getter),
 		Listenerer:            comfig.NewListenerer(getter),
 		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		RESTGatewayConfigurer: grpc.NewRESTGatewayConfigurer(getter),
+		RESTGatewayConfigurer: api.NewRESTGatewayConfigurer(getter),
 		Signerer:              signer.NewSignerer(getter),
 		Chainer:               chain.NewChainer(getter),
 		Rabbitter:             rabbit.NewRabbitter(getter),
