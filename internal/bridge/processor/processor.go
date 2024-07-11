@@ -2,6 +2,7 @@ package processor
 
 import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/tokens"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
@@ -9,13 +10,18 @@ import (
 )
 
 type Processor struct {
-	proxies bridgeTypes.ProxiesRepository
-	db      data.DepositsQ
-	signer  *signer.Signer
+	proxies     bridgeTypes.ProxiesRepository
+	db          data.DepositsQ
+	signer      *signer.Signer
+	tokenPairer tokens.TokenPairer
 }
 
-func New(proxies bridgeTypes.ProxiesRepository, db data.DepositsQ, signer *signer.Signer) *Processor {
-	return &Processor{proxies: proxies, db: db, signer: signer}
+func New(
+	proxies bridgeTypes.ProxiesRepository,
+	db data.DepositsQ,
+	signer *signer.Signer,
+	tokenPairer tokens.TokenPairer) *Processor {
+	return &Processor{proxies: proxies, db: db, signer: signer, tokenPairer: tokenPairer}
 }
 
 func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) (data *bridgeTypes.FormWithdrawalRequest, reprocessable bool, err error) {
@@ -62,6 +68,21 @@ func (p *Processor) ProcessFormWithdrawalRequest(req bridgeTypes.FormWithdrawalR
 			return nil, false, bridgeTypes.ErrChainNotSupported
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
+	}
+
+	dstTokenAddress, err := p.tokenPairer.GetDestinationTokenAddress(
+		req.Data.DepositIdentifier.GetChainId(),
+		req.Data.TokenAddress,
+		req.Data.DestinationChainId,
+	)
+	switch {
+	case errors.Is(err, tokens.ErrSourceTokenNotSupported),
+		errors.Is(err, tokens.ErrDestinationTokenNotSupported):
+		return nil, false, err
+	case err != nil:
+		return nil, true, errors.Wrap(err, "failed to get destination token address")
+	default:
+		req.Data.DestinationTokenAddress = &dstTokenAddress
 	}
 
 	tx, err := proxy.FormWithdrawalTransaction(req.Data)

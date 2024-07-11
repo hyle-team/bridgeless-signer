@@ -31,7 +31,7 @@ func TestProcessor_HappyPath(t *testing.T) {
 
 	db := pg.NewDepositsQ(cfg.DB())
 
-	processor := New(proxies, db, cfg.Signer())
+	processor := New(proxies, db, cfg.Signer(), cfg.TokenPairer())
 
 	deposit := data.Deposit{
 		DepositIdentifier: data.DepositIdentifier{

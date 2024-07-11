@@ -28,7 +28,7 @@ func RunService(ctx context.Context, cfg config.Config) error {
 		return errors.Wrap(err, "failed to create publisher")
 	}
 
-	processor := bridgeProcessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), serviceSigner)
+	processor := bridgeProcessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), serviceSigner, cfg.TokenPairer())
 
 	go core.RunServer(ctx, cfg, proxiesRepo, producer)
 	go core.RunConsumers(ctx, cfg, producer, processor)

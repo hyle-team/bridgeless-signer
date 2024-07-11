@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -23,6 +24,15 @@ type DepositIdentifier struct {
 	TxHash    string `structs:"tx_hash" db:"tx_hash"`
 	TxEventId int    `structs:"tx_event_id" db:"tx_event_id"`
 	ChainId   string `structs:"chain_id" db:"chain_id"`
+}
+
+func (d DepositIdentifier) GetChainId() *big.Int {
+	id, ok := new(big.Int).SetString(d.ChainId, 10)
+	if !ok {
+		return big.NewInt(0)
+	}
+
+	return id
 }
 
 func (d DepositIdentifier) String() string {

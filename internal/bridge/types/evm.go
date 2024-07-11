@@ -10,13 +10,14 @@ import (
 )
 
 var (
-	ErrChainNotSupported      = errors.New("chain not supported")
-	ErrTxPending              = errors.New("transaction is pending")
-	ErrTxFailed               = errors.New("transaction failed")
-	ErrTxNotFound             = errors.New("transaction not found")
-	ErrDepositNotFound        = errors.New("deposit not found")
-	ErrTxNotConfirmed         = errors.New("transaction not confirmed")
-	ErrInvalidReceiverAddress = errors.New("invalid receiver address")
+	ErrChainNotSupported               = errors.New("chain not supported")
+	ErrTxPending                       = errors.New("transaction is pending")
+	ErrTxFailed                        = errors.New("transaction failed")
+	ErrTxNotFound                      = errors.New("transaction not found")
+	ErrDepositNotFound                 = errors.New("deposit not found")
+	ErrTxNotConfirmed                  = errors.New("transaction not confirmed")
+	ErrInvalidReceiverAddress          = errors.New("invalid receiver address")
+	ErrDestinationTokenAddressRequired = errors.New("destination token address is required")
 )
 
 type Proxy interface {
@@ -35,11 +36,12 @@ type ProxiesRepository interface {
 type DepositData struct {
 	data.DepositIdentifier
 
-	DestinationChainId *big.Int
-	SourceAddress      common.Address
-	DestinationAddress string
-	Amount             *big.Int
-	TokenAddress       common.Address
+	DestinationChainId      *big.Int
+	SourceAddress           common.Address
+	DestinationAddress      string
+	Amount                  *big.Int
+	TokenAddress            common.Address
+	DestinationTokenAddress *common.Address
 }
 
 func (d DepositData) OriginTxId() string {

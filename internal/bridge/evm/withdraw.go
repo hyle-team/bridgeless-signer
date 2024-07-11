@@ -21,6 +21,10 @@ func (p *bridgeProxy) FormWithdrawalTransaction(data bridgeTypes.DepositData) (*
 		return nil, bridgeTypes.ErrInvalidReceiverAddress
 	}
 
+	if data.DestinationTokenAddress == nil {
+		return nil, bridgeTypes.ErrDestinationTokenAddressRequired
+	}
+
 	// transact opts prevent the transaction from being sent to
 	// the network, returning the transaction object only
 	return p.bridgeContract.BridgeOut(
