@@ -127,31 +127,39 @@ func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalReque
 		return true, errors.Wrap(err, "failed to get proxy")
 	}
 
-	err = errors.Wrap(proxy.SendWithdrawalTransaction(req.Transaction), "failed to send withdrawal transaction")
-	if err == nil {
-		err = errors.Wrap(p.db.SetWithdrawalTx(
+	// rollback if transaction failed to be sent
+	txConn := p.db.New()
+	err = txConn.Transaction(func() error {
+		if tempErr := txConn.SetWithdrawalTx(
 			req.DepositDbId, req.Transaction.Hash().Hex(), req.Data.DestinationChainId.String(),
-		), "failed to set withdrawal tx")
+		); tempErr != nil {
+			return errors.Wrap(tempErr, "failed to set withdrawal tx")
+		}
+
+		return errors.Wrap(proxy.SendWithdrawalTransaction(req.Transaction), "failed to send withdrawal transaction")
+	})
+	if err != nil {
+		// TODO: should be reprocessable or not?
+		return true, err
 	}
 
-	// TODO: should be reprocessable or not?
-	return true, err
+	return false, nil
 }
 
 func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(req.DepositDbId, err, reprocessable) }()
 
 	tx, err := p.signer.SignTx(req.Transaction, req.Data.DestinationChainId)
-	if err == nil {
-		res = &bridgeTypes.WithdrawalRequest{
-			Data:        req.Data,
-			DepositDbId: req.DepositDbId,
-			Transaction: tx,
-		}
+	if err != nil {
+		// TODO: should be reprocessable or not?
+		return res, true, errors.Wrap(err, "failed to sign withdrawal transaction")
 	}
 
-	// TODO: should be reprocessable or not?
-	return res, true, errors.Wrap(err, "failed to sign withdrawal transaction")
+	return &bridgeTypes.WithdrawalRequest{
+		Data:        req.Data,
+		DepositDbId: req.DepositDbId,
+		Transaction: tx,
+	}, false, nil
 }
 
 func (p *Processor) SetWithdrawStatusFailed(id int64) error {

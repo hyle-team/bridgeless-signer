@@ -92,3 +92,7 @@ func NewDepositsQ(db *pgdb.DB) data.DepositsQ {
 		selector: squirrel.Select("*").From(depositsTable),
 	}
 }
+
+func (d *depositsQ) Transaction(f func() error) error {
+	return d.db.Transaction(f)
+}

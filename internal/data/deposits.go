@@ -18,6 +18,7 @@ type DepositsQ interface {
 	Get(identifier DepositIdentifier) (*Deposit, error)
 	UpdateStatus(id int64, status types.WithdrawalStatus) error
 	SetWithdrawalTx(depositId int64, txHash, chainId string) error
+	Transaction(f func() error) error
 }
 
 type DepositIdentifier struct {
