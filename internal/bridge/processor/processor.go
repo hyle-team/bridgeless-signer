@@ -107,6 +107,18 @@ func (p *Processor) ProcessFormWithdrawalRequest(req bridgeTypes.FormWithdrawalR
 func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(req.DepositDbId, err, reprocessable) }()
 
+	// ensure that withdrawal request was not already processed
+	deposit, err := p.db.Get(req.Data.DepositIdentifier)
+	if err != nil {
+		return true, errors.Wrap(err, "failed to check if deposit already processed")
+	}
+	if deposit == nil {
+		return true, errors.New("deposit was not found in the database")
+	}
+	if deposit.WithdrawalTxHash != nil {
+		return false, errors.New("withdrawal transaction was already sent")
+	}
+
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId.String())
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {

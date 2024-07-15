@@ -54,6 +54,22 @@ chains:
       ## Number of confirmations required for the deposit to be considered final
       confirmations: 1
 
+## Tokens configuration
+tokens:
+  ## List of tokens
+  list:
+    -
+      ## Token configuration
+      token:
+        ## Chain ID
+        chain_id: "80002"
+        ## Token contract address
+        address: "0xe61174fa1b7e52132d8b365044bf95b0d90f442f"
+      ## List of available token pairs to bridge
+      pairs:
+        - chain_id: "80002"
+          address: "0xe61174fa1b7e52132d8b365044bf95b0d90f442f"
+
 ## RabbitMQ configuration
 rabbitmq:
   ## RabbitMQ connection URL
@@ -71,7 +87,6 @@ rabbitmq:
 ## Service signer private key
 signer:
   eth_signer: "signer_private_key_here"
-
 ```
 
 ### Host environment:
