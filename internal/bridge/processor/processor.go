@@ -36,27 +36,20 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 	}
 
 	depositData, err := proxy.GetDepositData(req.DepositIdentifier)
-	switch {
-	case err == nil:
-		data = &bridgeTypes.FormWithdrawalRequest{
+	if err == nil {
+		return &bridgeTypes.FormWithdrawalRequest{
 			DepositDbId: req.DepositDbId,
 			Data:        *depositData,
-		}
-	case errors.Is(err, bridgeTypes.ErrTxFailed),
-		errors.Is(err, bridgeTypes.ErrDepositNotFound):
-		reprocessable = false
-	case errors.Is(err, bridgeTypes.ErrTxNotConfirmed),
-		errors.Is(err, bridgeTypes.ErrTxPending):
-		// explicitly marking as reprocessable
-		reprocessable = true
-	default:
-		// unexpected error occurred - marking as reprocessable
-		reprocessable = true
+		}, false, nil
 	}
 
-	err = errors.Wrap(err, "failed to get deposit data")
+	reprocessable = true
+	if errors.Is(err, bridgeTypes.ErrTxFailed) ||
+		errors.Is(err, bridgeTypes.ErrDepositNotFound) {
+		reprocessable = false
+	}
 
-	return
+	return nil, reprocessable, errors.Wrap(err, "failed to get deposit data")
 }
 
 func (p *Processor) ProcessFormWithdrawalRequest(req bridgeTypes.FormWithdrawalRequest) (request *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
@@ -75,33 +68,32 @@ func (p *Processor) ProcessFormWithdrawalRequest(req bridgeTypes.FormWithdrawalR
 		req.Data.TokenAddress,
 		req.Data.DestinationChainId,
 	)
-	switch {
-	case errors.Is(err, tokens.ErrSourceTokenNotSupported),
-		errors.Is(err, tokens.ErrDestinationTokenNotSupported):
-		return nil, false, err
-	case err != nil:
-		return nil, true, errors.Wrap(err, "failed to get destination token address")
-	default:
-		req.Data.DestinationTokenAddress = &dstTokenAddress
+	if err != nil {
+		reprocessable = true
+		if errors.Is(err, tokens.ErrSourceTokenNotSupported) ||
+			errors.Is(err, tokens.ErrDestinationTokenNotSupported) {
+			reprocessable = false
+		}
+
+		return nil, reprocessable, errors.Wrap(err, "failed to get destination token address")
 	}
 
+	req.Data.DestinationTokenAddress = &dstTokenAddress
 	tx, err := proxy.FormWithdrawalTransaction(req.Data)
-	switch {
-	case err == nil:
-		request = &bridgeTypes.WithdrawalRequest{
+	if err == nil {
+		return &bridgeTypes.WithdrawalRequest{
 			Data:        req.Data,
 			DepositDbId: req.DepositDbId,
 			Transaction: tx,
-		}
-	case errors.Is(err, bridgeTypes.ErrInvalidReceiverAddress):
-		reprocessable = false
-	default:
-		reprocessable = true
+		}, false, nil
 	}
 
-	err = errors.Wrap(err, "failed to form withdrawal transaction")
+	reprocessable = true
+	if errors.Is(err, bridgeTypes.ErrInvalidReceiverAddress) {
+		reprocessable = false
+	}
 
-	return
+	return nil, reprocessable, errors.Wrap(err, "failed to form withdrawal transaction")
 }
 
 func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (reprocessable bool, err error) {
@@ -138,12 +130,7 @@ func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalReque
 
 		return errors.Wrap(proxy.SendWithdrawalTransaction(req.Transaction), "failed to send withdrawal transaction")
 	})
-	if err != nil {
-		// TODO: should be reprocessable or not?
-		return true, err
-	}
-
-	return false, nil
+	return err != nil, err
 }
 
 func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {

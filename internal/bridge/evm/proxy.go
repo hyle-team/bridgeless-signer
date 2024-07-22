@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"strings"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,6 +24,7 @@ type bridgeProxy struct {
 	depositEvent   abi.Event
 	signerAddr     common.Address
 	signerNonce    uint64
+	nonceM         sync.Mutex
 }
 
 func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.Proxy, error) {

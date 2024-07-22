@@ -9,7 +9,7 @@ require (
 	github.com/ignite/cli v0.27.2
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.6.1
-	gitlab.com/distributed_lab/figure v2.1.2+incompatible // indirect
+	gitlab.com/distributed_lab/figure v2.1.2+incompatible
 	gitlab.com/distributed_lab/kit v1.11.3
 	gitlab.com/distributed_lab/logan v3.8.1+incompatible
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17

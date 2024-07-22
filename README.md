@@ -158,11 +158,14 @@ services:
     image: rabbitmq:3-management-alpine
     hostname: rabbitmq
     container_name: 'rabbitmq'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
 
 volumes:
+  rabbitmq-data:
   signer-data:
 ```
 

@@ -52,29 +52,25 @@ func RunConsumers(
 	)
 
 	for i := uint(0); i < rabbitCfg.ConsumerInstances; i++ {
-		go func(index uint) {
-			idx := index + 1
+		idx := i + 1
+		for queue, consumerCfg := range consumersMap {
+			go func(id uint, queue string, consumerCfg consumerConfig) {
+				consumerName := consumer.GetName(consumerCfg.prefix, id)
 
-			for queue, consumerCfg := range consumersMap {
-				go func(queue string, consumerCfg consumerConfig) {
-					consumerName := consumer.GetName(consumerCfg.prefix, idx)
+				logger.Info(fmt.Sprintf("starting consumer %s...", consumerName))
+				err := consumer.New(
+					rabbitCfg.NewChannel(),
+					consumerName,
+					logger.WithField("consumer", consumerName),
+					consumerCfg.deliveryProcessor,
+					producer,
+				).Consume(ctx, queue)
 
-					logger.Info(fmt.Sprintf("starting consumer %s...", consumerName))
-					err := consumer.New(
-						rabbitCfg.NewChannel(),
-						consumerName,
-						logger.WithField("consumer", consumerName),
-						consumerCfg.deliveryProcessor,
-						producer,
-					).Consume(ctx, queue)
-
-					if err != nil {
-						panic(errors.Wrap(err, fmt.Sprintf("failed to consume for %s", consumerName)))
-					}
-				}(queue, consumerCfg)
-			}
-
-		}(i)
+				if err != nil {
+					panic(errors.Wrap(err, fmt.Sprintf("failed to consume for %s", consumerName)))
+				}
+			}(idx, queue, consumerCfg)
+		}
 	}
 }
 

@@ -44,6 +44,9 @@ func (p *bridgeProxy) SendWithdrawalTransaction(signedTx *types.Transaction) err
 }
 
 func (p *bridgeProxy) getTransactionNonce() *big.Int {
+	p.nonceM.Lock()
+	defer p.nonceM.Unlock()
+
 	// getting the current pending nonce
 	nonce := big.NewInt(0).SetUint64(p.signerNonce)
 

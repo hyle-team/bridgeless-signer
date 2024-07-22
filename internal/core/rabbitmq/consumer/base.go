@@ -71,6 +71,7 @@ func (c *Consumer) Consume(ctx context.Context, queue string) error {
 
 			logger.WithError(err).Error("failed to process delivery")
 			if !reprocessable {
+				logger.Debug("delivery is not reprocessable")
 				c.nack(logger, delivery, false)
 				continue
 			}
