@@ -7,7 +7,7 @@ import (
 
 type WithdrawalRequest struct {
 	DepositDbId int64
-	Data        DepositData
+	Data        data.DepositData
 	Transaction *types.Transaction
 }
 
@@ -18,5 +18,5 @@ type GetDepositRequest struct {
 
 type FormWithdrawalRequest struct {
 	DepositDbId int64
-	Data        DepositData
+	Data        data.DepositData
 }

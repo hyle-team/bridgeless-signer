@@ -2,6 +2,7 @@ package evm
 
 import (
 	"context"
+	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"math/big"
 	"sync/atomic"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *bridgeProxy) FormWithdrawalTransaction(data bridgeTypes.DepositData) (*types.Transaction, error) {
+func (p *bridgeProxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
 	if data.DestinationChainId == nil || data.DestinationChainId.String() != p.chain.Id.String() {
 		return nil, errors.New("invalid destination chain id")
 	}

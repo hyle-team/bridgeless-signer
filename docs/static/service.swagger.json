@@ -86,7 +86,13 @@
         "status": {
           "$ref": "#/definitions/WithdrawalStatus"
         },
-        "resultTransaction": {
+        "depositTransaction": {
+          "$ref": "#/definitions/Transaction"
+        },
+        "depositData": {
+          "$ref": "#/definitions/DepositData"
+        },
+        "withdrawalTransaction": {
           "$ref": "#/definitions/Transaction"
         }
       }
@@ -102,6 +108,34 @@
           "format": "int64"
         },
         "chainId": {
+          "type": "string"
+        }
+      }
+    },
+    "DepositData": {
+      "type": "object",
+      "properties": {
+        "eventIndex": {
+          "type": "string",
+          "format": "int64"
+        },
+        "blockNumber": {
+          "type": "string",
+          "format": "int64"
+        },
+        "depositor": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "depositToken": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "withdrawalToken": {
           "type": "string"
         }
       }
@@ -136,7 +170,8 @@
         "FAILED",
         "TX_PENDING",
         "TX_FAILED",
-        "TX_SUCCESSFUL"
+        "TX_SUCCESSFUL",
+        "REPROCESSING"
       ],
       "default": "PROCESSING"
     },

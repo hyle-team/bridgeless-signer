@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"os/signal"
 	"syscall"
 
@@ -55,6 +56,11 @@ func Run(args []string) bool {
 		return false
 	}
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			log.Info("service stopped: context was canceled")
+			return true
+		}
+
 		log.WithError(err).Error("failed to exec cmd")
 		return false
 	}

@@ -12,12 +12,20 @@ import (
 )
 
 const (
-	depositsTable             = "deposits"
-	depositsTxHash            = "tx_hash"
-	depositsTxEventId         = "tx_event_id"
-	depositsChainId           = "chain_id"
-	depositsStatus            = "status"
-	depositsId                = "id"
+	depositsTable     = "deposits"
+	depositsTxHash    = "tx_hash"
+	depositsTxEventId = "tx_event_id"
+	depositsChainId   = "chain_id"
+	depositsStatus    = "status"
+	depositsId        = "id"
+
+	depositsDepositor       = "depositor"
+	depositsAmount          = "amount"
+	depositsDepositToken    = "deposit_token"
+	depositsReceiver        = "receiver"
+	depositsWithdrawalToken = "withdrawal_token"
+	depositsDepositBlock    = "deposit_block"
+
 	depositsWithdrawalTxHash  = "withdrawal_tx_hash"
 	depositsWithdrawalChainId = "withdrawal_chain_id"
 )
@@ -84,6 +92,22 @@ func (d *depositsQ) UpdateStatus(id int64, status types.WithdrawalStatus) error 
 		Where(squirrel.Eq{depositsId: id})
 
 	return d.db.Exec(stmt)
+}
+
+func (d *depositsQ) SetDepositData(data data.DepositData) error {
+	fields := map[string]interface{}{
+		depositsDepositor:    strings.ToLower(data.SourceAddress.String()),
+		depositsAmount:       data.Amount.String(),
+		depositsDepositToken: strings.ToLower(data.TokenAddress.String()),
+		depositsReceiver:     strings.ToLower(data.DestinationAddress),
+		depositsDepositBlock: data.Block,
+	}
+
+	if data.DestinationTokenAddress != nil {
+		fields[depositsWithdrawalToken] = strings.ToLower(data.DestinationTokenAddress.String())
+	}
+
+	return d.db.Exec(squirrel.Update(depositsTable).SetMap(fields))
 }
 
 func NewDepositsQ(db *pgdb.DB) data.DepositsQ {

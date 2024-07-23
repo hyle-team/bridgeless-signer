@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *bridgeProxy) GetDepositData(id data.DepositIdentifier) (*bridgeTypes.DepositData, error) {
+func (p *bridgeProxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
 	txReceipt, err := p.GetTransactionReceipt(common.HexToHash(id.TxHash))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get transaction receipt")
@@ -40,13 +40,14 @@ func (p *bridgeProxy) GetDepositData(id data.DepositIdentifier) (*bridgeTypes.De
 	// parsing indexed event parameter that is always present and not in the parsed even data
 	event.Token = common.HexToAddress(log.Topics[1].Hex())
 
-	return &bridgeTypes.DepositData{
+	return &data.DepositData{
 		DepositIdentifier:  id,
 		DestinationChainId: event.ChainId,
 		DestinationAddress: event.DstAddress,
 		SourceAddress:      event.SrcAddress,
 		Amount:             event.Amount,
 		TokenAddress:       event.Token,
+		Block:              int64(log.BlockNumber),
 	}, nil
 }
 

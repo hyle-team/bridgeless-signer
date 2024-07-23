@@ -1,6 +1,7 @@
 package processor
 
 import (
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/tokens"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
@@ -77,9 +78,19 @@ func (p *Processor) ProcessFormWithdrawalRequest(req bridgeTypes.FormWithdrawalR
 
 		return nil, reprocessable, errors.Wrap(err, "failed to get destination token address")
 	}
-
 	req.Data.DestinationTokenAddress = &dstTokenAddress
-	tx, err := proxy.FormWithdrawalTransaction(req.Data)
+
+	var tx *ethTypes.Transaction
+	txConn := p.db.New()
+	err = txConn.Transaction(func() error {
+		tmpErr := txConn.SetDepositData(req.Data)
+		if tmpErr != nil {
+			return errors.Wrap(tmpErr, "failed to save deposit data")
+		}
+
+		tx, tmpErr = proxy.FormWithdrawalTransaction(req.Data)
+		return errors.Wrap(tmpErr, "failed to form withdrawal transaction")
+	})
 	if err == nil {
 		return &bridgeTypes.WithdrawalRequest{
 			Data:        req.Data,
@@ -107,7 +118,7 @@ func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalReque
 	if deposit == nil {
 		return true, errors.New("deposit was not found in the database")
 	}
-	if deposit.WithdrawalTxHash != nil {
+	if !deposit.WithdrawalAllowed() {
 		return false, errors.New("withdrawal transaction was already sent")
 	}
 

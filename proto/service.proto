@@ -4,6 +4,7 @@ option go_package = "github.com/hyle-team/bridgeless-signer/pkg/types";
 import "google/api/annotations.proto";
 import "deposit.proto";
 import "transaction.proto";
+import "gogoproto/gogo.proto";
 
 message WithdrawalRequest {
   Deposit deposit = 1;
@@ -16,15 +17,28 @@ enum WithdrawalStatus {
   TX_PENDING = 4;
   TX_FAILED = 5;
   TX_SUCCESSFUL = 6;
+  REPROCESSING = 7;
 }
 
 message CheckWithdrawalRequest {
   string origin_tx_id = 1;
 }
 
+message DepositData {
+  int64 event_index = 2;
+  optional int64 block_number = 3;
+  optional string depositor = 4;
+  optional string amount = 5;
+  optional string deposit_token = 6;
+  optional string receiver = 7;
+  optional string withdrawal_token = 8;
+}
+
 message CheckWithdrawalResponse {
   WithdrawalStatus status = 1;
-  optional Transaction result_transaction = 2;
+  Transaction deposit_transaction = 2 [(gogoproto.nullable) = false];
+  DepositData deposit_data = 3 [(gogoproto.nullable) = false];
+  optional Transaction withdrawal_transaction = 4;
 }
 
 message Empty {}
