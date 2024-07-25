@@ -111,10 +111,26 @@ make run
 
 ## Running with Docker Compose
 
+To pull the latest image of the service from the GitHub Container Registry, **firstly** execute the following command:
+
+```shell
+docker login ghcr.io
+```
+
 Example of `docker-compose.yml` file:
 
 ```yml
 services:
+  rabbitmq:
+    image: rabbitmq:3.13.6-management-alpine
+    hostname: rabbitmq
+    container_name: 'rabbitmq'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+
   signer-db:
     image: tokend/postgres-ubuntu:9.6
     hostname: signer-db
@@ -136,33 +152,26 @@ services:
       - 20000:5432
 
   signer:
-    build:
-      context: .
-      dockerfile: Dockerfile.vendor
+    image: ghcr.io/hyle-team/bridgeless-signer:7108db395fe92c56875657190c4d9305376c4323
+    #    build:
+    #      context: .
+    #      dockerfile: Dockerfile.vendor
     hostname: signer
     container_name: signer
     restart: unless-stopped
     depends_on:
       signer-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     environment:
       KV_VIPER_FILE: '/config.yaml'
     volumes:
-      - ./config.yaml:/config.yaml
+      - ./config.docker.local.yaml:/config.yaml
     ports:
       - 8111:8111
       - 8222:8222
     entrypoint: sh -c "bridgeless-signer migrate up && bridgeless-signer run service"
-
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    hostname: rabbitmq
-    container_name: 'rabbitmq'
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-    ports:
-      - 5672:5672
-      - 15672:15672
 
 volumes:
   rabbitmq-data:
