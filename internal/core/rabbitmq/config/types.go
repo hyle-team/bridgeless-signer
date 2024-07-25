@@ -14,7 +14,7 @@ type Config struct {
 }
 
 type ResendParams struct {
-	Delays        []int64 `fig:"delays,required"`
+	Delays        []int32 `fig:"delays,required"`
 	MaxRetryCount uint    `fig:"max_retry_count,required"`
 }
 

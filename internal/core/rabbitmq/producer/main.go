@@ -3,7 +3,6 @@ package producer
 import (
 	"encoding/json"
 	"fmt"
-
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/config"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
@@ -15,7 +14,7 @@ type Producer struct {
 	channel *amqp.Channel
 
 	maxRetryCount uint
-	delays        []int64
+	delays        []int32
 }
 
 // New creates a new Producer instance.
@@ -48,9 +47,7 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Produc
 	// Declaring delay queues and bind them to the delay exchange
 	for _, delay := range resendParams.Delays {
 		qName := getDelayQueueName(rabbitTypes.DelayQueuePrefix, delay)
-		_, err := ch.QueueDeclare(qName, true, false, false, false,
-			delayQueueArgs(delay),
-		)
+		_, err := ch.QueueDeclare(qName, true, false, false, false, delayQueueArgs(delay))
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("failed to declare delay queue %s", qName))
 		}
@@ -74,7 +71,7 @@ func (p *Producer) SendGetDepositRequest(request bridgeTypes.GetDepositRequest) 
 		return errors.Wrap(err, "failed to marshal get deposit request")
 	}
 
-	return p.channel.Publish("", rabbitTypes.GetDepositQueue, false, false, amqp.Publishing{Body: raw})
+	return p.channel.Publish("", rabbitTypes.GetDepositQueue, false, false, persistentPublishing(raw, nil))
 }
 
 func (p *Producer) SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalRequest) error {
@@ -83,7 +80,7 @@ func (p *Producer) SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalR
 		return errors.Wrap(err, "failed to marshal form withdraw request")
 	}
 
-	return p.channel.Publish("", rabbitTypes.FormWithdrawalQueue, false, false, amqp.Publishing{Body: raw})
+	return p.channel.Publish("", rabbitTypes.FormWithdrawalQueue, false, false, persistentPublishing(raw, nil))
 }
 
 func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
@@ -92,7 +89,7 @@ func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalReque
 		return errors.Wrap(err, "failed to marshal sign withdraw request")
 	}
 
-	return p.channel.Publish("", rabbitTypes.SignWithdrawalQueue, false, false, amqp.Publishing{Body: raw})
+	return p.channel.Publish("", rabbitTypes.SignWithdrawalQueue, false, false, persistentPublishing(raw, nil))
 }
 
 func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
@@ -101,12 +98,12 @@ func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalReq
 		return errors.Wrap(err, "failed to marshal submit withdraw request")
 	}
 
-	return p.channel.Publish("", rabbitTypes.SubmitWithdrawalQueue, false, false, amqp.Publishing{Body: raw})
+	return p.channel.Publish("", rabbitTypes.SubmitWithdrawalQueue, false, false, persistentPublishing(raw, nil))
 }
 
 func (p *Producer) ResendDelivery(queue string, msg amqp.Delivery) error {
 	retryCount := p.getCurrentRetryNumber(msg)
-	if retryCount >= p.maxRetryCount {
+	if retryCount >= int32(p.maxRetryCount) {
 		return rabbitTypes.ErrorMaxResendReached
 	}
 
@@ -116,13 +113,13 @@ func (p *Producer) ResendDelivery(queue string, msg amqp.Delivery) error {
 	return p.channel.Publish(rabbitTypes.DelayExchange, queue, false, false, p.formResendMsg(msg, retryCount, delay))
 }
 
-func (p *Producer) getCurrentRetryNumber(msg amqp.Delivery) uint {
+func (p *Producer) getCurrentRetryNumber(msg amqp.Delivery) int32 {
 	retryRaw, found := msg.Headers[rabbitTypes.HeaderRetryCountKey]
 	if !found {
 		return 0
 	}
 
-	retry, ok := retryRaw.(uint)
+	retry, ok := retryRaw.(int32)
 	if !ok {
 		return 0
 	}
@@ -130,13 +127,13 @@ func (p *Producer) getCurrentRetryNumber(msg amqp.Delivery) uint {
 	return retry
 }
 
-func (p *Producer) getDelay(retry uint) int64 {
+func (p *Producer) getDelay(retry int32) int32 {
 	if retry != 0 {
 		// Decrement the retry count to get the delay index
 		retry--
 	}
 
-	if retry >= p.maxRetryCount {
+	if retry >= int32(p.maxRetryCount) {
 		return 0
 	}
 
@@ -144,26 +141,31 @@ func (p *Producer) getDelay(retry uint) int64 {
 		return p.delays[len(p.delays)-1]
 	}
 
-	fmt.Println(p.delays)
-
 	return p.delays[retry]
 }
 
-func (p *Producer) formResendMsg(msg amqp.Delivery, retryCount uint, delay int64) amqp.Publishing {
-	return amqp.Publishing{
-		Body: msg.Body,
-		Headers: amqp.Table{
+func (p *Producer) formResendMsg(msg amqp.Delivery, retryCount int32, delay int32) amqp.Publishing {
+	return persistentPublishing(msg.Body,
+		amqp.Table{
 			rabbitTypes.HeaderRetryCountKey: retryCount,
 			rabbitTypes.HeaderDelayKey:      delay,
 		},
+	)
+}
+
+func persistentPublishing(body []byte, headers amqp.Table) amqp.Publishing {
+	return amqp.Publishing{
+		DeliveryMode: amqp.Persistent,
+		Body:         body,
+		Headers:      headers,
 	}
 }
 
-func getDelayQueueName(qPrefix string, delay int64) string {
+func getDelayQueueName(qPrefix string, delay int32) string {
 	return fmt.Sprintf("%s-%d", qPrefix, delay)
 }
 
-func delayQueueArgs(delay int64) amqp.Table {
+func delayQueueArgs(delay int32) amqp.Table {
 	return map[string]interface{}{
 		// Set the time in milliseconds for which the message will be stored in the queue.
 		// After this time, the message will be routed to the dead-letter exchange.
@@ -174,7 +176,7 @@ func delayQueueArgs(delay int64) amqp.Table {
 	}
 }
 
-func delayQueueBindArgs(delay int64) amqp.Table {
+func delayQueueBindArgs(delay int32) amqp.Table {
 	return map[string]interface{}{
 		rabbitTypes.HeadersMatchParam: rabbitTypes.HeadersMatchAll,
 		rabbitTypes.HeaderDelayKey:    delay,

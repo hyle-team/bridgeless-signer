@@ -15,9 +15,13 @@ const (
 
 	HeadersMatchParam = "x-match"
 	HeadersMatchAll   = "all"
-	HeadersMatchAny   = "any"
 
-	HeaderDelayKey      = "x-delay"
+	// Make sure to use values without "x-" prefix for the headers
+	// that should be comparable by the headers exchange.
+	// In this case, whe use "delay" to route messages to the specific delay queue
+	// and "x-retry-count" just to count the number of retries. It's not used for routing.
+
+	HeaderDelayKey      = "delay"
 	HeaderRetryCountKey = "x-retry-count"
 
 	GetDepositQueue       = "get-deposit-queue"

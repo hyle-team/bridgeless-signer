@@ -2,15 +2,13 @@ package evm
 
 import (
 	"context"
-	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"math/big"
-	"sync/atomic"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
+	"math/big"
 )
 
 func (p *bridgeProxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
@@ -48,11 +46,8 @@ func (p *bridgeProxy) getTransactionNonce() *big.Int {
 	p.nonceM.Lock()
 	defer p.nonceM.Unlock()
 
-	// getting the current pending nonce
 	nonce := big.NewInt(0).SetUint64(p.signerNonce)
-
-	// atomically incrementing the nonce
-	atomic.AddUint64(&p.signerNonce, 1)
+	p.signerNonce++
 
 	return nonce
 }

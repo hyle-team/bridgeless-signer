@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/spf13/cast"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -32,7 +33,7 @@ func (c *configer) RabbitMQConfig() Config {
 
 		err := figure.
 			Out(&cfg).
-			With(figure.BaseHooks, connectionHook).
+			With(figure.BaseHooks, rabbitHooks).
 			From(kv.MustGetStringMap(c.getter, rabbitmqConfigKey)).
 			Please()
 		if err != nil {
@@ -43,7 +44,7 @@ func (c *configer) RabbitMQConfig() Config {
 	}).(Config)
 }
 
-var connectionHook = figure.Hooks{
+var rabbitHooks = figure.Hooks{
 	"*amqp091.Connection": func(value interface{}) (reflect.Value, error) {
 		switch v := value.(type) {
 		case string:
@@ -55,6 +56,23 @@ var connectionHook = figure.Hooks{
 			return reflect.ValueOf(conn), nil
 		default:
 			return reflect.Value{}, errors.Errorf("failed to cast %#v of type %T to *amqp.Connection", value, value)
+		}
+	},
+	"[]int32": func(value interface{}) (reflect.Value, error) {
+		switch v := value.(type) {
+		case []interface{}:
+			var a []int32
+			for i, u := range v {
+				int32Value, err := cast.ToInt32E(u)
+				if err != nil {
+					return reflect.Value{}, errors.Wrapf(err, "failed to cast slice element number %d: %#v of type %T into int32", i, value, value)
+				}
+				a = append(a, int32Value)
+			}
+
+			return reflect.ValueOf(a), nil
+		default:
+			return reflect.Value{}, errors.Errorf("failed to cast %#v of type %T to []int32", value, value)
 		}
 	},
 }
