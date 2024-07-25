@@ -138,7 +138,7 @@ services:
   signer:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.vendor
     hostname: signer
     container_name: signer
     restart: unless-stopped
