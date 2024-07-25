@@ -1,0 +1,55 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    container_name: 'rabbitmq'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  signer-db:
+    image: tokend/postgres-ubuntu:9.6
+    hostname: signer-db
+    container_name: signer-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=signer
+      - POSTGRES_PASSWORD=signer
+      - POSTGRES_DB=signer
+      - PGDATA=/pgdata
+    volumes:
+      - signer-data:/pgdata
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U signer" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 20000:5432
+
+  signer:
+    build:
+      context: .
+      dockerfile: Dockerfile.vendor
+    hostname: signer
+    container_name: signer
+    restart: unless-stopped
+    depends_on:
+      signer-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    environment:
+      KV_VIPER_FILE: '/config.yaml'
+    volumes:
+      - ./config.docker.local.yaml:/config.yaml
+    ports:
+      - 8111:8111
+      - 8222:8222
+    entrypoint: sh -c "bridgeless-signer migrate up && bridgeless-signer run service"
+
+volumes:
+  rabbitmq-data:
+  signer-data:

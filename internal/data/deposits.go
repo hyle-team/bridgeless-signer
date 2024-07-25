@@ -1,0 +1,115 @@
+package data
+
+import (
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"gitlab.com/distributed_lab/logan/v3/errors"
+	"math/big"
+)
+
+const OriginTxIdPattern = "%s-%d-%s"
+
+var ErrAlreadySubmitted = errors.New("transaction already submitted")
+
+type DepositsQ interface {
+	New() DepositsQ
+	Insert(Deposit) (id int64, err error)
+	Get(identifier DepositIdentifier) (*Deposit, error)
+	SetDepositData(data DepositData) error
+	UpdateStatus(id int64, status types.WithdrawalStatus) error
+	SetWithdrawalTx(depositId int64, txHash, chainId string) error
+	Transaction(f func() error) error
+}
+
+type DepositIdentifier struct {
+	TxHash    string `structs:"tx_hash" db:"tx_hash"`
+	TxEventId int    `structs:"tx_event_id" db:"tx_event_id"`
+	ChainId   string `structs:"chain_id" db:"chain_id"`
+}
+
+func (d DepositIdentifier) GetChainId() *big.Int {
+	id, ok := new(big.Int).SetString(d.ChainId, 10)
+	if !ok {
+		return big.NewInt(0)
+	}
+
+	return id
+}
+
+func (d DepositIdentifier) String() string {
+	return fmt.Sprintf(OriginTxIdPattern, d.TxHash, d.TxEventId, d.ChainId)
+}
+
+type Deposit struct {
+	Id int64 `structs:"-" db:"id"`
+	DepositIdentifier
+	Status types.WithdrawalStatus `structs:"status" db:"status"`
+
+	Depositor       *string `structs:"depositor" db:"depositor"`
+	Amount          *string `structs:"amount" db:"amount"`
+	DepositToken    *string `structs:"deposit_token" db:"deposit_token"`
+	Receiver        *string `structs:"receiver" db:"receiver"`
+	WithdrawalToken *string `structs:"withdrawal_token" db:"withdrawal_token"`
+	DepositBlock    *int64  `structs:"deposit_block" db:"deposit_block"`
+
+	WithdrawalTxHash  *string `structs:"withdrawal_tx_hash" db:"withdrawal_tx_hash"`
+	WithdrawalChainId *string `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
+}
+
+func (d Deposit) Reprocessable() bool {
+	return d.Status == types.WithdrawalStatus_FAILED ||
+		d.Status == types.WithdrawalStatus_TX_FAILED
+}
+
+func (d Deposit) WithdrawalAllowed() bool {
+	if d.WithdrawalTxHash == nil {
+		return true
+	}
+
+	return d.Status == types.WithdrawalStatus_REPROCESSING
+}
+
+func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
+	result := &types.CheckWithdrawalResponse{
+		Status: d.Status,
+		DepositData: &types.DepositData{
+			EventIndex:      int64(d.TxEventId),
+			Depositor:       d.Depositor,
+			Amount:          d.Amount,
+			DepositToken:    d.DepositToken,
+			WithdrawalToken: d.WithdrawalToken,
+			Receiver:        d.Receiver,
+			BlockNumber:     d.DepositBlock,
+		},
+		DepositTransaction: &types.Transaction{
+			Hash:    d.TxHash,
+			ChainId: d.ChainId,
+		},
+	}
+
+	if d.WithdrawalTxHash != nil && d.WithdrawalChainId != nil {
+		result.WithdrawalTransaction = &types.Transaction{
+			Hash:    *d.WithdrawalTxHash,
+			ChainId: *d.WithdrawalChainId,
+		}
+	}
+
+	return result
+}
+
+type DepositData struct {
+	DepositIdentifier
+
+	DestinationChainId      *big.Int
+	SourceAddress           common.Address
+	DestinationAddress      string
+	Amount                  *big.Int
+	TokenAddress            common.Address
+	DestinationTokenAddress *common.Address
+	Block                   int64
+}
+
+func (d DepositData) OriginTxId() string {
+	return d.DepositIdentifier.String()
+}
