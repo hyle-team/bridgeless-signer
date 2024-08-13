@@ -1,10 +1,10 @@
 package config
 
 import (
+	"github.com/hyle-team/bridgeless-signer/pkg/tokens"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/tokens"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"

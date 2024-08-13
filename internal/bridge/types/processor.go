@@ -20,3 +20,11 @@ type FormWithdrawalRequest struct {
 	DepositDbId int64
 	Data        data.DepositData
 }
+
+type SubmitTransactionRequest struct {
+	DepositDbId int64
+}
+
+func (r SubmitTransactionRequest) Id() int64 {
+	return r.DepositDbId
+}

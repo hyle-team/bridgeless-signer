@@ -28,6 +28,8 @@ const (
 
 	depositsWithdrawalTxHash  = "withdrawal_tx_hash"
 	depositsWithdrawalChainId = "withdrawal_chain_id"
+
+	depositsSubmitStatus = "submit_status"
 )
 
 type depositsQ struct {
@@ -53,10 +55,11 @@ func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {
 	stmt := squirrel.
 		Insert(depositsTable).
 		SetMap(map[string]interface{}{
-			depositsTxHash:    deposit.TxHash,
-			depositsTxEventId: deposit.TxEventId,
-			depositsChainId:   deposit.ChainId,
-			depositsStatus:    deposit.Status,
+			depositsTxHash:       deposit.TxHash,
+			depositsTxEventId:    deposit.TxEventId,
+			depositsChainId:      deposit.ChainId,
+			depositsStatus:       deposit.Status,
+			depositsSubmitStatus: deposit.SubmitStatus,
 		}).
 		Suffix("RETURNING id")
 
@@ -86,10 +89,28 @@ func (d *depositsQ) Get(identifier data.DepositIdentifier) (*data.Deposit, error
 	return &deposit, err
 }
 
-func (d *depositsQ) UpdateStatus(id int64, status types.WithdrawalStatus) error {
+func (d *depositsQ) Select(selector data.DepositsSelector) ([]data.Deposit, error) {
+	query := d.applySelector(selector, d.selector)
+	var deposits []data.Deposit
+	if err := d.db.Select(&deposits, query); err != nil {
+		return nil, err
+	}
+
+	return deposits, nil
+}
+
+func (d *depositsQ) UpdateWithdrawalStatus(id int64, status types.WithdrawalStatus) error {
 	stmt := squirrel.Update(depositsTable).
 		Set(depositsStatus, status).
 		Where(squirrel.Eq{depositsId: id})
+
+	return d.db.Exec(stmt)
+}
+
+func (d *depositsQ) UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids ...int64) error {
+	stmt := squirrel.Update(depositsTable).
+		Set(depositsSubmitStatus, status).
+		Where(squirrel.Eq{depositsId: ids})
 
 	return d.db.Exec(stmt)
 }
@@ -119,4 +140,16 @@ func NewDepositsQ(db *pgdb.DB) data.DepositsQ {
 
 func (d *depositsQ) Transaction(f func() error) error {
 	return d.db.Transaction(f)
+}
+
+func (d *depositsQ) applySelector(selector data.DepositsSelector, sql squirrel.SelectBuilder) squirrel.SelectBuilder {
+	if len(selector.Ids) > 0 {
+		sql = sql.Where(squirrel.Eq{depositsId: selector.Ids})
+	}
+
+	if selector.Submitted != nil {
+		sql = sql.Where(squirrel.Eq{depositsSubmitStatus: types.SubmitWithdrawalStatus_NOT_SUBMITTED})
+	}
+
+	return sql
 }

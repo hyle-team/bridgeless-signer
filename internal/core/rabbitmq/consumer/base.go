@@ -2,8 +2,6 @@ package consumer
 
 import (
 	"context"
-	"fmt"
-
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -17,7 +15,7 @@ const (
 	SubmitWithdrawalConsumerPrefix = "submit_withdrawal_consumer"
 )
 
-type Consumer struct {
+type BaseConsumer struct {
 	channel           *amqp.Channel
 	name              string
 	logger            *logan.Entry
@@ -25,14 +23,14 @@ type Consumer struct {
 	deliveryResender  rabbitTypes.DeliveryResender
 }
 
-func New(
+func NewBase(
 	channel *amqp.Channel,
 	name string,
 	logger *logan.Entry,
 	deliveryProcessor rabbitTypes.DeliveryProcessor,
 	deliveryResender rabbitTypes.DeliveryResender,
 ) rabbitTypes.Consumer {
-	return &Consumer{
+	return &BaseConsumer{
 		channel:           channel,
 		name:              name,
 		logger:            logger,
@@ -41,10 +39,8 @@ func New(
 	}
 }
 
-func (c *Consumer) Consume(ctx context.Context, queue string) error {
-	deliveries, err := c.channel.Consume(
-		queue, c.name, false, false, false, false, nil,
-	)
+func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
+	deliveries, err := c.channel.Consume(queue, c.name, false, false, false, false, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to get consumer channel")
 	}
@@ -65,21 +61,20 @@ func (c *Consumer) Consume(ctx context.Context, queue string) error {
 
 			reprocessable, callback, err := c.deliveryProcessor.ProcessDelivery(delivery)
 			if err == nil {
-				c.ack(logger, delivery)
+				ack(logger, delivery)
 				continue
 			}
 
 			logger.WithError(err).Error("failed to process delivery")
 			if !reprocessable {
 				logger.Debug("delivery is not reprocessable")
-				c.nack(logger, delivery, false)
+				nack(logger, delivery, false)
 				continue
 			}
 
-			err = c.deliveryResender.ResendDelivery(queue, delivery)
-			if err == nil {
+			if err = c.deliveryResender.ResendDelivery(queue, delivery); err == nil {
 				logger.Debug("delivery resent")
-				c.ack(logger, delivery)
+				ack(logger, delivery)
 				continue
 			}
 
@@ -91,30 +86,10 @@ func (c *Consumer) Consume(ctx context.Context, queue string) error {
 					}
 				}
 
-				c.nack(logger, delivery, false)
+				nack(logger, delivery, false)
 			} else {
-				c.nack(logger, delivery, true)
+				nack(logger, delivery, true)
 			}
 		}
 	}
-}
-
-func (c *Consumer) ack(logger *logan.Entry, delivery amqp.Delivery) {
-	if err := delivery.Ack(false); err != nil {
-		logger.WithError(err).Error("failed to ack delivery")
-	} else {
-		logger.Debug("delivery acked")
-	}
-}
-
-func (c *Consumer) nack(logger *logan.Entry, delivery amqp.Delivery, requeue bool) {
-	if err := delivery.Nack(false, requeue); err != nil {
-		logger.WithError(err).Error("failed to nack delivery")
-	} else {
-		logger.Debug("delivery nacked")
-	}
-}
-
-func GetName(prefix string, index uint) string {
-	return fmt.Sprintf("%s_%d", prefix, index)
 }

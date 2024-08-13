@@ -27,6 +27,7 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Produc
 		rabbitTypes.FormWithdrawalQueue,
 		rabbitTypes.SignWithdrawalQueue,
 		rabbitTypes.SubmitWithdrawalQueue,
+		rabbitTypes.SubmitTransactionQueue,
 	}
 
 	for _, queue := range consumerQueues {
@@ -65,40 +66,33 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Produc
 	}, nil
 }
 
-func (p *Producer) SendGetDepositRequest(request bridgeTypes.GetDepositRequest) error {
-	raw, err := json.Marshal(request)
+func (p *Producer) publish(queue string, marshable any) error {
+	raw, err := json.Marshal(marshable)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal get deposit request")
+		return errors.Wrap(err, fmt.Sprintf("failed to marshal %T", marshable))
 	}
 
-	return p.channel.Publish("", rabbitTypes.GetDepositQueue, false, false, persistentPublishing(raw, nil))
+	return p.channel.Publish("", queue, false, false, persistentPublishing(raw, nil))
+}
+
+func (p *Producer) SendGetDepositRequest(request bridgeTypes.GetDepositRequest) error {
+	return p.publish(rabbitTypes.GetDepositQueue, request)
 }
 
 func (p *Producer) SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalRequest) error {
-	raw, err := json.Marshal(request)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal form withdraw request")
-	}
-
-	return p.channel.Publish("", rabbitTypes.FormWithdrawalQueue, false, false, persistentPublishing(raw, nil))
+	return p.publish(rabbitTypes.FormWithdrawalQueue, request)
 }
 
 func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
-	raw, err := json.Marshal(request)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal sign withdraw request")
-	}
-
-	return p.channel.Publish("", rabbitTypes.SignWithdrawalQueue, false, false, persistentPublishing(raw, nil))
+	return p.publish(rabbitTypes.SignWithdrawalQueue, request)
 }
 
 func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
-	raw, err := json.Marshal(request)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal submit withdraw request")
-	}
+	return p.publish(rabbitTypes.SubmitWithdrawalQueue, request)
+}
 
-	return p.channel.Publish("", rabbitTypes.SubmitWithdrawalQueue, false, false, persistentPublishing(raw, nil))
+func (p *Producer) SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error {
+	return p.publish(rabbitTypes.SubmitTransactionQueue, request)
 }
 
 func (p *Producer) ResendDelivery(queue string, msg amqp.Delivery) error {

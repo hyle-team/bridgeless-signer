@@ -3,7 +3,6 @@ package core
 import (
 	"context"
 	"fmt"
-
 	bridgeProcessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
@@ -16,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type consumerConfig struct {
+type baseConsumer struct {
 	deliveryProcessor rabbitTypes.DeliveryProcessor
 	prefix            string
 }
@@ -31,7 +30,7 @@ func RunConsumers(
 	var (
 		logger       = cfg.Log()
 		rabbitCfg    = cfg.RabbitMQConfig()
-		consumersMap = map[string]consumerConfig{
+		consumersMap = map[string]baseConsumer{
 			rabbitTypes.GetDepositQueue: {
 				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, producer),
 				prefix:            consumer.GetDepositConsumerPrefix,
@@ -54,24 +53,37 @@ func RunConsumers(
 	for i := uint(0); i < rabbitCfg.ConsumerInstances; i++ {
 		idx := i + 1
 		for queue, consumerCfg := range consumersMap {
-			go func(id uint, queue string, consumerCfg consumerConfig) {
+			go func(id uint, queue string, consumerCfg baseConsumer) {
 				consumerName := consumer.GetName(consumerCfg.prefix, id)
-
 				logger.Info(fmt.Sprintf("starting consumer %s...", consumerName))
-				err := consumer.New(
+				err := consumer.NewBase(
 					rabbitCfg.NewChannel(),
 					consumerName,
 					logger.WithField("consumer", consumerName),
 					consumerCfg.deliveryProcessor,
 					producer,
 				).Consume(ctx, queue)
-
 				if err != nil {
 					panic(errors.Wrap(err, fmt.Sprintf("failed to consume for %s", consumerName)))
 				}
 			}(idx, queue, consumerCfg)
 		}
 	}
+
+	go func() {
+		logger.Info(fmt.Sprintf("starting batch consumer %s...", consumer.SubmitTransactionConsumerPrefix))
+		err := consumer.NewBatch[bridgeTypes.SubmitTransactionRequest](
+			rabbitCfg.NewChannel(),
+			consumer.SubmitTransactionConsumerPrefix,
+			logger.WithField("consumer", consumer.SubmitTransactionConsumerPrefix),
+			consumerProcessors.NewSubmitTransactionHandler(processor),
+			producer,
+			rabbitCfg.TxSubmitterOpts,
+		).Consume(ctx, rabbitTypes.SubmitTransactionQueue)
+		if err != nil {
+			panic(errors.Wrap(err, "failed to consume for batch consumer"))
+		}
+	}()
 }
 
 func RunServer(

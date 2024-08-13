@@ -20,6 +20,12 @@ enum WithdrawalStatus {
   REPROCESSING = 7;
 }
 
+enum SubmitWithdrawalStatus {
+  NOT_SUBMITTED = 0;
+  SUBMIT_FAILED = 1;
+  SUCCESSFUL = 2;
+}
+
 message CheckWithdrawalRequest {
   string origin_tx_id = 1;
 }
@@ -39,6 +45,7 @@ message CheckWithdrawalResponse {
   Transaction deposit_transaction = 2 [(gogoproto.nullable) = false];
   DepositData deposit_data = 3 [(gogoproto.nullable) = false];
   optional Transaction withdrawal_transaction = 4;
+  SubmitWithdrawalStatus submit_status = 5;
 }
 
 message Empty {}

@@ -2,11 +2,11 @@ package config
 
 import (
 	"errors"
+	"github.com/hyle-team/bridgeless-signer/pkg/tokens"
 	"math/big"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/tokens"
 	"gitlab.com/distributed_lab/kit/kv"
 )
 

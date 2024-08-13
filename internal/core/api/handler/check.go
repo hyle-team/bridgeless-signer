@@ -60,7 +60,7 @@ func (h *ServiceHandler) CheckWithdrawal(_ context.Context, request *types.Check
 			}
 
 			// updating in the db
-			if err = dbconn.UpdateStatus(tx.Id, tx.Status); err != nil {
+			if err = dbconn.UpdateWithdrawalStatus(tx.Id, tx.Status); err != nil {
 				h.logger.WithError(err).Error("failed to update transaction status")
 				return nil, ErrInternal
 			}
