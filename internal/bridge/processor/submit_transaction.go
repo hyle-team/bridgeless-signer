@@ -13,7 +13,7 @@ func (p *Processor) SubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequ
 		return false, nil
 	}
 
-	depositIds := make([]int64, 0, len(reqs))
+	depositIds := make([]int64, len(reqs))
 	for i, req := range reqs {
 		depositIds[i] = req.DepositDbId
 	}
@@ -24,7 +24,7 @@ func (p *Processor) SubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequ
 		return true, errors.Wrap(err, "failed to get deposits")
 	}
 
-	depositTxs := make([]coretypes.Transaction, 0, len(deposits))
+	depositTxs := make([]coretypes.Transaction, len(deposits))
 	for i, d := range deposits {
 		depositTxs[i] = d.ToTransaction()
 	}

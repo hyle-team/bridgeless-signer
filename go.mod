@@ -22,7 +22,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/hyle-team/bridgeless-core v0.0.0-20240806114452-bca43d5ffe5c
+	github.com/hyle-team/bridgeless-core v0.0.0-20240814124421-34bfbc7e857c
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/cast v1.6.0
 	github.com/stretchr/testify v1.9.0
@@ -161,7 +161,7 @@ replace (
 	github.com/cosmos/iavl => github.com/cosmos/iavl v0.19.6
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/hyle-team/bridgeless-core => /Users/slbmax/go/src/github.com/hyle-team/bridgeless-core
+	//github.com/hyle-team/bridgeless-core => /Users/slbmax/go/src/github.com/hyle-team/bridgeless-core
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.29
 	github.com/tidwall/btree => github.com/tidwall/btree v1.5.0
 )

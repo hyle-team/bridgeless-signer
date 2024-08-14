@@ -53,7 +53,7 @@ func NewBatch[T rabbitTypes.Identifiable](
 	}
 }
 
-func (c BatchConsumer[T]) Consume(ctx context.Context, queue string) error {
+func (c *BatchConsumer[T]) Consume(ctx context.Context, queue string) error {
 	deliveries, err := c.channel.Consume(queue, c.name, false, false, false, false, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to get consumer channel")
@@ -106,7 +106,7 @@ func (c BatchConsumer[T]) Consume(ctx context.Context, queue string) error {
 	}
 }
 
-func (c BatchConsumer[T]) processBatch(queue string) {
+func (c *BatchConsumer[T]) processBatch(queue string) {
 	if len(c.batch) == 0 {
 		return
 	}
@@ -117,7 +117,7 @@ func (c BatchConsumer[T]) processBatch(queue string) {
 	logger := c.logger.WithField("batch_size", len(c.batch))
 	logger.Debug("processing batch")
 
-	entryBatch := make([]T, 0, len(c.batch))
+	entryBatch := make([]T, len(c.batch))
 	for i, entry := range c.batch {
 		entryBatch[i] = entry.Entry
 	}

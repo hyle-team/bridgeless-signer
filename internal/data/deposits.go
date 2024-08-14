@@ -114,7 +114,7 @@ func (d Deposit) ToTransaction() bridgetypes.Transaction {
 		DepositTxHash:     d.TxHash,
 		DepositTxIndex:    uint64(d.TxEventId),
 		DepositChainId:    d.GetChainId().String(),
-		WithdrawalTxHash:  "0x", // TODO: add withdrawal tx hash
+		WithdrawalTxHash:  stringOrEmpty(d.WithdrawalTxHash),
 		Depositor:         stringOrEmpty(d.Depositor),
 		Amount:            stringOrEmpty(d.Amount),
 		DepositToken:      stringOrEmpty(d.DepositToken),
@@ -123,10 +123,6 @@ func (d Deposit) ToTransaction() bridgetypes.Transaction {
 		WithdrawalChainId: stringOrEmpty(d.WithdrawalChainId),
 	}
 
-	// in case when tx hash was set by the user request
-	if d.WithdrawalTxHash != nil {
-		tx.WithdrawalTxHash = *d.WithdrawalTxHash
-	}
 	if d.DepositBlock != nil {
 		tx.DepositBlock = uint64(*d.DepositBlock)
 	}
