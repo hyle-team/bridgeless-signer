@@ -16,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"math/big"
+	"strings"
 
 	txclient "github.com/cosmos/cosmos-sdk/types/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -56,14 +57,13 @@ func (c *Connector) GetDestinationTokenAddress(
 	srcTokenAddr common.Address,
 	dstChainId *big.Int,
 ) (common.Address, error) {
-	resp, err := c.bridger.GetTokenPair(
-		context.Background(),
-		&bridgetypes.QueryGetTokenPair{
-			SrcChain:   srcChainId.String(),
-			SrcAddress: srcTokenAddr.String(),
-			DstChain:   dstChainId.String(),
-		},
-	)
+	req := bridgetypes.QueryGetTokenPair{
+		SrcChain:   srcChainId.String(),
+		SrcAddress: strings.ToLower(srcTokenAddr.String()),
+		DstChain:   dstChainId.String(),
+	}
+
+	resp, err := c.bridger.GetTokenPair(context.Background(), &req)
 	if err != nil {
 		if errors.Is(bridgetypes.ErrTokenPairNotFound.GRPCStatus().Err(), err) {
 			return common.Address{}, tokens.ErrPairNotFound

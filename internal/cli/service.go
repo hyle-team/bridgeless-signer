@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"sync"
 
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm"
 	bridgeprocessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
@@ -15,6 +16,7 @@ import (
 
 func RunService(ctx context.Context, cfg config.Config) error {
 	var (
+		wg            = sync.WaitGroup{}
 		serviceSigner = cfg.Signer()
 		coreCfg       = cfg.CoreConnectorConfig()
 		coreConnector = coreconnector.NewConnector(coreCfg.Connection, coreCfg.Settings)
@@ -33,9 +35,9 @@ func RunService(ctx context.Context, cfg config.Config) error {
 
 	processor := bridgeprocessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), serviceSigner, coreConnector, coreConnector)
 
-	go core.RunServer(ctx, cfg, proxiesRepo, producer)
-	go core.RunConsumers(ctx, cfg, producer, processor)
+	core.RunServer(ctx, &wg, cfg, proxiesRepo, producer)
+	core.RunConsumers(ctx, &wg, cfg, producer, processor)
+	wg.Wait()
 
-	<-ctx.Done()
 	return ctx.Err()
 }

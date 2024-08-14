@@ -50,6 +50,7 @@ func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
 	for {
 		select {
 		case <-ctx.Done():
+			c.logger.Info("consuming stopped")
 			return errors.Wrap(c.channel.Close(), "failed to close channel")
 		case delivery, ok := <-deliveries:
 			if !ok {
@@ -78,8 +79,8 @@ func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
 				continue
 			}
 
-			logger.WithError(err).Error("failed to resend delivery")
 			if errors.Is(err, rabbitTypes.ErrorMaxResendReached) {
+				logger.Debug(err.Error())
 				if callback != nil {
 					if err := callback(); err != nil {
 						logger.WithError(err).Error("failed to call reprocess fail callback")
@@ -88,6 +89,7 @@ func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
 
 				nack(logger, delivery, false)
 			} else {
+				logger.WithError(err).Error("failed to resend delivery")
 				nack(logger, delivery, true)
 			}
 		}

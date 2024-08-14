@@ -45,11 +45,11 @@ func (h *SignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reproce
 
 	submitReq, reprocessable, err := h.processor.ProcessSignWithdrawalRequest(request)
 	if err != nil {
-		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
+		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process sign withdrawal request")
 	}
 
 	if err = h.producer.SendSubmitWithdrawalRequest(*submitReq); err != nil {
-		return true, rprFailCallback, errors.Wrap(err, "failed to send form withdraw request")
+		return true, rprFailCallback, errors.Wrap(err, "failed to send submit withdraw request")
 	}
 
 	return false, nil, nil

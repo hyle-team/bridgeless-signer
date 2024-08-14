@@ -67,10 +67,15 @@ func (c BatchConsumer[T]) Consume(ctx context.Context, queue string) error {
 	for {
 		select {
 		case <-ctx.Done():
-			// return ack-ed deliveries to the sender in case of context cancellation
-			for _, entry := range c.batch {
-				_ = c.deliveryResender.ResendDelivery(queue, entry.Delivery)
+			if len(c.batch) != 0 {
+				// return ack-ed deliveries to the sender in case of context cancellation
+				c.logger.Info("resending ack-ed deliveries")
+				for _, entry := range c.batch {
+					_ = c.deliveryResender.ResendDelivery(queue, entry.Delivery)
+				}
 			}
+
+			c.logger.Info("consuming stopped")
 			c.batch = c.batch[:0]
 
 			return errors.Wrap(c.channel.Close(), "failed to close channel")

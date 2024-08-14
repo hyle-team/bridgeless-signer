@@ -42,18 +42,21 @@ func NewServer(
 }
 
 // RunGRPC starts the GRPC server.
-func (s *Server) RunGRPC(_ context.Context) error {
+func (s *Server) RunGRPC(ctx context.Context) error {
 	grpcServer := grpc.NewServer()
 	types.RegisterServiceServer(grpcServer, s)
+
+	// graceful shutdown
+	go func() { <-ctx.Done(); grpcServer.Stop() }()
 	return grpcServer.Serve(s.listener)
 }
 
 // RunRESTGateway starts the REST gateway server.
-func (s *Server) RunRESTGateway(ctx context.Context) (err error) {
+func (s *Server) RunRESTGateway(ctx context.Context) error {
 	grpcGatewayRouter := runtime.NewServeMux()
 	httpRouter := http.NewServeMux()
 
-	if err = types.RegisterServiceHandlerServer(context.Background(), grpcGatewayRouter, s); err != nil {
+	if err := types.RegisterServiceHandlerServer(context.Background(), grpcGatewayRouter, s); err != nil {
 		return errors.Wrap(err, "failed to register service handler")
 	}
 
@@ -62,13 +65,14 @@ func (s *Server) RunRESTGateway(ctx context.Context) (err error) {
 	httpRouter.Handle("/", grpcGatewayRouter)
 
 	srv := &http.Server{Addr: s.gatewayAddr, Handler: httpRouter}
-	defer func() {
-		if tmpErr := srv.Shutdown(ctx); tmpErr != nil {
-			err = errors.Wrap(tmpErr, "failed to shutdown rest server")
-		}
-	}()
 
-	return srv.ListenAndServe()
+	// graceful shutdown
+	go func() { <-ctx.Done(); srv.Shutdown(ctx) }()
+	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		return errors.Wrap(err, "failed to listen and serve")
+	}
+
+	return nil
 }
 
 func (s *Server) SubmitWithdrawal(ctx context.Context, request *types.WithdrawalRequest) (*types.Empty, error) {

@@ -3,6 +3,7 @@ package config
 import (
 	"crypto/tls"
 	"github.com/hyle-team/bridgeless-signer/internal/connectors/core"
+	pkgTypes "github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
@@ -10,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+	"reflect"
 	"time"
 )
 
@@ -48,7 +50,7 @@ func (c *configurer) CoreConnectorConfig() ConnectorConfig {
 
 		if err := figure.
 			Out(&cfg).
-			With(figure.BaseHooks).
+			With(figure.BaseHooks, accountHook).
 			From(kv.MustGetStringMap(c.getter, yamlKey)).
 			Please(); err != nil {
 			panic(errors.Wrap(err, "failed to configure core connector"))
@@ -75,4 +77,20 @@ func (c *configurer) CoreConnectorConfig() ConnectorConfig {
 			Connection: client,
 		}
 	}).(ConnectorConfig)
+}
+
+var accountHook = figure.Hooks{
+	"types.Account": func(value interface{}) (reflect.Value, error) {
+		switch v := value.(type) {
+		case string:
+			acc, err := pkgTypes.NewAccount(v)
+			if err != nil {
+				return reflect.Value{}, errors.Wrap(err, "failed to create account")
+			}
+
+			return reflect.ValueOf(*acc), nil
+		default:
+			return reflect.Value{}, errors.Errorf("unsupported conversion from %T", value)
+		}
+	},
 }

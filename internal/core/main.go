@@ -12,7 +12,7 @@ import (
 	consumerProcessors "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/consumer/processors"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data/pg"
-	"github.com/pkg/errors"
+	"sync"
 )
 
 type baseConsumer struct {
@@ -23,6 +23,7 @@ type baseConsumer struct {
 // RunConsumers runs consumers for all queues.
 func RunConsumers(
 	ctx context.Context,
+	wg *sync.WaitGroup,
 	cfg config.Config,
 	producer rabbitTypes.Producer,
 	processor *bridgeProcessor.Processor,
@@ -53,7 +54,10 @@ func RunConsumers(
 	for i := uint(0); i < rabbitCfg.ConsumerInstances; i++ {
 		idx := i + 1
 		for queue, consumerCfg := range consumersMap {
+			wg.Add(1)
 			go func(id uint, queue string, consumerCfg baseConsumer) {
+				defer wg.Done()
+
 				consumerName := consumer.GetName(consumerCfg.prefix, id)
 				logger.Info(fmt.Sprintf("starting consumer %s...", consumerName))
 				err := consumer.NewBase(
@@ -64,13 +68,16 @@ func RunConsumers(
 					producer,
 				).Consume(ctx, queue)
 				if err != nil {
-					panic(errors.Wrap(err, fmt.Sprintf("failed to consume for %s", consumerName)))
+					logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumerName))
 				}
 			}(idx, queue, consumerCfg)
 		}
 	}
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+
 		logger.Info(fmt.Sprintf("starting batch consumer %s...", consumer.SubmitTransactionConsumerPrefix))
 		err := consumer.NewBatch[bridgeTypes.SubmitTransactionRequest](
 			rabbitCfg.NewChannel(),
@@ -81,13 +88,14 @@ func RunConsumers(
 			rabbitCfg.TxSubmitterOpts,
 		).Consume(ctx, rabbitTypes.SubmitTransactionQueue)
 		if err != nil {
-			panic(errors.Wrap(err, "failed to consume for batch consumer"))
+			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.SubmitTransactionConsumerPrefix))
 		}
 	}()
 }
 
 func RunServer(
 	ctx context.Context,
+	wg *sync.WaitGroup,
 	cfg config.Config,
 	proxiesRepo bridgeTypes.ProxiesRepository,
 	producer rabbitTypes.Producer,
@@ -105,17 +113,22 @@ func RunServer(
 		),
 	)
 
+	wg.Add(2)
 	go func() {
+		defer wg.Done()
+
 		logger.Info("starting rest gateway...")
 		if err := server.RunRESTGateway(ctx); err != nil {
-			panic(errors.Wrap(err, "rest gateway error occurred"))
+			logger.WithError(err).Error("rest gateway error occurred")
 		}
 	}()
 
 	go func() {
+		defer wg.Done()
+
 		logger.Info("starting grpc server...")
 		if err := server.RunGRPC(ctx); err != nil {
-			panic(errors.Wrap(err, "grpc server error occurred"))
+			logger.WithError(err).Error("grpc server error occurred")
 		}
 	}()
 }
