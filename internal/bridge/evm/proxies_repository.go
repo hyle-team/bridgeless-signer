@@ -2,9 +2,9 @@ package evm
 
 import (
 	"fmt"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )

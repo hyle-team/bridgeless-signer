@@ -11,7 +11,7 @@ import (
 	"math/big"
 )
 
-func (p *bridgeProxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
+func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
 	if data.DestinationChainId == nil || data.DestinationChainId.String() != p.chain.Id.String() {
 		return nil, errors.New("invalid destination chain id")
 	}
@@ -35,11 +35,11 @@ func (p *bridgeProxy) FormWithdrawalTransaction(data data.DepositData) (*types.T
 	)
 }
 
-func (p *bridgeProxy) SendWithdrawalTransaction(signedTx *types.Transaction) error {
-	return p.chain.Rpc.SendTransaction(context.Background(), signedTx)
+func (p *proxy) SendWithdrawalTransaction(signedTx *types.Transaction) error {
+	return p.chain.EvmRpc.SendTransaction(context.Background(), signedTx)
 }
 
-func (p *bridgeProxy) getTransactionNonce() *big.Int {
+func (p *proxy) getTransactionNonce() *big.Int {
 	p.nonceM.Lock()
 	defer p.nonceM.Unlock()
 

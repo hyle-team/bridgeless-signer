@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *bridgeProxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
+func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
 	txReceipt, err := p.GetTransactionReceipt(common.HexToHash(id.TxHash))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get transaction receipt")
@@ -29,7 +29,7 @@ func (p *bridgeProxy) GetDepositData(id data.DepositIdentifier) (*data.DepositDa
 	}
 
 	log := txReceipt.Logs[id.TxEventId]
-	if !p.IsDepositLog(log) {
+	if !p.isDepositLog(log) {
 		return nil, bridgeTypes.ErrDepositNotFound
 	}
 
@@ -51,8 +51,8 @@ func (p *bridgeProxy) GetDepositData(id data.DepositIdentifier) (*data.DepositDa
 	}, nil
 }
 
-func (p *bridgeProxy) validateConfirmations(receipt *types.Receipt) error {
-	curHeight, err := p.chain.Rpc.BlockNumber(context.Background())
+func (p *proxy) validateConfirmations(receipt *types.Receipt) error {
+	curHeight, err := p.chain.EvmRpc.BlockNumber(context.Background())
 	if err != nil {
 		return errors.Wrap(err, "failed to get current block number")
 	}

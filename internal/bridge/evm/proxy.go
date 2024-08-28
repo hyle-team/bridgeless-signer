@@ -3,6 +3,7 @@ package evm
 import (
 	"bytes"
 	"context"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	"strings"
 	"sync"
 
@@ -10,14 +11,13 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
 
 const DepositEvent = "BridgeIn"
 
-type bridgeProxy struct {
+type proxy struct {
 	chain          chain.Chain
 	bridgeContract *contracts.Bridge
 	contractABI    abi.ABI
@@ -27,6 +27,8 @@ type bridgeProxy struct {
 	nonceM         sync.Mutex
 }
 
+// NewBridgeProxy creates a new bridge proxy for the given chain.
+// We need signer address to obtain the nonce for the signer when forming a new transaction.
 func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.Proxy, error) {
 	bridgeAbi, err := abi.JSON(strings.NewReader(contracts.BridgeMetaData.ABI))
 	if err != nil {
@@ -38,17 +40,17 @@ func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.P
 		return nil, errors.New("wrong bridge ABI events")
 	}
 
-	bridgeContract, err := contracts.NewBridge(chain.BridgeAddress, chain.Rpc)
+	bridgeContract, err := contracts.NewBridge(chain.BridgeAddress, chain.EvmRpc)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create bridge contract")
 	}
 
-	nonce, err := chain.Rpc.PendingNonceAt(context.Background(), signerAddr)
+	nonce, err := chain.EvmRpc.PendingNonceAt(context.Background(), signerAddr)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get signer nonce")
 	}
 
-	return &bridgeProxy{
+	return &proxy{
 		chain:          chain,
 		contractABI:    bridgeAbi,
 		depositEvent:   depositEvent,
@@ -58,7 +60,11 @@ func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.P
 	}, nil
 }
 
-func (p *bridgeProxy) IsDepositLog(log *types.Log) bool {
+func (p *proxy) Type() bridgeTypes.ChainType {
+	return p.chain.Type
+}
+
+func (p *proxy) isDepositLog(log *types.Log) bool {
 	if log == nil || log.Topics == nil {
 		return false
 	}

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
 	core "github.com/hyle-team/bridgeless-signer/internal/connectors/core/config"
 	api "github.com/hyle-team/bridgeless-signer/internal/core/api/config"
