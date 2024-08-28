@@ -1,15 +1,16 @@
 package tokens
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
-	ErrSourceTokenNotSupported      = fmt.Errorf("source token not supported")
-	ErrDestinationTokenNotSupported = fmt.Errorf("destination token not supported")
+	ErrPairNotFound                 = errors.New("pair not found")
+	ErrSourceTokenNotSupported      = errors.New("source token not supported")
+	ErrDestinationTokenNotSupported = errors.New("destination token not supported")
 )
 
 type TokenPairerConfiger interface {

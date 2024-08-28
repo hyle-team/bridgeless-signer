@@ -94,6 +94,9 @@
         },
         "withdrawalTransaction": {
           "$ref": "#/definitions/Transaction"
+        },
+        "submitStatus": {
+          "$ref": "#/definitions/SubmitWithdrawalStatus"
         }
       }
     },
@@ -142,6 +145,15 @@
     },
     "Empty": {
       "type": "object"
+    },
+    "SubmitWithdrawalStatus": {
+      "type": "string",
+      "enum": [
+        "NOT_SUBMITTED",
+        "SUBMIT_FAILED",
+        "SUCCESSFUL"
+      ],
+      "default": "NOT_SUBMITTED"
     },
     "Transaction": {
       "type": "object",

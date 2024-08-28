@@ -45,7 +45,12 @@ func (h *SubmitWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (repro
 
 	reprocessable, err = h.processor.ProcessSendWithdrawalRequest(request)
 	if err != nil {
-		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
+		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process send withdrawal request")
+	}
+
+	submitTxReq := bridgeTypes.SubmitTransactionRequest{DepositDbId: request.DepositDbId}
+	if err = h.producer.SendSubmitTransactionRequest(submitTxReq); err != nil {
+		return true, rprFailCallback, errors.Wrap(err, "failed to send submit transaction request")
 	}
 
 	return false, nil, nil

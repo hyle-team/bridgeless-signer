@@ -36,10 +36,7 @@ func (p *bridgeProxy) FormWithdrawalTransaction(data data.DepositData) (*types.T
 }
 
 func (p *bridgeProxy) SendWithdrawalTransaction(signedTx *types.Transaction) error {
-	return errors.Wrap(
-		p.chain.Rpc.SendTransaction(context.Background(), signedTx),
-		"failed to send withdrawal transaction",
-	)
+	return p.chain.Rpc.SendTransaction(context.Background(), signedTx)
 }
 
 func (p *bridgeProxy) getTransactionNonce() *big.Int {

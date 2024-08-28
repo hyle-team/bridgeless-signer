@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"math/big"
@@ -15,9 +16,11 @@ var ErrAlreadySubmitted = errors.New("transaction already submitted")
 type DepositsQ interface {
 	New() DepositsQ
 	Insert(Deposit) (id int64, err error)
+	Select(selector DepositsSelector) ([]Deposit, error)
 	Get(identifier DepositIdentifier) (*Deposit, error)
 	SetDepositData(data DepositData) error
-	UpdateStatus(id int64, status types.WithdrawalStatus) error
+	UpdateWithdrawalStatus(id int64, status types.WithdrawalStatus) error
+	UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids ...int64) error
 	SetWithdrawalTx(depositId int64, txHash, chainId string) error
 	Transaction(f func() error) error
 }
@@ -26,6 +29,11 @@ type DepositIdentifier struct {
 	TxHash    string `structs:"tx_hash" db:"tx_hash"`
 	TxEventId int    `structs:"tx_event_id" db:"tx_event_id"`
 	ChainId   string `structs:"chain_id" db:"chain_id"`
+}
+
+type DepositsSelector struct {
+	Ids       []int64
+	Submitted *bool
 }
 
 func (d DepositIdentifier) GetChainId() *big.Int {
@@ -55,6 +63,8 @@ type Deposit struct {
 
 	WithdrawalTxHash  *string `structs:"withdrawal_tx_hash" db:"withdrawal_tx_hash"`
 	WithdrawalChainId *string `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
+
+	SubmitStatus types.SubmitWithdrawalStatus `structs:"submit_status" db:"submit_status"`
 }
 
 func (d Deposit) Reprocessable() bool {
@@ -86,6 +96,7 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 			Hash:    d.TxHash,
 			ChainId: d.ChainId,
 		},
+		SubmitStatus: d.SubmitStatus,
 	}
 
 	if d.WithdrawalTxHash != nil && d.WithdrawalChainId != nil {
@@ -96,6 +107,27 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 	}
 
 	return result
+}
+
+func (d Deposit) ToTransaction() bridgetypes.Transaction {
+	tx := bridgetypes.Transaction{
+		DepositTxHash:     d.TxHash,
+		DepositTxIndex:    uint64(d.TxEventId),
+		DepositChainId:    d.GetChainId().String(),
+		WithdrawalTxHash:  stringOrEmpty(d.WithdrawalTxHash),
+		Depositor:         stringOrEmpty(d.Depositor),
+		Amount:            stringOrEmpty(d.Amount),
+		DepositToken:      stringOrEmpty(d.DepositToken),
+		Receiver:          stringOrEmpty(d.Receiver),
+		WithdrawalToken:   stringOrEmpty(d.WithdrawalToken),
+		WithdrawalChainId: stringOrEmpty(d.WithdrawalChainId),
+	}
+
+	if d.DepositBlock != nil {
+		tx.DepositBlock = uint64(*d.DepositBlock)
+	}
+
+	return tx
 }
 
 type DepositData struct {
@@ -112,4 +144,12 @@ type DepositData struct {
 
 func (d DepositData) OriginTxId() string {
 	return d.DepositIdentifier.String()
+}
+
+func stringOrEmpty(s *string) string {
+	if s == nil {
+		return ""
+	}
+
+	return *s
 }

@@ -8,8 +8,10 @@ gen-proto:
 	cd proto && buf generate
 
 run:
-	KV_VIPER_FILE=$(VIPER_FILE) go run main.go migrate up
-	KV_VIPER_FILE=$(VIPER_FILE) go run main.go run service
+	rm -f $(GOPATH)/bin/signer
+	go build -o $(GOPATH)/bin/signer
+	KV_VIPER_FILE=$(VIPER_FILE) signer migrate up
+	KV_VIPER_FILE=$(VIPER_FILE) signer run service
 
 test:
 	KV_VIPER_FILE=$(VIPER_FILE) go test -count=1 $(TESTING_PACKAGES)

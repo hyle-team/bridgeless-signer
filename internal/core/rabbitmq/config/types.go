@@ -2,15 +2,22 @@ package config
 
 import (
 	"runtime"
+	"time"
 
 	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Config struct {
-	Connection        *amqp.Connection `fig:"url,required"`
-	ConsumerInstances uint             `fig:"consumer_instances,required"`
-	ResendParams      ResendParams     `fig:"resend_params,required"`
+	Connection        *amqp.Connection   `fig:"url,required"`
+	ConsumerInstances uint               `fig:"consumer_instances,required"`
+	ResendParams      ResendParams       `fig:"resend_params,required"`
+	TxSubmitterOpts   BatchConsumingOpts `fig:"tx_submitter,required"`
+}
+
+type BatchConsumingOpts struct {
+	MaxSize int           `fig:"max_size,required"`
+	Period  time.Duration `fig:"period,required"`
 }
 
 type ResendParams struct {

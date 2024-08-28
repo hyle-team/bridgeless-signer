@@ -24,10 +24,11 @@ const (
 	HeaderDelayKey      = "delay"
 	HeaderRetryCountKey = "x-retry-count"
 
-	GetDepositQueue       = "get-deposit-queue"
-	FormWithdrawalQueue   = "form-withdrawal-queue"
-	SignWithdrawalQueue   = "sign-withdrawal-queue"
-	SubmitWithdrawalQueue = "submit-withdrawal-queue"
+	GetDepositQueue        = "get-deposit-queue"
+	FormWithdrawalQueue    = "form-withdrawal-queue"
+	SignWithdrawalQueue    = "sign-withdrawal-queue"
+	SubmitWithdrawalQueue  = "submit-withdrawal-queue"
+	SubmitTransactionQueue = "submit-transaction-queue"
 )
 
 var ErrorMaxResendReached = errors.New("max resend count reached")
@@ -37,6 +38,7 @@ type Producer interface {
 	SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalRequest) error
 	SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
 	SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
 	DeliveryResender
 }
 
@@ -52,4 +54,14 @@ type DeliveryProcessor interface {
 	// ProcessDelivery processes the delivery and returns whether the delivery should be reprocessed,
 	// a callback to be called if the reprocessing fails, and an error.
 	ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error)
+}
+
+type Identifiable interface {
+	Id() int64
+}
+
+type BatchProcessor[T Identifiable] interface {
+	// ProcessBatch processes the batch and returns whether the batch should be reprocessed,
+	// a callback to be called if the reprocessing fails, and an error.
+	ProcessBatch(batch []T) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error)
 }

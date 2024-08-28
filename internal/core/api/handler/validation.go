@@ -24,7 +24,7 @@ func (h *ServiceHandler) ValidateWithdrawalRequest(request *types.WithdrawalRequ
 
 	err := validation.Errors{
 		"tx_hash":        validation.Validate(deposit.TxHash, validation.Required, validation.Match(txHashPattern)),
-		"tx_event_index": validation.Validate(deposit.TxEventIndex, validation.Required, validation.Min(0)),
+		"tx_event_index": validation.Validate(deposit.TxEventIndex, validation.Min(0)),
 		"chain_id":       validation.Validate(deposit.ChainId, validation.Required),
 	}.Filter()
 

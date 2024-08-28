@@ -2,11 +2,11 @@ package config
 
 import (
 	"fmt"
+	"github.com/hyle-team/bridgeless-signer/pkg/tokens"
 	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/tokens"
 )
 
 type configTokenPairer struct {

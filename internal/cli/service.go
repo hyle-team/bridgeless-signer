@@ -2,19 +2,24 @@ package cli
 
 import (
 	"context"
+	"sync"
 
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm"
-	bridgeProcessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
+	bridgeprocessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
+	coreconnector "github.com/hyle-team/bridgeless-signer/internal/connectors/core"
 	"github.com/hyle-team/bridgeless-signer/internal/core"
-	rabbitProducer "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/producer"
+	rabbitproducer "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/producer"
 	"github.com/hyle-team/bridgeless-signer/internal/data/pg"
 	"github.com/pkg/errors"
 )
 
 func RunService(ctx context.Context, cfg config.Config) error {
 	var (
+		wg            = sync.WaitGroup{}
 		serviceSigner = cfg.Signer()
+		coreCfg       = cfg.CoreConnectorConfig()
+		coreConnector = coreconnector.NewConnector(coreCfg.Connection, coreCfg.Settings)
 		rabbitCfg     = cfg.RabbitMQConfig()
 	)
 
@@ -23,16 +28,16 @@ func RunService(ctx context.Context, cfg config.Config) error {
 		return errors.Wrap(err, "failed to create proxiesRepo repository")
 	}
 
-	producer, err := rabbitProducer.New(rabbitCfg.NewChannel(), rabbitCfg.ResendParams)
+	producer, err := rabbitproducer.New(rabbitCfg.NewChannel(), rabbitCfg.ResendParams)
 	if err != nil {
 		return errors.Wrap(err, "failed to create publisher")
 	}
 
-	processor := bridgeProcessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), serviceSigner, cfg.TokenPairer())
+	processor := bridgeprocessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), serviceSigner, coreConnector, coreConnector)
 
-	go core.RunServer(ctx, cfg, proxiesRepo, producer)
-	go core.RunConsumers(ctx, cfg, producer, processor)
+	core.RunServer(ctx, &wg, cfg, proxiesRepo, producer)
+	core.RunConsumers(ctx, &wg, cfg, producer, processor)
+	wg.Wait()
 
-	<-ctx.Done()
 	return ctx.Err()
 }
