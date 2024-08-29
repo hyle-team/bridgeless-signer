@@ -28,7 +28,7 @@ func (p *bridgeProxy) FormWithdrawalTransaction(data data.DepositData) (*types.T
 	// the network, returning the transaction object only
 	return p.bridgeContract.BridgeOut(
 		bridgeOutTransactOpts(p.getTransactionNonce()),
-		data.TokenAddress,
+		*data.DestinationTokenAddress,
 		common.HexToAddress(data.DestinationAddress),
 		data.Amount,
 		data.OriginTxId(),
