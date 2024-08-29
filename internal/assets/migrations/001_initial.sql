@@ -24,3 +24,5 @@ CREATE TABLE deposits
 );
 
 -- +migrate Down
+
+drop table deposits;
