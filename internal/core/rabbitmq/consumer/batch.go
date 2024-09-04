@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	SubmitTransactionConsumerPrefix = "submit_transaction_consumer"
+	SubmitTransactionConsumerPrefix       = "submit_transaction_consumer"
+	SubmitBitcoinWithdrawalConsumerPrefix = "submit_bitcoin_withdrawal_consumer"
 )
 
 type amqpParsedEntry[T rabbitTypes.Identifiable] struct {

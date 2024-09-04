@@ -74,7 +74,7 @@ func RunConsumers(
 		}
 	}
 
-	wg.Add(1)
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
 
@@ -91,6 +91,23 @@ func RunConsumers(
 			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.SubmitTransactionConsumerPrefix))
 		}
 	}()
+	go func() {
+		defer wg.Done()
+
+		logger.Info(fmt.Sprintf("starting batch consumer %s...", consumer.SubmitBitcoinWithdrawalConsumerPrefix))
+		err := consumer.NewBatch[bridgeTypes.BitcoinWithdrawalRequest](
+			rabbitCfg.NewChannel(),
+			consumer.SubmitBitcoinWithdrawalConsumerPrefix,
+			logger.WithField("consumer", consumer.SubmitBitcoinWithdrawalConsumerPrefix),
+			consumerProcessors.NewSubmitBitcoinWithdrawalHandler(processor, producer),
+			producer,
+			rabbitCfg.BitcoinSubmitterOpts,
+		).Consume(ctx, rabbitTypes.SubmitBitcoinWithdrawalQueue)
+		if err != nil {
+			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.SubmitBitcoinWithdrawalConsumerPrefix))
+		}
+	}()
+
 }
 
 func RunServer(

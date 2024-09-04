@@ -5,25 +5,13 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/pkg/errors"
 	"math/big"
 )
 
+var zeroAddr = common.Address{}
+
 func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
-	if data.DestinationChainId == nil || data.DestinationChainId.String() != p.chain.Id.String() {
-		return nil, errors.New("invalid destination chain id")
-	}
-
-	if !common.IsHexAddress(data.DestinationAddress) {
-		return nil, bridgeTypes.ErrInvalidReceiverAddress
-	}
-
-	if data.DestinationTokenAddress == nil {
-		return nil, bridgeTypes.ErrDestinationTokenAddressRequired
-	}
-
 	// transact opts prevent the transaction from being sent to
 	// the network, returning the transaction object only
 	return p.bridgeContract.BridgeOut(
@@ -36,7 +24,7 @@ func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transac
 }
 
 func (p *proxy) SendWithdrawalTransaction(signedTx *types.Transaction) error {
-	return p.chain.EvmRpc.SendTransaction(context.Background(), signedTx)
+	return p.chain.Rpc.SendTransaction(context.Background(), signedTx)
 }
 
 func (p *proxy) getTransactionNonce() *big.Int {

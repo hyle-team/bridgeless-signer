@@ -2,11 +2,12 @@ package processor
 
 import (
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 )
 
 func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (reprocessable bool, err error) {
-	defer func() { err = p.updateInvalidDepositStatus(req.DepositDbId, err, reprocessable) }()
+	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	// ensure that withdrawal request was not already processed
 	deposit, err := p.db.Get(req.Data.DepositIdentifier)
@@ -20,7 +21,7 @@ func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalReque
 		return false, errors.New("withdrawal transaction was already sent")
 	}
 
-	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId.String())
+	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {
 			return false, bridgeTypes.ErrChainNotSupported
@@ -31,9 +32,11 @@ func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalReque
 	// rollback if transaction failed to be sent
 	txConn := p.db.New()
 	err = txConn.Transaction(func() error {
-		if tempErr := txConn.SetWithdrawalTx(
-			req.DepositDbId, req.Transaction.Hash().Hex(), req.Data.DestinationChainId.String(),
-		); tempErr != nil {
+		if tempErr := txConn.SetWithdrawalTxs(data.WithdrawalTx{
+			DepositId: req.DepositDbId,
+			TxHash:    req.Transaction.Hash().Hex(),
+			ChainId:   req.Data.DestinationChainId,
+		}); tempErr != nil {
 			return errors.Wrap(tempErr, "failed to set withdrawal tx")
 		}
 

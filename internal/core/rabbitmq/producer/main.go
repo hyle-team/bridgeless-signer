@@ -27,6 +27,7 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Produc
 		rabbitTypes.FormWithdrawalQueue,
 		rabbitTypes.SignWithdrawalQueue,
 		rabbitTypes.SubmitWithdrawalQueue,
+		rabbitTypes.SubmitBitcoinWithdrawalQueue,
 		rabbitTypes.SubmitTransactionQueue,
 	}
 
@@ -89,6 +90,10 @@ func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalReque
 
 func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
 	return p.publish(rabbitTypes.SubmitWithdrawalQueue, request)
+}
+
+func (p *Producer) SendSubmitBitcoinWithdrawalRequest(request bridgeTypes.BitcoinWithdrawalRequest) error {
+	return p.publish(rabbitTypes.SubmitBitcoinWithdrawalQueue, request)
 }
 
 func (p *Producer) SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error {

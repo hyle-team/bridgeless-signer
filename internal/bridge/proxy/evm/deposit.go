@@ -20,10 +20,6 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		return nil, bridgeTypes.ErrTxFailed
 	}
 
-	if err = p.validateConfirmations(txReceipt); err != nil {
-		return nil, errors.Wrap(err, "failed to validate confirmations")
-	}
-
 	if len(txReceipt.Logs) < id.TxEventId+1 {
 		return nil, bridgeTypes.ErrDepositNotFound
 	}
@@ -31,6 +27,10 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 	log := txReceipt.Logs[id.TxEventId]
 	if !p.isDepositLog(log) {
 		return nil, bridgeTypes.ErrDepositNotFound
+	}
+
+	if err = p.validateConfirmations(txReceipt); err != nil {
+		return nil, errors.Wrap(err, "failed to validate confirmations")
 	}
 
 	var event contracts.BridgeBridgeIn
@@ -42,7 +42,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 
 	return &data.DepositData{
 		DepositIdentifier:  id,
-		DestinationChainId: event.ChainId,
+		DestinationChainId: event.ChainId.String(),
 		DestinationAddress: event.DstAddress,
 		SourceAddress:      event.SrcAddress,
 		Amount:             event.Amount,
@@ -52,13 +52,13 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 }
 
 func (p *proxy) validateConfirmations(receipt *types.Receipt) error {
-	curHeight, err := p.chain.EvmRpc.BlockNumber(context.Background())
+	curHeight, err := p.chain.Rpc.BlockNumber(context.Background())
 	if err != nil {
 		return errors.Wrap(err, "failed to get current block number")
 	}
 
 	// including the current block
-	if receipt.BlockNumber.Uint64()+uint64(p.chain.Confirmations)-1 > curHeight {
+	if receipt.BlockNumber.Uint64()+p.chain.Confirmations-1 > curHeight {
 		return bridgeTypes.ErrTxNotConfirmed
 	}
 

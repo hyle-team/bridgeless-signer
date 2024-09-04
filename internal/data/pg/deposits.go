@@ -2,6 +2,8 @@ package pg
 
 import (
 	"database/sql"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/lib/pq"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -41,14 +43,37 @@ func (d *depositsQ) New() data.DepositsQ {
 	return NewDepositsQ(d.db.Clone())
 }
 
-func (d *depositsQ) SetWithdrawalTx(depositId int64, txHash, chainId string) error {
-	stmt := squirrel.Update(depositsTable).
-		Set(depositsStatus, types.WithdrawalStatus_TX_PENDING).
-		Set(depositsWithdrawalTxHash, txHash).
-		Set(depositsWithdrawalChainId, chainId).
-		Where(squirrel.Eq{depositsId: depositId})
+func (d *depositsQ) SetWithdrawalTxs(txs ...data.WithdrawalTx) error {
+	if len(txs) == 0 {
+		return nil
+	}
 
-	return d.db.Exec(stmt)
+	var (
+		hashes = make(pq.StringArray, len(txs))
+		chains = make(pq.StringArray, len(txs))
+		ids    = make(pq.Int64Array, len(txs))
+	)
+	for i, tx := range txs {
+		hashes[i] = strings.ToLower(tx.TxHash)
+		chains[i] = tx.ChainId
+		ids[i] = tx.DepositId
+	}
+
+	const query string = `
+UPDATE deposits
+SET
+    status = $1,
+    withdrawal_tx_hash = unnested_data.tx_hash,
+    withdrawal_chain_id = unnested_data.chain_id
+FROM (
+	SELECT unnest($2::text[]) as tx_hash,
+    	   unnest($3::text[]) as chain_id,
+    	   unnest($4::bigint[]) as deposit_id
+) as unnested_data
+WHERE deposits.id = unnested_data.deposit_id
+`
+
+	return d.db.ExecRaw(query, types.WithdrawalStatus_TX_PENDING, hashes, chains, ids)
 }
 
 func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {
@@ -99,10 +124,10 @@ func (d *depositsQ) Select(selector data.DepositsSelector) ([]data.Deposit, erro
 	return deposits, nil
 }
 
-func (d *depositsQ) UpdateWithdrawalStatus(id int64, status types.WithdrawalStatus) error {
+func (d *depositsQ) UpdateWithdrawalStatus(status types.WithdrawalStatus, ids ...int64) error {
 	stmt := squirrel.Update(depositsTable).
 		Set(depositsStatus, status).
-		Where(squirrel.Eq{depositsId: id})
+		Where(squirrel.Eq{depositsId: ids})
 
 	return d.db.Exec(stmt)
 }
@@ -117,14 +142,18 @@ func (d *depositsQ) UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids 
 
 func (d *depositsQ) SetDepositData(data data.DepositData) error {
 	fields := map[string]interface{}{
-		depositsDepositor:    strings.ToLower(data.SourceAddress.String()),
 		depositsAmount:       data.Amount.String(),
-		depositsDepositToken: strings.ToLower(data.TokenAddress.String()),
 		depositsReceiver:     strings.ToLower(data.DestinationAddress),
 		depositsDepositBlock: data.Block,
 	}
 
-	if data.DestinationTokenAddress != nil {
+	if data.TokenAddress != (common.Address{}) {
+		fields[depositsDepositToken] = strings.ToLower(data.TokenAddress.String())
+	}
+	if data.SourceAddress != (common.Address{}) {
+		fields[depositsDepositor] = strings.ToLower(data.SourceAddress.String())
+	}
+	if data.DestinationTokenAddress != (common.Address{}) {
 		fields[depositsWithdrawalToken] = strings.ToLower(data.DestinationTokenAddress.String())
 	}
 

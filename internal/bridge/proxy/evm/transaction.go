@@ -12,7 +12,7 @@ import (
 
 func (p *proxy) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, error) {
 	ctx := context.Background()
-	tx, pending, err := p.chain.EvmRpc.TransactionByHash(ctx, txHash)
+	tx, pending, err := p.chain.Rpc.TransactionByHash(ctx, txHash)
 	if err != nil {
 		if err.Error() == "not found" {
 			return nil, bridgeTypes.ErrTxNotFound
@@ -24,7 +24,7 @@ func (p *proxy) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, error
 		return nil, bridgeTypes.ErrTxPending
 	}
 
-	receipt, err := p.chain.EvmRpc.TransactionReceipt(context.Background(), tx.Hash())
+	receipt, err := p.chain.Rpc.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tx receipt")
 	}
@@ -40,6 +40,9 @@ func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStat
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrTxPending) {
 			return bridgeTypes.TransactionStatusPending, nil
+		}
+		if errors.Is(err, bridgeTypes.ErrTxNotFound) {
+			return bridgeTypes.TransactionStatusNotFound, nil
 		}
 
 		return bridgeTypes.TransactionStatusUnknown, errors.Wrap(err, "failed to get transaction receipt")

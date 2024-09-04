@@ -9,10 +9,11 @@ import (
 )
 
 type Config struct {
-	Connection        *amqp.Connection   `fig:"url,required"`
-	ConsumerInstances uint               `fig:"consumer_instances,required"`
-	ResendParams      ResendParams       `fig:"resend_params,required"`
-	TxSubmitterOpts   BatchConsumingOpts `fig:"tx_submitter,required"`
+	Connection           *amqp.Connection   `fig:"url,required"`
+	ConsumerInstances    uint               `fig:"consumer_instances,required"`
+	ResendParams         ResendParams       `fig:"resend_params,required"`
+	TxSubmitterOpts      BatchConsumingOpts `fig:"tx_submitter,required"`
+	BitcoinSubmitterOpts BatchConsumingOpts `fig:"bitcoin_submitter,required"`
 }
 
 type BatchConsumingOpts struct {
