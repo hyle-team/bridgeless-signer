@@ -7,7 +7,11 @@ import (
 )
 
 func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
-	var amounts map[btcutil.Address]btcutil.Amount
+	if len(data) == 0 {
+		return "", errors.New("empty data")
+	}
+
+	amounts := make(map[btcutil.Address]btcutil.Amount, len(data))
 	for adrRaw, amount := range data {
 		addr, err := btcutil.DecodeAddress(adrRaw, p.chain.Params)
 		if err != nil {

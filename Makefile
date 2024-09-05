@@ -12,9 +12,13 @@ build:
 	go build -o $(GOPATH)/bin/signer
 
 run:
-	build
 	KV_VIPER_FILE=$(VIPER_FILE) signer migrate up
 	KV_VIPER_FILE=$(VIPER_FILE) signer run service
+
+build-run: build run
+
+clear-db:
+	KV_VIPER_FILE=$(VIPER_FILE) signer migrate down
 
 test:
 	KV_VIPER_FILE=$(VIPER_FILE) go test -count=1 $(TESTING_PACKAGES)

@@ -62,10 +62,11 @@ var bitcoinHooks = figure.Hooks{
 			}
 
 			client, err := rpcclient.New(&rpcclient.ConnConfig{
-				Host:       clientConfig.Host,
-				User:       clientConfig.User,
-				Pass:       clientConfig.Pass,
-				DisableTLS: clientConfig.DisableTLS,
+				Host:         clientConfig.Host,
+				User:         clientConfig.User,
+				Pass:         clientConfig.Pass,
+				HTTPPostMode: true,
+				DisableTLS:   clientConfig.DisableTLS,
 			}, nil)
 			if err != nil {
 				return reflect.Value{}, errors.Wrap(err, "failed to create bitcoin rpc client")

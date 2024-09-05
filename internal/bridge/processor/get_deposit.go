@@ -14,7 +14,7 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 	proxy, err := p.proxies.Proxy(req.DepositIdentifier.ChainId)
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {
-			return data, false, errors.Wrap(err, fmt.Sprintf("chain id: %v", req.DepositIdentifier.ChainId))
+			return data, false, errors.Wrap(err, fmt.Sprintf("source chain id: %v", req.DepositIdentifier.ChainId))
 		}
 		return data, true, errors.Wrap(err, "failed to get source proxy")
 	}
@@ -35,7 +35,7 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 	dstProxy, err := p.proxies.Proxy(depositData.DestinationChainId)
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {
-			return data, false, errors.Wrap(err, fmt.Sprintf("chain id: %v", req.DepositIdentifier.ChainId))
+			return data, false, errors.Wrap(err, fmt.Sprintf("destination chain id: %v", depositData.DestinationChainId))
 		}
 		return data, true, errors.Wrap(err, "failed to get destination proxy")
 	}

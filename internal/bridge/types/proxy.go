@@ -17,7 +17,7 @@ var (
 	ErrInvalidReceiverAddress = errors.New("invalid receiver address")
 	ErrInvalidDepositedAmount = errors.New("invalid deposited amount")
 	ErrNotImplemented         = errors.New("not implemented")
-	ErrInvalidScriptPubKey    = errors.New("invalid script pub keyå")
+	ErrInvalidScriptPubKey    = errors.New("invalid script pub key")
 )
 
 type ChainType string
@@ -51,7 +51,9 @@ type Proxy interface {
 	Type() ChainType
 	GetTransactionStatus(txHash string) (TransactionStatus, error)
 	GetDepositData(id data.DepositIdentifier) (*data.DepositData, error)
+
 	AddressValid(addr string) bool
+	TransactionHashValid(hash string) bool
 
 	// Ethereum-specific methods
 	FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error)

@@ -23,6 +23,10 @@ func NewSubmitBitcoinWithdrawalHandler(
 }
 
 func (h *SubmitBitcoinWithdrawalHandler) ProcessBatch(batch []bridgeTypes.BitcoinWithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
+	if len(batch) == 0 {
+		return false, nil, nil
+	}
+
 	defer func() {
 		if reprocessable {
 			rprFailCallback = func(ids ...int64) error {

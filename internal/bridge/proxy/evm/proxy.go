@@ -5,6 +5,7 @@ import (
 	"context"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	"math/big"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -17,6 +18,8 @@ import (
 )
 
 const DepositEvent = "BridgeIn"
+
+var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
 
 type proxy struct {
 	chain          chain.Evm
@@ -79,4 +82,8 @@ func (p *proxy) AddressValid(addr string) bool {
 
 func (p *proxy) SendBitcoins(map[string]*big.Int) (txHash string, err error) {
 	return "", bridgeTypes.ErrNotImplemented
+}
+
+func (p *proxy) TransactionHashValid(hash string) bool {
+	return txHashPattern.MatchString(hash)
 }

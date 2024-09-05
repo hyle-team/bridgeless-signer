@@ -17,7 +17,7 @@ func (p *Processor) ProcessFormWithdrawalRequest(req bridgeTypes.FormWithdrawalR
 	}
 
 	tx, err := proxy.FormWithdrawalTransaction(req.Data)
-	if err == nil {
+	if err != nil {
 		return nil, true, errors.Wrap(err, "failed to form withdrawal transaction")
 	}
 

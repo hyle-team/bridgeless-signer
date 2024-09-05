@@ -110,7 +110,7 @@ func (p *proxy) parseDepositOutput(out btcjson.Vout) (*big.Int, error) {
 		return nil, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, fmt.Sprintf("unsupported type %s", stype))
 	}
 	if !p.bridgeAddr(addrs[0]) {
-		return nil, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "receiver address is not valid")
+		return nil, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "receiver address is not bridge")
 	}
 	if out.Value == 0 {
 		return nil, bridgeTypes.ErrInvalidDepositedAmount

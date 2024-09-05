@@ -1,16 +1,14 @@
 package handler
 
 import (
-	"regexp"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	"github.com/pkg/errors"
 	"strconv"
 	"strings"
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
-	"gitlab.com/distributed_lab/logan/v3/errors"
 )
-
-var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
 
 func (h *ServiceHandler) ValidateWithdrawalRequest(request *types.WithdrawalRequest) error {
 	if request == nil {
@@ -23,18 +21,25 @@ func (h *ServiceHandler) ValidateWithdrawalRequest(request *types.WithdrawalRequ
 	}
 
 	err := validation.Errors{
-		"tx_hash":        validation.Validate(deposit.TxHash, validation.Required, validation.Match(txHashPattern)),
+		"tx_hash":        validation.Validate(deposit.TxHash, validation.Required),
 		"tx_event_index": validation.Validate(deposit.TxEventIndex, validation.Min(0)),
 		"chain_id":       validation.Validate(deposit.ChainId, validation.Required),
 	}.Filter()
 
-	if err == nil {
-		if !h.proxies.SupportsChain(deposit.ChainId) {
-			return ErrChainNotSupported
+	proxy, err := h.proxies.Proxy(deposit.ChainId)
+	if err != nil {
+		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {
+			return err
 		}
+
+		return errors.Wrap(err, "failed to get proxy")
 	}
 
-	return err
+	if !proxy.TransactionHashValid(deposit.TxHash) {
+		return validation.Errors{"tx_hash": errors.New("invalid transaction hash")}
+	}
+
+	return nil
 }
 
 func (h *ServiceHandler) CheckWithdrawalRequest(request *types.CheckWithdrawalRequest) (*types.WithdrawalRequest, error) {

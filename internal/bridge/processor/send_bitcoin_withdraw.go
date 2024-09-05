@@ -13,7 +13,7 @@ func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.BitcoinWithdrawal
 	}
 
 	var (
-		params        map[string]*big.Int
+		params        = make(map[string]*big.Int, len(reqs))
 		withdrawalTxs = make([]data.WithdrawalTx, len(reqs))
 		depositIds    = make([]int64, len(reqs))
 	)
