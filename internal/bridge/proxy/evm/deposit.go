@@ -44,7 +44,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		DepositIdentifier:  id,
 		DestinationChainId: event.ChainId.String(),
 		DestinationAddress: event.DstAddress,
-		SourceAddress:      event.SrcAddress,
+		SourceAddress:      event.SrcAddress.String(),
 		Amount:             event.Amount,
 		TokenAddress:       event.Token,
 		Block:              int64(log.BlockNumber),

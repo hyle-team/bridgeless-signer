@@ -43,7 +43,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		return nil, bridgeTypes.ErrTxNotConfirmed
 	}
 
-	if len(tx.Vout) < dstDataIdx+1 {
+	if len(tx.Vout) < dstDataIdx+1 || len(tx.Vin) == 0 {
 		return nil, bridgeTypes.ErrDepositNotFound
 	}
 
@@ -57,15 +57,46 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		return nil, errors.Wrap(err, "failed to get destination address")
 	}
 
+	depositor, err := p.parseSenderAddress(tx.Vin[0])
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get depositor")
+	}
+
 	return &data.DepositData{
 		DepositIdentifier:  id,
 		DestinationChainId: chainId,
 		DestinationAddress: addr,
-		// no source address can be specified (?)
-		Amount: amount,
+		SourceAddress:      depositor,
+		Amount:             amount,
 		// no token address here
 		Block: block.Height,
 	}, nil
+}
+
+func (p *proxy) parseSenderAddress(in btcjson.Vin) (addr string, err error) {
+	prevTx, err := p.getTx(in.Txid)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get previous transaction to identify sender")
+	}
+
+	if len(prevTx.Vout) < int(in.Vout)+1 {
+		return "", errors.New("sender vout not found")
+	}
+
+	scriptRaw, err := hex.DecodeString(prevTx.Vout[in.Vout].ScriptPubKey.Hex)
+	if err != nil {
+		return "", errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, err.Error())
+	}
+
+	_, addrs, _, err := txscript.ExtractPkScriptAddrs(scriptRaw, p.chain.Params)
+	if err != nil {
+		return "", errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, err.Error())
+	}
+	if len(addrs) == 0 {
+		return "", errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "empty sender address")
+	}
+
+	return addrs[0].String(), nil
 }
 
 func (p *proxy) parseDestinationOutput(out btcjson.Vout) (addr, chainId string, err error) {
