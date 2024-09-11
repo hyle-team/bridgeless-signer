@@ -25,8 +25,7 @@ require (
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/hyle-team/bridgeless-core v12.1.9-rc4
-
+	github.com/hyle-team/bridgeless-core v0.0.0-20240911163215-e9a1ef12c6da
 	github.com/lib/pq v1.10.9
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/cast v1.6.0
