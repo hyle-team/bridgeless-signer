@@ -19,10 +19,16 @@ type DepositsQ interface {
 	Select(selector DepositsSelector) ([]Deposit, error)
 	Get(identifier DepositIdentifier) (*Deposit, error)
 	SetDepositData(data DepositData) error
-	UpdateWithdrawalStatus(id int64, status types.WithdrawalStatus) error
+	UpdateWithdrawalStatus(status types.WithdrawalStatus, ids ...int64) error
 	UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids ...int64) error
-	SetWithdrawalTx(depositId int64, txHash, chainId string) error
+	SetWithdrawalTxs(txs ...WithdrawalTx) error
 	Transaction(f func() error) error
+}
+
+type WithdrawalTx struct {
+	DepositId int64
+	TxHash    string
+	ChainId   string
 }
 
 type DepositIdentifier struct {
@@ -34,15 +40,6 @@ type DepositIdentifier struct {
 type DepositsSelector struct {
 	Ids       []int64
 	Submitted *bool
-}
-
-func (d DepositIdentifier) GetChainId() *big.Int {
-	id, ok := new(big.Int).SetString(d.ChainId, 10)
-	if !ok {
-		return big.NewInt(0)
-	}
-
-	return id
 }
 
 func (d DepositIdentifier) String() string {
@@ -113,7 +110,7 @@ func (d Deposit) ToTransaction() bridgetypes.Transaction {
 	tx := bridgetypes.Transaction{
 		DepositTxHash:     d.TxHash,
 		DepositTxIndex:    uint64(d.TxEventId),
-		DepositChainId:    d.GetChainId().String(),
+		DepositChainId:    d.ChainId,
 		WithdrawalTxHash:  stringOrEmpty(d.WithdrawalTxHash),
 		Depositor:         stringOrEmpty(d.Depositor),
 		Amount:            stringOrEmpty(d.Amount),
@@ -132,14 +129,17 @@ func (d Deposit) ToTransaction() bridgetypes.Transaction {
 
 type DepositData struct {
 	DepositIdentifier
+	DestinationChainId string
 
-	DestinationChainId      *big.Int
-	SourceAddress           common.Address
-	DestinationAddress      string
-	Amount                  *big.Int
+	SourceAddress      string
+	DestinationAddress string
+
+	Amount *big.Int
+
 	TokenAddress            common.Address
-	DestinationTokenAddress *common.Address
-	Block                   int64
+	DestinationTokenAddress common.Address
+
+	Block int64
 }
 
 func (d DepositData) OriginTxId() string {

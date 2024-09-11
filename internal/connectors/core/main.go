@@ -15,7 +15,6 @@ import (
 	pkgTypes "github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"math/big"
 	"strings"
 
 	txclient "github.com/cosmos/cosmos-sdk/types/tx"
@@ -53,14 +52,14 @@ func NewConnector(conn *grpc.ClientConn, settings ConnectorSettings) *Connector 
 }
 
 func (c *Connector) GetDestinationTokenAddress(
-	srcChainId *big.Int,
+	srcChainId string,
 	srcTokenAddr common.Address,
-	dstChainId *big.Int,
+	dstChainId string,
 ) (common.Address, error) {
 	req := bridgetypes.QueryGetTokenPair{
-		SrcChain:   srcChainId.String(),
+		SrcChain:   srcChainId,
 		SrcAddress: strings.ToLower(srcTokenAddr.String()),
-		DstChain:   dstChainId.String(),
+		DstChain:   dstChainId,
 	}
 
 	resp, err := c.bridger.GetTokenPair(context.Background(), &req)

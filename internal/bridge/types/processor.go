@@ -18,7 +18,17 @@ type GetDepositRequest struct {
 
 type FormWithdrawalRequest struct {
 	DepositDbId int64
+	Destination ChainType
 	Data        data.DepositData
+}
+
+type BitcoinWithdrawalRequest struct {
+	DepositDbId int64
+	Data        data.DepositData
+}
+
+func (b BitcoinWithdrawalRequest) Id() int64 {
+	return b.DepositDbId
 }
 
 type SubmitTransactionRequest struct {

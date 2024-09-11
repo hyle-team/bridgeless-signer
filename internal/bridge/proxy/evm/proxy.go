@@ -3,6 +3,9 @@ package evm
 import (
 	"bytes"
 	"context"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
+	"math/big"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -10,15 +13,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
 
 const DepositEvent = "BridgeIn"
 
-type bridgeProxy struct {
-	chain          chain.Chain
+var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
+
+type proxy struct {
+	chain          chain.Evm
 	bridgeContract *contracts.Bridge
 	contractABI    abi.ABI
 	depositEvent   abi.Event
@@ -27,7 +31,9 @@ type bridgeProxy struct {
 	nonceM         sync.Mutex
 }
 
-func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.Proxy, error) {
+// NewBridgeProxy creates a new bridge proxy for the given chain.
+// We need signer address to obtain the nonce for the signer when forming a new transaction.
+func NewBridgeProxy(chain chain.Evm, signerAddr common.Address) (bridgeTypes.Proxy, error) {
 	bridgeAbi, err := abi.JSON(strings.NewReader(contracts.BridgeMetaData.ABI))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse bridge ABI")
@@ -48,7 +54,7 @@ func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.P
 		return nil, errors.Wrap(err, "failed to get signer nonce")
 	}
 
-	return &bridgeProxy{
+	return &proxy{
 		chain:          chain,
 		contractABI:    bridgeAbi,
 		depositEvent:   depositEvent,
@@ -58,10 +64,26 @@ func NewBridgeProxy(chain chain.Chain, signerAddr common.Address) (bridgeTypes.P
 	}, nil
 }
 
-func (p *bridgeProxy) IsDepositLog(log *types.Log) bool {
-	if log == nil || log.Topics == nil {
+func (p *proxy) Type() bridgeTypes.ChainType {
+	return bridgeTypes.ChainTypeEVM
+}
+
+func (p *proxy) isDepositLog(log *types.Log) bool {
+	if log == nil || len(log.Topics) == 0 {
 		return false
 	}
 
 	return bytes.Equal(log.Topics[0].Bytes(), p.depositEvent.ID.Bytes()) && len(log.Topics) == 2
+}
+
+func (p *proxy) AddressValid(addr string) bool {
+	return common.IsHexAddress(addr) && common.HexToAddress(addr) != (common.Address{})
+}
+
+func (p *proxy) SendBitcoins(map[string]*big.Int) (txHash string, err error) {
+	return "", bridgeTypes.ErrNotImplemented
+}
+
+func (p *proxy) TransactionHashValid(hash string) bool {
+	return txHashPattern.MatchString(hash)
 }

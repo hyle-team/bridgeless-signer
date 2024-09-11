@@ -5,41 +5,27 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/pkg/errors"
 	"math/big"
 )
 
-func (p *bridgeProxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
-	if data.DestinationChainId == nil || data.DestinationChainId.String() != p.chain.Id.String() {
-		return nil, errors.New("invalid destination chain id")
-	}
-
-	if !common.IsHexAddress(data.DestinationAddress) {
-		return nil, bridgeTypes.ErrInvalidReceiverAddress
-	}
-
-	if data.DestinationTokenAddress == nil {
-		return nil, bridgeTypes.ErrDestinationTokenAddressRequired
-	}
-
+func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
 	// transact opts prevent the transaction from being sent to
 	// the network, returning the transaction object only
 	return p.bridgeContract.BridgeOut(
 		bridgeOutTransactOpts(p.getTransactionNonce()),
-		*data.DestinationTokenAddress,
+		data.DestinationTokenAddress,
 		common.HexToAddress(data.DestinationAddress),
 		data.Amount,
 		data.OriginTxId(),
 	)
 }
 
-func (p *bridgeProxy) SendWithdrawalTransaction(signedTx *types.Transaction) error {
+func (p *proxy) SendWithdrawalTransaction(signedTx *types.Transaction) error {
 	return p.chain.Rpc.SendTransaction(context.Background(), signedTx)
 }
 
-func (p *bridgeProxy) getTransactionNonce() *big.Int {
+func (p *proxy) getTransactionNonce() *big.Int {
 	p.nonceM.Lock()
 	defer p.nonceM.Unlock()
 

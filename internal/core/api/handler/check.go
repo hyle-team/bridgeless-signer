@@ -2,14 +2,10 @@ package handler
 
 import (
 	"context"
-
-	"github.com/ethereum/go-ethereum/common"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -42,25 +38,21 @@ func (h *ServiceHandler) CheckWithdrawal(_ context.Context, request *types.Check
 			return nil, ErrInternal // should not happen if the chain is supported, but just in case
 		}
 
-		receipt, err := proxy.GetTransactionReceipt(common.HexToHash(*tx.WithdrawalTxHash))
+		st, err := proxy.GetTransactionStatus(*tx.WithdrawalTxHash)
 		if err != nil {
-			// omitting only pending txs
-			if !errors.Is(err, bridgeTypes.ErrTxPending) {
-				// if the tx is still pending, we return the same status
-				// otherwise, render error
-				h.logger.WithError(err).Error("failed to get tx receipt")
-				return nil, ErrInternal
-			}
-		} else {
-			switch receipt.Status {
-			case ethTypes.ReceiptStatusFailed:
+			h.logger.WithError(err).Error("failed to get tx receipt")
+			return nil, ErrInternal
+		}
+
+		if st != bridgeTypes.TransactionStatusPending {
+			switch st {
+			case bridgeTypes.TransactionStatusFailed:
 				tx.Status = types.WithdrawalStatus_TX_FAILED
-			case ethTypes.ReceiptStatusSuccessful:
+			case bridgeTypes.TransactionStatusSuccessful:
 				tx.Status = types.WithdrawalStatus_TX_SUCCESSFUL
 			}
-
 			// updating in the db
-			if err = dbconn.UpdateWithdrawalStatus(tx.Id, tx.Status); err != nil {
+			if err = dbconn.UpdateWithdrawalStatus(tx.Status, tx.Id); err != nil {
 				h.logger.WithError(err).Error("failed to update transaction status")
 				return nil, ErrInternal
 			}

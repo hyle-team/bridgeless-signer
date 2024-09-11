@@ -2,9 +2,9 @@ package cli
 
 import (
 	"context"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy"
 	"sync"
 
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/evm"
 	bridgeprocessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
 	coreconnector "github.com/hyle-team/bridgeless-signer/internal/connectors/core"
@@ -23,7 +23,7 @@ func RunService(ctx context.Context, cfg config.Config) error {
 		rabbitCfg     = cfg.RabbitMQConfig()
 	)
 
-	proxiesRepo, err := evm.NewProxiesRepository(cfg.Chains(), serviceSigner.Address())
+	proxiesRepo, err := proxy.NewProxiesRepository(cfg.Chains(), serviceSigner.Address())
 	if err != nil {
 		return errors.Wrap(err, "failed to create proxiesRepo repository")
 	}
@@ -37,6 +37,7 @@ func RunService(ctx context.Context, cfg config.Config) error {
 
 	core.RunServer(ctx, &wg, cfg, proxiesRepo, producer)
 	core.RunConsumers(ctx, &wg, cfg, producer, processor)
+
 	wg.Wait()
 
 	return ctx.Err()

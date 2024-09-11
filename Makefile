@@ -7,11 +7,18 @@ VIPER_FILE="${GOPATH}/src/github.com/hyle-team/bridgeless-signer/config.local.ya
 gen-proto:
 	cd proto && buf generate
 
-run:
+build:
 	rm -f $(GOPATH)/bin/signer
 	go build -o $(GOPATH)/bin/signer
+
+run:
 	KV_VIPER_FILE=$(VIPER_FILE) signer migrate up
 	KV_VIPER_FILE=$(VIPER_FILE) signer run service
+
+build-run: build run
+
+clear-db:
+	KV_VIPER_FILE=$(VIPER_FILE) signer migrate down
 
 test:
 	KV_VIPER_FILE=$(VIPER_FILE) go test -count=1 $(TESTING_PACKAGES)

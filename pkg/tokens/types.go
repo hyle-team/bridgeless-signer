@@ -1,10 +1,8 @@
 package tokens
 
 import (
-	"github.com/pkg/errors"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -19,8 +17,8 @@ type TokenPairerConfiger interface {
 
 type TokenPairer interface {
 	GetDestinationTokenAddress(
-		srcChainId *big.Int,
+		srcChainId string,
 		srcTokenAddr common.Address,
-		dstChainId *big.Int,
+		dstChainId string,
 	) (common.Address, error)
 }

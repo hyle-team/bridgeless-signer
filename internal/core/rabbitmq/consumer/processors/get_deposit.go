@@ -2,6 +2,7 @@ package processors
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
@@ -48,8 +49,20 @@ func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessab
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
 	}
 
-	if err = h.producer.SendFormWithdrawalRequest(*withdrawReq); err != nil {
-		return true, rprFailCallback, errors.Wrap(err, "failed to send form withdraw request")
+	switch withdrawReq.Destination {
+	case bridgeTypes.ChainTypeEVM:
+		if err = h.producer.SendFormWithdrawalRequest(*withdrawReq); err != nil {
+			return true, rprFailCallback, errors.Wrap(err, "failed to send form withdraw request")
+		}
+	case bridgeTypes.ChainTypeBitcoin:
+		if err = h.producer.SendSubmitBitcoinWithdrawalRequest(bridgeTypes.BitcoinWithdrawalRequest{
+			DepositDbId: request.DepositDbId,
+			Data:        withdrawReq.Data,
+		}); err != nil {
+			return true, rprFailCallback, errors.Wrap(err, "failed to send submit withdraw request")
+		}
+	default:
+		return false, nil, errors.New(fmt.Sprintf("invalid destination type: %v", withdrawReq.Destination))
 	}
 
 	return false, nil, nil
