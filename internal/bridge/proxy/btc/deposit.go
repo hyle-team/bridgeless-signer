@@ -15,7 +15,10 @@ import (
 	"strings"
 )
 
-const defaultDecimals = 8
+const (
+	defaultDecimals                  = 8
+	defaultDepositorAddressOutputIdx = 0
+)
 
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
 	var (
@@ -57,7 +60,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		return nil, errors.Wrap(err, "failed to get destination address")
 	}
 
-	depositor, err := p.parseSenderAddress(tx.Vin[0])
+	depositor, err := p.parseSenderAddress(tx.Vin[defaultDepositorAddressOutputIdx])
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get depositor")
 	}
