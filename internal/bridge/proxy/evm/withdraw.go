@@ -14,6 +14,8 @@ func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transac
 	// the network, returning the transaction object only
 
 	if IsAddressEmpty(data.DestinationTokenAddress) {
+		// If the address is empty, it indicates that the
+		// native token is being transferred.
 		return p.bridgeContract.BridgeOutNative(
 			bridgeOutTransactOpts(p.getTransactionNonce()),
 			common.HexToAddress(data.DestinationAddress),

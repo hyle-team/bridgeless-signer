@@ -82,12 +82,11 @@ func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {
 	stmt := squirrel.
 		Insert(depositsTable).
 		SetMap(map[string]interface{}{
-			depositsTxHash:        deposit.TxHash,
-			depositsTxEventId:     deposit.TxEventId,
-			depositsChainId:       deposit.ChainId,
-			depositsStatus:        deposit.Status,
-			depositsSubmitStatus:  deposit.SubmitStatus,
-			depositIsWrappedToken: deposit.IsWrappedToken,
+			depositsTxHash:       deposit.TxHash,
+			depositsTxEventId:    deposit.TxEventId,
+			depositsChainId:      deposit.ChainId,
+			depositsStatus:       deposit.Status,
+			depositsSubmitStatus: deposit.SubmitStatus,
 		}).
 		Suffix("RETURNING id")
 
@@ -161,7 +160,13 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 		fields[depositsWithdrawalToken] = strings.ToLower(data.DestinationTokenAddress.String())
 	}
 
-	return d.db.Exec(squirrel.Update(depositsTable).SetMap(fields))
+	return d.db.Exec(squirrel.Update(depositsTable).Where(
+		squirrel.Eq{
+			depositsTxHash:    data.TxHash,
+			depositsTxEventId: data.TxEventId,
+			depositsChainId:   data.ChainId,
+		},
+	).SetMap(fields))
 }
 
 func NewDepositsQ(db *pgdb.DB) data.DepositsQ {
