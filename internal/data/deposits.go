@@ -121,8 +121,6 @@ func (d Deposit) ToTransaction() bridgetypes.Transaction {
 		Receiver:          stringOrEmpty(d.Receiver),
 		WithdrawalToken:   stringOrEmpty(d.WithdrawalToken),
 		WithdrawalChainId: stringOrEmpty(d.WithdrawalChainId),
-
-		IsWrapped: boolOrFalse(d.IsWrappedToken),
 	}
 
 	if d.DepositBlock != nil {
@@ -159,12 +157,4 @@ func stringOrEmpty(s *string) string {
 	}
 
 	return *s
-}
-
-func boolOrFalse(b *bool) bool {
-	if b == nil {
-		return false
-	}
-
-	return *b
 }

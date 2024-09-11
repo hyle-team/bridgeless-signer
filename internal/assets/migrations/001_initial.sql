@@ -18,7 +18,6 @@ CREATE TABLE deposits
     withdrawal_tx_hash  text,
     withdrawal_chain_id text,
 
-    is_wrapped_token    bool,
     submit_status       int         not null,
 
     CONSTRAINT unique_deposit UNIQUE (tx_hash, tx_event_id, chain_id)

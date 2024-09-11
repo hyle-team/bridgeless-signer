@@ -25,7 +25,8 @@ require (
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/hyle-team/bridgeless-core v0.0.0-20240814124421-34bfbc7e857c
+	github.com/hyle-team/bridgeless-core v12.1.9-rc4
+
 	github.com/lib/pq v1.10.9
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/cast v1.6.0
@@ -169,8 +170,6 @@ replace (
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
-	github.com/hyle-team/bridgeless-core => /Users/dl/go/github.com/hyle-team/bridgeless-core
-	//github.com/hyle-team/bridgeless-core => /Users/slbmax/go/src/github.com/hyle-team/bridgeless-core
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.29
 	github.com/tidwall/btree => github.com/tidwall/btree v1.5.0
 	nhooyr.io/websocket => github.com/coder/websocket v1.8.7
