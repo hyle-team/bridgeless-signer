@@ -153,8 +153,8 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 	if data.TokenAddress != (common.Address{}) {
 		fields[depositsDepositToken] = strings.ToLower(data.TokenAddress.String())
 	}
-	if data.SourceAddress != (common.Address{}) {
-		fields[depositsDepositor] = strings.ToLower(data.SourceAddress.String())
+	if data.SourceAddress != "" {
+		fields[depositsDepositor] = strings.ToLower(data.SourceAddress)
 	}
 	if data.DestinationTokenAddress != (common.Address{}) {
 		fields[depositsWithdrawalToken] = strings.ToLower(data.DestinationTokenAddress.String())

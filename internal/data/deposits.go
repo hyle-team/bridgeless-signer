@@ -134,7 +134,7 @@ type DepositData struct {
 	DepositIdentifier
 	DestinationChainId string
 
-	SourceAddress      common.Address
+	SourceAddress      string
 	DestinationAddress string
 
 	Amount *big.Int
