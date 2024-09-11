@@ -49,7 +49,7 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 			return data, false, bridgeTypes.ErrInvalidDepositedAmount
 		}
 	case bridgeTypes.ChainTypeEVM:
-		depositData.DestinationTokenAddress, err = p.tokenPairer.GetDestinationTokenAddress(
+		depositData.DestinationTokenAddress, depositData.IsWrappedToken, err = p.tokenPairer.GetDestinationTokenInfo(
 			depositData.ChainId,
 			depositData.TokenAddress,
 			depositData.DestinationChainId,

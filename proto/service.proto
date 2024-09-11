@@ -38,6 +38,7 @@ message DepositData {
   optional string deposit_token = 6;
   optional string receiver = 7;
   optional string withdrawal_token = 8;
+  optional bool is_wrapped = 9;
 }
 
 message CheckWithdrawalResponse {

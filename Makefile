@@ -20,5 +20,8 @@ build-run: build run
 clear-db:
 	KV_VIPER_FILE=$(VIPER_FILE) signer migrate down
 
+migrate-db:
+	KV_VIPER_FILE=$(VIPER_FILE) signer migrate up
+
 test:
 	KV_VIPER_FILE=$(VIPER_FILE) go test -count=1 $(TESTING_PACKAGES)

@@ -61,6 +61,8 @@ type Deposit struct {
 	WithdrawalTxHash  *string `structs:"withdrawal_tx_hash" db:"withdrawal_tx_hash"`
 	WithdrawalChainId *string `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
 
+	IsWrappedToken *bool `structs:"is_wrapped_token" db:"is_wrapped_token"`
+
 	SubmitStatus types.SubmitWithdrawalStatus `structs:"submit_status" db:"submit_status"`
 }
 
@@ -88,6 +90,7 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 			WithdrawalToken: d.WithdrawalToken,
 			Receiver:        d.Receiver,
 			BlockNumber:     d.DepositBlock,
+			IsWrapped:       d.IsWrappedToken,
 		},
 		DepositTransaction: &types.Transaction{
 			Hash:    d.TxHash,
@@ -108,16 +111,19 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 
 func (d Deposit) ToTransaction() bridgetypes.Transaction {
 	tx := bridgetypes.Transaction{
-		DepositTxHash:     d.TxHash,
-		DepositTxIndex:    uint64(d.TxEventId),
-		DepositChainId:    d.ChainId,
-		WithdrawalTxHash:  stringOrEmpty(d.WithdrawalTxHash),
-		Depositor:         stringOrEmpty(d.Depositor),
-		Amount:            stringOrEmpty(d.Amount),
-		DepositToken:      stringOrEmpty(d.DepositToken),
-		Receiver:          stringOrEmpty(d.Receiver),
-		WithdrawalToken:   stringOrEmpty(d.WithdrawalToken),
+		DepositTxHash:    d.TxHash,
+		DepositTxIndex:   uint64(d.TxEventId),
+		DepositChainId:   d.ChainId,
+		WithdrawalTxHash: stringOrEmpty(d.WithdrawalTxHash),
+		Depositor:        stringOrEmpty(d.Depositor),
+		Amount:           stringOrEmpty(d.Amount),
+		DepositToken:     stringOrEmpty(d.DepositToken),
+		Receiver:         stringOrEmpty(d.Receiver),
+		WithdrawalToken:  stringOrEmpty(d.WithdrawalToken),
+
 		WithdrawalChainId: stringOrEmpty(d.WithdrawalChainId),
+
+		IsWrapped: boolOrFalse(d.IsWrappedToken),
 	}
 
 	if d.DepositBlock != nil {
@@ -139,6 +145,8 @@ type DepositData struct {
 	TokenAddress            common.Address
 	DestinationTokenAddress common.Address
 
+	IsWrappedToken bool
+
 	Block int64
 }
 
@@ -152,4 +160,12 @@ func stringOrEmpty(s *string) string {
 	}
 
 	return *s
+}
+
+func boolOrFalse(b *bool) bool {
+	if b == nil {
+		return false
+	}
+
+	return true
 }

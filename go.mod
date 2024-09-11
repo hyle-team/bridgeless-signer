@@ -26,6 +26,7 @@ require (
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/hyle-team/bridgeless-core v0.0.0-20240814124421-34bfbc7e857c
+	github.com/lib/pq v1.10.9
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/cast v1.6.0
 	gitlab.com/distributed_lab/figure/v3 v3.1.4
@@ -100,7 +101,6 @@ require (
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
@@ -168,7 +168,10 @@ replace (
 	github.com/cosmos/iavl => github.com/cosmos/iavl v0.19.6
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+
+	github.com/hyle-team/bridgeless-core => /Users/dl/go/github.com/hyle-team/bridgeless-core
 	//github.com/hyle-team/bridgeless-core => /Users/slbmax/go/src/github.com/hyle-team/bridgeless-core
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.29
 	github.com/tidwall/btree => github.com/tidwall/btree v1.5.0
+	nhooyr.io/websocket => github.com/coder/websocket v1.8.7
 )

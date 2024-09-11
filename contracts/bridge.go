@@ -31,7 +31,7 @@ var (
 
 // BridgeMetaData contains all meta data concerning the Bridge contract.
 var BridgeMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"dstAddress\",\"type\":\"string\"}],\"name\":\"BridgeIn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dstAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"originTxId\",\"type\":\"string\"}],\"name\":\"BridgeOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"addToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_chainId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_dst\",\"type\":\"string\"}],\"name\":\"bridgeIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_originTxId\",\"type\":\"string\"}],\"name\":\"bridgeOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"removeToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"sendToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"}],\"name\":\"setOperator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"dstAddress\",\"type\":\"string\"}],\"name\":\"BridgeIn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dstAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"originTxId\",\"type\":\"string\"}],\"name\":\"BridgeOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"allowList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_chainId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_dst\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"_isWrapped\",\"type\":\"bool\"}],\"name\":\"bridgeIn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_chainId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_dst\",\"type\":\"string\"}],\"name\":\"bridgeInNative\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_originTxId\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"_isWrapped\",\"type\":\"bool\"}],\"name\":\"bridgeOut\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_originTxId\",\"type\":\"string\"}],\"name\":\"bridgeOutNative\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // BridgeABI is the input ABI used to generate the binding from.
@@ -180,6 +180,37 @@ func (_Bridge *BridgeTransactorRaw) Transact(opts *bind.TransactOpts, method str
 	return _Bridge.Contract.contract.Transact(opts, method, params...)
 }
 
+// AllowList is a free data retrieval call binding the contract method 0x2848aeaf.
+//
+// Solidity: function allowList(address ) view returns(bool)
+func (_Bridge *BridgeCaller) AllowList(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
+	var out []interface{}
+	err := _Bridge.contract.Call(opts, &out, "allowList", arg0)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// AllowList is a free data retrieval call binding the contract method 0x2848aeaf.
+//
+// Solidity: function allowList(address ) view returns(bool)
+func (_Bridge *BridgeSession) AllowList(arg0 common.Address) (bool, error) {
+	return _Bridge.Contract.AllowList(&_Bridge.CallOpts, arg0)
+}
+
+// AllowList is a free data retrieval call binding the contract method 0x2848aeaf.
+//
+// Solidity: function allowList(address ) view returns(bool)
+func (_Bridge *BridgeCallerSession) AllowList(arg0 common.Address) (bool, error) {
+	return _Bridge.Contract.AllowList(&_Bridge.CallOpts, arg0)
+}
+
 // Operator is a free data retrieval call binding the contract method 0x570ca735.
 //
 // Solidity: function operator() view returns(address)
@@ -242,88 +273,88 @@ func (_Bridge *BridgeCallerSession) Owner() (common.Address, error) {
 	return _Bridge.Contract.Owner(&_Bridge.CallOpts)
 }
 
-// AddToken is a paid mutator transaction binding the contract method 0xd48bfca7.
+// BridgeIn is a paid mutator transaction binding the contract method 0x4a5368bf.
 //
-// Solidity: function addToken(address _token) returns()
-func (_Bridge *BridgeTransactor) AddToken(opts *bind.TransactOpts, _token common.Address) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "addToken", _token)
+// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst, bool _isWrapped) returns()
+func (_Bridge *BridgeTransactor) BridgeIn(opts *bind.TransactOpts, _token common.Address, _amount *big.Int, _chainId *big.Int, _dst string, _isWrapped bool) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "bridgeIn", _token, _amount, _chainId, _dst, _isWrapped)
 }
 
-// AddToken is a paid mutator transaction binding the contract method 0xd48bfca7.
+// BridgeIn is a paid mutator transaction binding the contract method 0x4a5368bf.
 //
-// Solidity: function addToken(address _token) returns()
-func (_Bridge *BridgeSession) AddToken(_token common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.AddToken(&_Bridge.TransactOpts, _token)
+// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst, bool _isWrapped) returns()
+func (_Bridge *BridgeSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId *big.Int, _dst string, _isWrapped bool) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeIn(&_Bridge.TransactOpts, _token, _amount, _chainId, _dst, _isWrapped)
 }
 
-// AddToken is a paid mutator transaction binding the contract method 0xd48bfca7.
+// BridgeIn is a paid mutator transaction binding the contract method 0x4a5368bf.
 //
-// Solidity: function addToken(address _token) returns()
-func (_Bridge *BridgeTransactorSession) AddToken(_token common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.AddToken(&_Bridge.TransactOpts, _token)
+// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst, bool _isWrapped) returns()
+func (_Bridge *BridgeTransactorSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId *big.Int, _dst string, _isWrapped bool) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeIn(&_Bridge.TransactOpts, _token, _amount, _chainId, _dst, _isWrapped)
 }
 
-// BridgeIn is a paid mutator transaction binding the contract method 0x3a678fc5.
+// BridgeInNative is a paid mutator transaction binding the contract method 0x93ce02da.
 //
-// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst) returns()
-func (_Bridge *BridgeTransactor) BridgeIn(opts *bind.TransactOpts, _token common.Address, _amount *big.Int, _chainId *big.Int, _dst string) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "bridgeIn", _token, _amount, _chainId, _dst)
+// Solidity: function bridgeInNative(uint256 _chainId, string _dst) payable returns()
+func (_Bridge *BridgeTransactor) BridgeInNative(opts *bind.TransactOpts, _chainId *big.Int, _dst string) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "bridgeInNative", _chainId, _dst)
 }
 
-// BridgeIn is a paid mutator transaction binding the contract method 0x3a678fc5.
+// BridgeInNative is a paid mutator transaction binding the contract method 0x93ce02da.
 //
-// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst) returns()
-func (_Bridge *BridgeSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId *big.Int, _dst string) (*types.Transaction, error) {
-	return _Bridge.Contract.BridgeIn(&_Bridge.TransactOpts, _token, _amount, _chainId, _dst)
+// Solidity: function bridgeInNative(uint256 _chainId, string _dst) payable returns()
+func (_Bridge *BridgeSession) BridgeInNative(_chainId *big.Int, _dst string) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeInNative(&_Bridge.TransactOpts, _chainId, _dst)
 }
 
-// BridgeIn is a paid mutator transaction binding the contract method 0x3a678fc5.
+// BridgeInNative is a paid mutator transaction binding the contract method 0x93ce02da.
 //
-// Solidity: function bridgeIn(address _token, uint256 _amount, uint256 _chainId, string _dst) returns()
-func (_Bridge *BridgeTransactorSession) BridgeIn(_token common.Address, _amount *big.Int, _chainId *big.Int, _dst string) (*types.Transaction, error) {
-	return _Bridge.Contract.BridgeIn(&_Bridge.TransactOpts, _token, _amount, _chainId, _dst)
+// Solidity: function bridgeInNative(uint256 _chainId, string _dst) payable returns()
+func (_Bridge *BridgeTransactorSession) BridgeInNative(_chainId *big.Int, _dst string) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeInNative(&_Bridge.TransactOpts, _chainId, _dst)
 }
 
-// BridgeOut is a paid mutator transaction binding the contract method 0x7eceb981.
+// BridgeOut is a paid mutator transaction binding the contract method 0xb9fe6843.
 //
-// Solidity: function bridgeOut(address _token, address _receiver, uint256 _amount, string _originTxId) returns()
-func (_Bridge *BridgeTransactor) BridgeOut(opts *bind.TransactOpts, _token common.Address, _receiver common.Address, _amount *big.Int, _originTxId string) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "bridgeOut", _token, _receiver, _amount, _originTxId)
+// Solidity: function bridgeOut(address _token, address _receiver, uint256 _amount, string _originTxId, bool _isWrapped) returns()
+func (_Bridge *BridgeTransactor) BridgeOut(opts *bind.TransactOpts, _token common.Address, _receiver common.Address, _amount *big.Int, _originTxId string, _isWrapped bool) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "bridgeOut", _token, _receiver, _amount, _originTxId, _isWrapped)
 }
 
-// BridgeOut is a paid mutator transaction binding the contract method 0x7eceb981.
+// BridgeOut is a paid mutator transaction binding the contract method 0xb9fe6843.
 //
-// Solidity: function bridgeOut(address _token, address _receiver, uint256 _amount, string _originTxId) returns()
-func (_Bridge *BridgeSession) BridgeOut(_token common.Address, _receiver common.Address, _amount *big.Int, _originTxId string) (*types.Transaction, error) {
-	return _Bridge.Contract.BridgeOut(&_Bridge.TransactOpts, _token, _receiver, _amount, _originTxId)
+// Solidity: function bridgeOut(address _token, address _receiver, uint256 _amount, string _originTxId, bool _isWrapped) returns()
+func (_Bridge *BridgeSession) BridgeOut(_token common.Address, _receiver common.Address, _amount *big.Int, _originTxId string, _isWrapped bool) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeOut(&_Bridge.TransactOpts, _token, _receiver, _amount, _originTxId, _isWrapped)
 }
 
-// BridgeOut is a paid mutator transaction binding the contract method 0x7eceb981.
+// BridgeOut is a paid mutator transaction binding the contract method 0xb9fe6843.
 //
-// Solidity: function bridgeOut(address _token, address _receiver, uint256 _amount, string _originTxId) returns()
-func (_Bridge *BridgeTransactorSession) BridgeOut(_token common.Address, _receiver common.Address, _amount *big.Int, _originTxId string) (*types.Transaction, error) {
-	return _Bridge.Contract.BridgeOut(&_Bridge.TransactOpts, _token, _receiver, _amount, _originTxId)
+// Solidity: function bridgeOut(address _token, address _receiver, uint256 _amount, string _originTxId, bool _isWrapped) returns()
+func (_Bridge *BridgeTransactorSession) BridgeOut(_token common.Address, _receiver common.Address, _amount *big.Int, _originTxId string, _isWrapped bool) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeOut(&_Bridge.TransactOpts, _token, _receiver, _amount, _originTxId, _isWrapped)
 }
 
-// RemoveToken is a paid mutator transaction binding the contract method 0x5fa7b584.
+// BridgeOutNative is a paid mutator transaction binding the contract method 0x07bb49bc.
 //
-// Solidity: function removeToken(address _token) returns()
-func (_Bridge *BridgeTransactor) RemoveToken(opts *bind.TransactOpts, _token common.Address) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "removeToken", _token)
+// Solidity: function bridgeOutNative(address _receiver, uint256 _amount, string _originTxId) returns()
+func (_Bridge *BridgeTransactor) BridgeOutNative(opts *bind.TransactOpts, _receiver common.Address, _amount *big.Int, _originTxId string) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "bridgeOutNative", _receiver, _amount, _originTxId)
 }
 
-// RemoveToken is a paid mutator transaction binding the contract method 0x5fa7b584.
+// BridgeOutNative is a paid mutator transaction binding the contract method 0x07bb49bc.
 //
-// Solidity: function removeToken(address _token) returns()
-func (_Bridge *BridgeSession) RemoveToken(_token common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.RemoveToken(&_Bridge.TransactOpts, _token)
+// Solidity: function bridgeOutNative(address _receiver, uint256 _amount, string _originTxId) returns()
+func (_Bridge *BridgeSession) BridgeOutNative(_receiver common.Address, _amount *big.Int, _originTxId string) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeOutNative(&_Bridge.TransactOpts, _receiver, _amount, _originTxId)
 }
 
-// RemoveToken is a paid mutator transaction binding the contract method 0x5fa7b584.
+// BridgeOutNative is a paid mutator transaction binding the contract method 0x07bb49bc.
 //
-// Solidity: function removeToken(address _token) returns()
-func (_Bridge *BridgeTransactorSession) RemoveToken(_token common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.RemoveToken(&_Bridge.TransactOpts, _token)
+// Solidity: function bridgeOutNative(address _receiver, uint256 _amount, string _originTxId) returns()
+func (_Bridge *BridgeTransactorSession) BridgeOutNative(_receiver common.Address, _amount *big.Int, _originTxId string) (*types.Transaction, error) {
+	return _Bridge.Contract.BridgeOutNative(&_Bridge.TransactOpts, _receiver, _amount, _originTxId)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
@@ -345,48 +376,6 @@ func (_Bridge *BridgeSession) RenounceOwnership() (*types.Transaction, error) {
 // Solidity: function renounceOwnership() returns()
 func (_Bridge *BridgeTransactorSession) RenounceOwnership() (*types.Transaction, error) {
 	return _Bridge.Contract.RenounceOwnership(&_Bridge.TransactOpts)
-}
-
-// SendToken is a paid mutator transaction binding the contract method 0x2fdcfbd2.
-//
-// Solidity: function sendToken(address _token, address _receiver, uint256 _amount) returns()
-func (_Bridge *BridgeTransactor) SendToken(opts *bind.TransactOpts, _token common.Address, _receiver common.Address, _amount *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "sendToken", _token, _receiver, _amount)
-}
-
-// SendToken is a paid mutator transaction binding the contract method 0x2fdcfbd2.
-//
-// Solidity: function sendToken(address _token, address _receiver, uint256 _amount) returns()
-func (_Bridge *BridgeSession) SendToken(_token common.Address, _receiver common.Address, _amount *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.SendToken(&_Bridge.TransactOpts, _token, _receiver, _amount)
-}
-
-// SendToken is a paid mutator transaction binding the contract method 0x2fdcfbd2.
-//
-// Solidity: function sendToken(address _token, address _receiver, uint256 _amount) returns()
-func (_Bridge *BridgeTransactorSession) SendToken(_token common.Address, _receiver common.Address, _amount *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.SendToken(&_Bridge.TransactOpts, _token, _receiver, _amount)
-}
-
-// SetOperator is a paid mutator transaction binding the contract method 0xb3ab15fb.
-//
-// Solidity: function setOperator(address _operator) returns()
-func (_Bridge *BridgeTransactor) SetOperator(opts *bind.TransactOpts, _operator common.Address) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "setOperator", _operator)
-}
-
-// SetOperator is a paid mutator transaction binding the contract method 0xb3ab15fb.
-//
-// Solidity: function setOperator(address _operator) returns()
-func (_Bridge *BridgeSession) SetOperator(_operator common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.SetOperator(&_Bridge.TransactOpts, _operator)
-}
-
-// SetOperator is a paid mutator transaction binding the contract method 0xb3ab15fb.
-//
-// Solidity: function setOperator(address _operator) returns()
-func (_Bridge *BridgeTransactorSession) SetOperator(_operator common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.SetOperator(&_Bridge.TransactOpts, _operator)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.

@@ -51,11 +51,11 @@ func NewConnector(conn *grpc.ClientConn, settings ConnectorSettings) *Connector 
 	}
 }
 
-func (c *Connector) GetDestinationTokenAddress(
+func (c *Connector) GetDestinationTokenInfo(
 	srcChainId string,
 	srcTokenAddr common.Address,
 	dstChainId string,
-) (common.Address, error) {
+) (common.Address, bool, error) {
 	req := bridgetypes.QueryGetTokenPair{
 		SrcChain:   srcChainId,
 		SrcAddress: strings.ToLower(srcTokenAddr.String()),
@@ -65,13 +65,13 @@ func (c *Connector) GetDestinationTokenAddress(
 	resp, err := c.bridger.GetTokenPair(context.Background(), &req)
 	if err != nil {
 		if errors.Is(bridgetypes.ErrTokenPairNotFound.GRPCStatus().Err(), err) {
-			return common.Address{}, tokens.ErrPairNotFound
+			return common.Address{}, false, tokens.ErrPairNotFound
 		}
 
-		return common.Address{}, errors.Wrap(err, "failed to get token pair")
+		return common.Address{}, false, errors.Wrap(err, "failed to get token pair")
 	}
 
-	return common.HexToAddress(resp.Info.Address), nil
+	return common.HexToAddress(resp.Info.Address), resp.Info.IsWrapped, nil
 
 }
 

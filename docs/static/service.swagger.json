@@ -140,6 +140,9 @@
         },
         "withdrawalToken": {
           "type": "string"
+        },
+        "isWrapped": {
+          "type": "boolean"
         }
       }
     },

@@ -48,6 +48,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		Amount:             event.Amount,
 		TokenAddress:       event.Token,
 		Block:              int64(log.BlockNumber),
+		//IsWrappedToken:     // TODO set is Wrapped
 	}, nil
 }
 

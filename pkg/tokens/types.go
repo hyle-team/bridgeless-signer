@@ -16,9 +16,9 @@ type TokenPairerConfiger interface {
 }
 
 type TokenPairer interface {
-	GetDestinationTokenAddress(
+	GetDestinationTokenInfo(
 		srcChainId string,
 		srcTokenAddr common.Address,
 		dstChainId string,
-	) (common.Address, error)
+	) (common.Address, bool, error)
 }

@@ -32,6 +32,8 @@ const (
 	depositsWithdrawalChainId = "withdrawal_chain_id"
 
 	depositsSubmitStatus = "submit_status"
+
+	depositIsWrappedToken = "is_wrapped_token"
 )
 
 type depositsQ struct {
@@ -80,11 +82,12 @@ func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {
 	stmt := squirrel.
 		Insert(depositsTable).
 		SetMap(map[string]interface{}{
-			depositsTxHash:       deposit.TxHash,
-			depositsTxEventId:    deposit.TxEventId,
-			depositsChainId:      deposit.ChainId,
-			depositsStatus:       deposit.Status,
-			depositsSubmitStatus: deposit.SubmitStatus,
+			depositsTxHash:        deposit.TxHash,
+			depositsTxEventId:     deposit.TxEventId,
+			depositsChainId:       deposit.ChainId,
+			depositsStatus:        deposit.Status,
+			depositsSubmitStatus:  deposit.SubmitStatus,
+			depositIsWrappedToken: deposit.IsWrappedToken,
 		}).
 		Suffix("RETURNING id")
 
@@ -142,9 +145,10 @@ func (d *depositsQ) UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids 
 
 func (d *depositsQ) SetDepositData(data data.DepositData) error {
 	fields := map[string]interface{}{
-		depositsAmount:       data.Amount.String(),
-		depositsReceiver:     strings.ToLower(data.DestinationAddress),
-		depositsDepositBlock: data.Block,
+		depositsAmount:        data.Amount.String(),
+		depositsReceiver:      strings.ToLower(data.DestinationAddress),
+		depositsDepositBlock:  data.Block,
+		depositIsWrappedToken: data.IsWrappedToken,
 	}
 
 	if data.TokenAddress != (common.Address{}) {

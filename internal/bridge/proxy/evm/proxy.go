@@ -77,7 +77,7 @@ func (p *proxy) isDepositLog(log *types.Log) bool {
 }
 
 func (p *proxy) AddressValid(addr string) bool {
-	return common.IsHexAddress(addr) && common.HexToAddress(addr) != (common.Address{})
+	return common.IsHexAddress(addr)
 }
 
 func (p *proxy) SendBitcoins(map[string]*big.Int) (txHash string, err error) {

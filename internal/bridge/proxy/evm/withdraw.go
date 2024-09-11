@@ -12,12 +12,23 @@ import (
 func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
 	// transact opts prevent the transaction from being sent to
 	// the network, returning the transaction object only
+
+	if IsAddressEmpty(data.DestinationTokenAddress) {
+		return p.bridgeContract.BridgeOutNative(
+			bridgeOutTransactOpts(p.getTransactionNonce()),
+			common.HexToAddress(data.DestinationAddress),
+			data.Amount,
+			data.OriginTxId(),
+		)
+	}
+
 	return p.bridgeContract.BridgeOut(
 		bridgeOutTransactOpts(p.getTransactionNonce()),
 		data.DestinationTokenAddress,
 		common.HexToAddress(data.DestinationAddress),
 		data.Amount,
 		data.OriginTxId(),
+		data.IsWrappedToken,
 	)
 }
 
