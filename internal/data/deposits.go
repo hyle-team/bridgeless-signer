@@ -111,16 +111,15 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 
 func (d Deposit) ToTransaction() bridgetypes.Transaction {
 	tx := bridgetypes.Transaction{
-		DepositTxHash:    d.TxHash,
-		DepositTxIndex:   uint64(d.TxEventId),
-		DepositChainId:   d.ChainId,
-		WithdrawalTxHash: stringOrEmpty(d.WithdrawalTxHash),
-		Depositor:        stringOrEmpty(d.Depositor),
-		Amount:           stringOrEmpty(d.Amount),
-		DepositToken:     stringOrEmpty(d.DepositToken),
-		Receiver:         stringOrEmpty(d.Receiver),
-		WithdrawalToken:  stringOrEmpty(d.WithdrawalToken),
-
+		DepositTxHash:     d.TxHash,
+		DepositTxIndex:    uint64(d.TxEventId),
+		DepositChainId:    d.ChainId,
+		WithdrawalTxHash:  stringOrEmpty(d.WithdrawalTxHash),
+		Depositor:         stringOrEmpty(d.Depositor),
+		Amount:            stringOrEmpty(d.Amount),
+		DepositToken:      stringOrEmpty(d.DepositToken),
+		Receiver:          stringOrEmpty(d.Receiver),
+		WithdrawalToken:   stringOrEmpty(d.WithdrawalToken),
 		WithdrawalChainId: stringOrEmpty(d.WithdrawalChainId),
 
 		IsWrapped: boolOrFalse(d.IsWrappedToken),
@@ -167,5 +166,5 @@ func boolOrFalse(b *bool) bool {
 		return false
 	}
 
-	return true
+	return *b
 }
