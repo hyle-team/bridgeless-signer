@@ -2,8 +2,8 @@ package config
 
 import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
+	core "github.com/hyle-team/bridgeless-signer/internal/bridge/core/config"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
-	core "github.com/hyle-team/bridgeless-signer/internal/connectors/core/config"
 	api "github.com/hyle-team/bridgeless-signer/internal/core/api/config"
 	rabbit "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/config"
 	"gitlab.com/distributed_lab/kit/comfig"

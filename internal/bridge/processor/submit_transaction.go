@@ -36,7 +36,7 @@ func (p *Processor) SubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequ
 			return errors.Wrap(tmperr, "failed to set deposits submitted")
 		}
 
-		return errors.Wrap(p.submitter.SubmitDeposits(depositTxs...), "failed to submit deposits")
+		return errors.Wrap(p.core.SubmitDeposits(depositTxs...), "failed to submit deposits")
 	})
 
 	return err != nil, err

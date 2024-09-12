@@ -2,7 +2,6 @@ package pg
 
 import (
 	"database/sql"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/lib/pq"
 	"strings"
 
@@ -148,16 +147,11 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 		depositsReceiver:      strings.ToLower(data.DestinationAddress),
 		depositsDepositBlock:  data.Block,
 		depositIsWrappedToken: data.IsWrappedToken,
-	}
-
-	if data.TokenAddress != (common.Address{}) {
-		fields[depositsDepositToken] = strings.ToLower(data.TokenAddress.String())
-	}
-	if data.SourceAddress != "" {
-		fields[depositsDepositor] = strings.ToLower(data.SourceAddress)
-	}
-	if data.DestinationTokenAddress != (common.Address{}) {
-		fields[depositsWithdrawalToken] = strings.ToLower(data.DestinationTokenAddress.String())
+		// can be 0x00... in case of native ones
+		depositsDepositToken: strings.ToLower(data.TokenAddress.String()),
+		depositsDepositor:    strings.ToLower(data.SourceAddress),
+		// can be 0x00... in case of native ones
+		depositsWithdrawalToken: strings.ToLower(data.DestinationTokenAddress.String()),
 	}
 
 	return d.db.Exec(squirrel.Update(depositsTable).Where(

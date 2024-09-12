@@ -1,36 +1,28 @@
 package processor
 
 import (
-	coretypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/tokens"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 )
 
-type TxSubmitter interface {
-	SubmitDeposits(depositTxs ...coretypes.Transaction) error
-}
-
 type Processor struct {
-	proxies     bridgeTypes.ProxiesRepository
-	db          data.DepositsQ
-	signer      *signer.Signer
-	tokenPairer tokens.TokenPairer
-	submitter   TxSubmitter
+	proxies bridgeTypes.ProxiesRepository
+	db      data.DepositsQ
+	signer  *signer.Signer
+	core    bridgeTypes.Bridger
 }
 
 func New(
 	proxies bridgeTypes.ProxiesRepository,
 	db data.DepositsQ,
 	signer *signer.Signer,
-	tokenPairer tokens.TokenPairer,
-	submitter TxSubmitter,
+	core bridgeTypes.Bridger,
 
 ) *Processor {
-	return &Processor{proxies: proxies, db: db, signer: signer, tokenPairer: tokenPairer, submitter: submitter}
+	return &Processor{proxies: proxies, db: db, signer: signer, core: core}
 }
 
 func (p *Processor) SetWithdrawStatusFailed(ids ...int64) error {

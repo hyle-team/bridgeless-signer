@@ -2,9 +2,9 @@ package processor
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/btc"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
-	"github.com/hyle-team/bridgeless-signer/pkg/tokens"
 	"github.com/pkg/errors"
 )
 
@@ -28,7 +28,6 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 			errors.Is(err, bridgeTypes.ErrInvalidScriptPubKey) {
 			reprocessable = false
 		}
-
 		return nil, reprocessable, errors.Wrap(err, "failed to get deposit data")
 	}
 
@@ -43,27 +42,41 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 		return data, false, errors.Wrap(bridgeTypes.ErrInvalidReceiverAddress, depositData.DestinationAddress)
 	}
 
+	srcTokenInfo, err := p.core.GetTokenInfo(depositData.ChainId, depositData.TokenAddress.String())
+	if err != nil {
+		reprocessable = true
+		if errors.Is(err, bridgeTypes.ErrTokenInfoNotFound) {
+			reprocessable = false
+		}
+		return nil, reprocessable, errors.Wrap(err, "failed to get source token info")
+	}
+	dstTokenInfo, err := p.core.GetDestinationTokenInfo(
+		depositData.ChainId,
+		depositData.TokenAddress,
+		depositData.DestinationChainId,
+	)
+	if err != nil {
+		reprocessable = true
+		if errors.Is(err, bridgeTypes.ErrPairNotFound) {
+			reprocessable = false
+		}
+		return nil, reprocessable, errors.Wrap(err, "failed to get destination token info")
+	}
+
+	transformAmount(depositData.Amount, srcTokenInfo.Decimals, dstTokenInfo.Decimals)
+
 	switch dstProxy.Type() {
 	case bridgeTypes.ChainTypeBitcoin:
-		if depositData.Amount.Int64() < btc.MinSatoshisPerOutput {
-			return data, false, bridgeTypes.ErrInvalidDepositedAmount
+		if depositData.Amount.IsInt64() && depositData.Amount.Int64() < btc.MinSatoshisPerOutput {
+			return nil, false, bridgeTypes.ErrInvalidDepositedAmount
 		}
 	case bridgeTypes.ChainTypeEVM:
-		depositData.DestinationTokenAddress, depositData.IsWrappedToken, err = p.tokenPairer.GetDestinationTokenInfo(
-			depositData.ChainId,
-			depositData.TokenAddress,
-			depositData.DestinationChainId,
-		)
-		if err != nil {
-			reprocessable = true
-			if errors.Is(err, tokens.ErrSourceTokenNotSupported) ||
-				errors.Is(err, tokens.ErrDestinationTokenNotSupported) ||
-				errors.Is(err, tokens.ErrPairNotFound) {
-				reprocessable = false
-			}
-
-			return nil, reprocessable, errors.Wrap(err, "failed to get destination token address")
+		if depositData.Amount.IsInt64() && depositData.Amount.Int64() == 0 {
+			return nil, false, bridgeTypes.ErrInvalidDepositedAmount
 		}
+
+		depositData.DestinationTokenAddress = common.HexToAddress(dstTokenInfo.Address)
+		depositData.IsWrappedToken = dstTokenInfo.IsWrapped
 	default:
 		return data, false, errors.Wrap(err, fmt.Sprintf("invalid chain type: %v", dstProxy.Type()))
 	}
