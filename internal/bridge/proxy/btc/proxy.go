@@ -9,8 +9,8 @@ import (
 	"regexp"
 )
 
-// MinSatoshisPerOutput calculated for P2PKH
-const MinSatoshisPerOutput = 547
+// minSatoshisPerOutput calculated for P2PKH
+const minSatoshisPerOutput = 547
 
 var txHashPattern = regexp.MustCompile("^[a-fA-F0-9]{64}$")
 

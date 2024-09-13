@@ -9,6 +9,14 @@ import (
 	"math/big"
 )
 
+func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
+	if amount.IsInt64() && amount.Int64() <= 0 {
+		return false
+	}
+
+	return true
+}
+
 func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
 	// transact opts prevent the transaction from being sent to
 	// the network, returning the transaction object only

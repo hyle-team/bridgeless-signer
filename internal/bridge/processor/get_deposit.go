@@ -3,7 +3,6 @@ package processor
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/btc"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
@@ -64,22 +63,12 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 	}
 
 	transformAmount(depositData.Amount, srcTokenInfo.Decimals, dstTokenInfo.Decimals)
-
-	switch dstProxy.Type() {
-	case bridgeTypes.ChainTypeBitcoin:
-		if depositData.Amount.IsInt64() && depositData.Amount.Int64() < btc.MinSatoshisPerOutput {
-			return nil, false, bridgeTypes.ErrInvalidDepositedAmount
-		}
-	case bridgeTypes.ChainTypeEVM:
-		if depositData.Amount.IsInt64() && depositData.Amount.Int64() == 0 {
-			return nil, false, bridgeTypes.ErrInvalidDepositedAmount
-		}
-
-		depositData.DestinationTokenAddress = common.HexToAddress(dstTokenInfo.Address)
-		depositData.IsWrappedToken = dstTokenInfo.IsWrapped
-	default:
-		return data, false, errors.Wrap(err, fmt.Sprintf("invalid chain type: %v", dstProxy.Type()))
+	if !dstProxy.WithdrawalAmountValid(depositData.Amount) {
+		return nil, false, bridgeTypes.ErrInvalidDepositedAmount
 	}
+
+	depositData.DestinationTokenAddress = common.HexToAddress(dstTokenInfo.Address)
+	depositData.IsWrappedToken = dstTokenInfo.IsWrapped
 
 	if err = p.db.New().SetDepositData(*depositData); err != nil {
 		return nil, true, errors.Wrap(err, "failed to save deposit data")

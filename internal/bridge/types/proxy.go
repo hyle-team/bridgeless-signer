@@ -54,6 +54,7 @@ type Proxy interface {
 
 	AddressValid(addr string) bool
 	TransactionHashValid(hash string) bool
+	WithdrawalAmountValid(amount *big.Int) bool
 
 	// Ethereum-specific methods
 	FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error)
