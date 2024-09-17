@@ -2,7 +2,7 @@ package config
 
 import (
 	"crypto/tls"
-	"github.com/hyle-team/bridgeless-signer/internal/connectors/core"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/core"
 	pkgTypes "github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure/v3"

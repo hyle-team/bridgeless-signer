@@ -18,7 +18,7 @@ func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.BitcoinWithdrawal
 		depositIds    = make([]int64, len(reqs))
 	)
 	for i, req := range reqs {
-		params[req.Data.DestinationAddress] = req.Data.Amount
+		params[req.Data.DestinationAddress] = req.Data.WithdrawalAmount
 		depositIds[i] = req.DepositDbId
 	}
 

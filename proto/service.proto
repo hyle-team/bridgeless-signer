@@ -34,11 +34,12 @@ message DepositData {
   int64 event_index = 2;
   optional int64 block_number = 3;
   optional string depositor = 4;
-  optional string amount = 5;
+  optional string deposit_amount = 5;
   optional string deposit_token = 6;
   optional string receiver = 7;
   optional string withdrawal_token = 8;
   optional bool is_wrapped = 9;
+  optional string withdrawal_amount = 10;
 }
 
 message CheckWithdrawalResponse {

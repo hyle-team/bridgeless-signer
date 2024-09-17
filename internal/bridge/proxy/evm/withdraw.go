@@ -9,6 +9,14 @@ import (
 	"math/big"
 )
 
+func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
+	if amount.Cmp(big.NewInt(0)) != 1 {
+		return false
+	}
+
+	return true
+}
+
 func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
 	// transact opts prevent the transaction from being sent to
 	// the network, returning the transaction object only
@@ -19,7 +27,7 @@ func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transac
 		return p.bridgeContract.BridgeOutNative(
 			bridgeOutTransactOpts(p.getTransactionNonce()),
 			common.HexToAddress(data.DestinationAddress),
-			data.Amount,
+			data.WithdrawalAmount,
 			data.OriginTxId(),
 		)
 	}
@@ -28,7 +36,7 @@ func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transac
 		bridgeOutTransactOpts(p.getTransactionNonce()),
 		data.DestinationTokenAddress,
 		common.HexToAddress(data.DestinationAddress),
-		data.Amount,
+		data.WithdrawalAmount,
 		data.OriginTxId(),
 		data.IsWrappedToken,
 	)

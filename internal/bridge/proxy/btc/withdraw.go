@@ -21,7 +21,7 @@ func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 			return "", errors.New("amount is nil")
 		}
 		value := amount.Int64()
-		if value < MinSatoshisPerOutput {
+		if value < minSatoshisPerOutput {
 			return "", errors.New("amount is too small")
 		}
 
@@ -34,4 +34,12 @@ func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 	}
 
 	return hash.String(), nil
+}
+
+func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
+	if amount.Cmp(big.NewInt(minSatoshisPerOutput)) == -1 {
+		return false
+	}
+
+	return true
 }
