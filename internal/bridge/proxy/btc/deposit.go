@@ -70,7 +70,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		DestinationChainId: chainId,
 		DestinationAddress: addr,
 		SourceAddress:      depositor,
-		Amount:             amount,
+		DepositAmount:      amount,
 		// no token address here
 		Block: block.Height,
 	}, nil

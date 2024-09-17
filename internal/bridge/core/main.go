@@ -7,23 +7,20 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	txclient "github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/hyle-team/bridgeless-signer/pkg/tokens"
-	pkgTypes "github.com/hyle-team/bridgeless-signer/pkg/types"
-	"github.com/pkg/errors"
-	"google.golang.org/grpc"
-	"strings"
-
-	txclient "github.com/cosmos/cosmos-sdk/types/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	coretypes "github.com/hyle-team/bridgeless-core/types"
 	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	pkgTypes "github.com/hyle-team/bridgeless-signer/pkg/types"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc"
 )
 
-var _ tokens.TokenPairer = &Connector{}
+var _ types.Bridger = &Connector{}
 
 type ConnectorSettings struct {
 	Account     pkgTypes.Account `fig:"account_private_key,required"`
@@ -36,7 +33,7 @@ type Connector struct {
 	transactor txclient.ServiceClient
 	txConfiger sdkclient.TxConfig
 	auther     authtypes.QueryClient
-	bridger    bridgetypes.QueryClient
+	querier    bridgetypes.QueryClient
 
 	settings ConnectorSettings
 }
@@ -46,43 +43,9 @@ func NewConnector(conn *grpc.ClientConn, settings ConnectorSettings) *Connector 
 		transactor: txclient.NewServiceClient(conn),
 		txConfiger: authtx.NewTxConfig(codec.NewProtoCodec(codectypes.NewInterfaceRegistry()), []signing.SignMode{signing.SignMode_SIGN_MODE_DIRECT}),
 		auther:     authtypes.NewQueryClient(conn),
-		bridger:    bridgetypes.NewQueryClient(conn),
+		querier:    bridgetypes.NewQueryClient(conn),
 		settings:   settings,
 	}
-}
-
-func (c *Connector) GetDestinationTokenAddress(
-	srcChainId string,
-	srcTokenAddr common.Address,
-	dstChainId string,
-) (common.Address, error) {
-	req := bridgetypes.QueryGetTokenPair{
-		SrcChain:   srcChainId,
-		SrcAddress: strings.ToLower(srcTokenAddr.String()),
-		DstChain:   dstChainId,
-	}
-
-	resp, err := c.bridger.GetTokenPair(context.Background(), &req)
-	if err != nil {
-		if errors.Is(bridgetypes.ErrTokenPairNotFound.GRPCStatus().Err(), err) {
-			return common.Address{}, tokens.ErrPairNotFound
-		}
-
-		return common.Address{}, errors.Wrap(err, "failed to get token pair")
-	}
-
-	return common.HexToAddress(resp.Info.Address), nil
-
-}
-
-func (c *Connector) SubmitDeposits(depositTxs ...bridgetypes.Transaction) error {
-	if len(depositTxs) == 0 {
-		return nil
-	}
-
-	msg := bridgetypes.NewMsgSubmitTransactions(c.settings.Account.CosmosAddress(), depositTxs...)
-
-	return c.submitMsgs(msg)
 }
 
 func (c *Connector) submitMsgs(msgs ...sdk.Msg) error {

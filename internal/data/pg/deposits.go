@@ -2,7 +2,6 @@ package pg
 
 import (
 	"database/sql"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/lib/pq"
 	"strings"
 
@@ -21,17 +20,20 @@ const (
 	depositsStatus    = "status"
 	depositsId        = "id"
 
-	depositsDepositor       = "depositor"
-	depositsAmount          = "amount"
-	depositsDepositToken    = "deposit_token"
-	depositsReceiver        = "receiver"
-	depositsWithdrawalToken = "withdrawal_token"
-	depositsDepositBlock    = "deposit_block"
+	depositsDepositor        = "depositor"
+	depositsDepositAmount    = "deposit_amount"
+	depositsWithdrawalAmount = "withdrawal_amount"
+	depositsDepositToken     = "deposit_token"
+	depositsReceiver         = "receiver"
+	depositsWithdrawalToken  = "withdrawal_token"
+	depositsDepositBlock     = "deposit_block"
 
 	depositsWithdrawalTxHash  = "withdrawal_tx_hash"
 	depositsWithdrawalChainId = "withdrawal_chain_id"
 
 	depositsSubmitStatus = "submit_status"
+
+	depositIsWrappedToken = "is_wrapped_token"
 )
 
 type depositsQ struct {
@@ -142,22 +144,25 @@ func (d *depositsQ) UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids 
 
 func (d *depositsQ) SetDepositData(data data.DepositData) error {
 	fields := map[string]interface{}{
-		depositsAmount:       data.Amount.String(),
-		depositsReceiver:     strings.ToLower(data.DestinationAddress),
-		depositsDepositBlock: data.Block,
+		depositsDepositAmount:    data.DepositAmount.String(),
+		depositsWithdrawalAmount: data.WithdrawalAmount.String(),
+		depositsReceiver:         strings.ToLower(data.DestinationAddress),
+		depositsDepositBlock:     data.Block,
+		depositIsWrappedToken:    data.IsWrappedToken,
+		// can be 0x00... in case of native ones
+		depositsDepositToken: strings.ToLower(data.TokenAddress.String()),
+		depositsDepositor:    strings.ToLower(data.SourceAddress),
+		// can be 0x00... in case of native ones
+		depositsWithdrawalToken: strings.ToLower(data.DestinationTokenAddress.String()),
 	}
 
-	if data.TokenAddress != (common.Address{}) {
-		fields[depositsDepositToken] = strings.ToLower(data.TokenAddress.String())
-	}
-	if data.SourceAddress != "" {
-		fields[depositsDepositor] = strings.ToLower(data.SourceAddress)
-	}
-	if data.DestinationTokenAddress != (common.Address{}) {
-		fields[depositsWithdrawalToken] = strings.ToLower(data.DestinationTokenAddress.String())
-	}
-
-	return d.db.Exec(squirrel.Update(depositsTable).SetMap(fields))
+	return d.db.Exec(squirrel.Update(depositsTable).Where(
+		squirrel.Eq{
+			depositsTxHash:    data.TxHash,
+			depositsTxEventId: data.TxEventId,
+			depositsChainId:   data.ChainId,
+		},
+	).SetMap(fields))
 }
 
 func NewDepositsQ(db *pgdb.DB) data.DepositsQ {

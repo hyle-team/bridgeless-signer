@@ -129,7 +129,7 @@
         "depositor": {
           "type": "string"
         },
-        "amount": {
+        "depositAmount": {
           "type": "string"
         },
         "depositToken": {
@@ -139,6 +139,12 @@
           "type": "string"
         },
         "withdrawalToken": {
+          "type": "string"
+        },
+        "isWrapped": {
+          "type": "boolean"
+        },
+        "withdrawalAmount": {
           "type": "string"
         }
       }
