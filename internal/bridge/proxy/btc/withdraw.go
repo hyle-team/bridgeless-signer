@@ -37,7 +37,7 @@ func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 }
 
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
-	if amount.IsInt64() && amount.Int64() < minSatoshisPerOutput {
+	if amount.Cmp(big.NewInt(minSatoshisPerOutput)) == -1 {
 		return false
 	}
 

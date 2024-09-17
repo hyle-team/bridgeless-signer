@@ -10,7 +10,7 @@ import (
 )
 
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
-	if amount.IsInt64() && amount.Int64() <= 0 {
+	if amount.Cmp(big.NewInt(0)) != 1 {
 		return false
 	}
 
@@ -27,7 +27,7 @@ func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transac
 		return p.bridgeContract.BridgeOutNative(
 			bridgeOutTransactOpts(p.getTransactionNonce()),
 			common.HexToAddress(data.DestinationAddress),
-			data.Amount,
+			data.WithdrawalAmount,
 			data.OriginTxId(),
 		)
 	}
@@ -36,7 +36,7 @@ func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transac
 		bridgeOutTransactOpts(p.getTransactionNonce()),
 		data.DestinationTokenAddress,
 		common.HexToAddress(data.DestinationAddress),
-		data.Amount,
+		data.WithdrawalAmount,
 		data.OriginTxId(),
 		data.IsWrappedToken,
 	)

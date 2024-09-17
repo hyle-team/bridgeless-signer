@@ -48,8 +48,8 @@ func Test_TransformAmount(t *testing.T) {
 
 	for name, tCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			transformAmount(tCase.amount, tCase.cDec, tCase.tDec)
-			require.Equal(t, tCase.expected.String(), tCase.amount.String())
+			result := transformAmount(tCase.amount, tCase.cDec, tCase.tDec)
+			require.Equal(t, tCase.expected.String(), result.String())
 		})
 	}
 }

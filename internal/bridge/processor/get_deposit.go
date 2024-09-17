@@ -62,8 +62,8 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 		return nil, reprocessable, errors.Wrap(err, "failed to get destination token info")
 	}
 
-	transformAmount(depositData.Amount, srcTokenInfo.Decimals, dstTokenInfo.Decimals)
-	if !dstProxy.WithdrawalAmountValid(depositData.Amount) {
+	depositData.WithdrawalAmount = transformAmount(depositData.DepositAmount, srcTokenInfo.Decimals, dstTokenInfo.Decimals)
+	if !dstProxy.WithdrawalAmountValid(depositData.WithdrawalAmount) {
 		return nil, false, bridgeTypes.ErrInvalidDepositedAmount
 	}
 

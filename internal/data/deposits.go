@@ -52,7 +52,7 @@ type Deposit struct {
 	Status types.WithdrawalStatus `structs:"status" db:"status"`
 
 	Depositor       *string `structs:"depositor" db:"depositor"`
-	Amount          *string `structs:"amount" db:"amount"`
+	DepositAmount   *string `structs:"deposit_amount" db:"deposit_amount"`
 	DepositToken    *string `structs:"deposit_token" db:"deposit_token"`
 	Receiver        *string `structs:"receiver" db:"receiver"`
 	WithdrawalToken *string `structs:"withdrawal_token" db:"withdrawal_token"`
@@ -60,6 +60,7 @@ type Deposit struct {
 
 	WithdrawalTxHash  *string `structs:"withdrawal_tx_hash" db:"withdrawal_tx_hash"`
 	WithdrawalChainId *string `structs:"withdrawal_chain_id" db:"withdrawal_chain_id"`
+	WithdrawalAmount  *string `structs:"withdrawal_amount" db:"withdrawal_amount"`
 
 	IsWrappedToken *bool `structs:"is_wrapped_token" db:"is_wrapped_token"`
 
@@ -83,14 +84,15 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 	result := &types.CheckWithdrawalResponse{
 		Status: d.Status,
 		DepositData: &types.DepositData{
-			EventIndex:      int64(d.TxEventId),
-			Depositor:       d.Depositor,
-			Amount:          d.Amount,
-			DepositToken:    d.DepositToken,
-			WithdrawalToken: d.WithdrawalToken,
-			Receiver:        d.Receiver,
-			BlockNumber:     d.DepositBlock,
-			IsWrapped:       d.IsWrappedToken,
+			EventIndex:       int64(d.TxEventId),
+			Depositor:        d.Depositor,
+			DepositAmount:    d.DepositAmount,
+			WithdrawalAmount: d.WithdrawalAmount,
+			DepositToken:     d.DepositToken,
+			WithdrawalToken:  d.WithdrawalToken,
+			Receiver:         d.Receiver,
+			BlockNumber:      d.DepositBlock,
+			IsWrapped:        d.IsWrappedToken,
 		},
 		DepositTransaction: &types.Transaction{
 			Hash:    d.TxHash,
@@ -111,12 +113,13 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 
 func (d Deposit) ToTransaction() bridgetypes.Transaction {
 	tx := bridgetypes.Transaction{
-		DepositTxHash:     d.TxHash,
-		DepositTxIndex:    uint64(d.TxEventId),
-		DepositChainId:    d.ChainId,
-		WithdrawalTxHash:  stringOrEmpty(d.WithdrawalTxHash),
-		Depositor:         stringOrEmpty(d.Depositor),
-		Amount:            stringOrEmpty(d.Amount),
+		DepositTxHash:    d.TxHash,
+		DepositTxIndex:   uint64(d.TxEventId),
+		DepositChainId:   d.ChainId,
+		WithdrawalTxHash: stringOrEmpty(d.WithdrawalTxHash),
+		Depositor:        stringOrEmpty(d.Depositor),
+		// TODO: separate for deposit/withdrawal amount when added to bridge core
+		Amount:            stringOrEmpty(d.WithdrawalAmount),
 		DepositToken:      stringOrEmpty(d.DepositToken),
 		Receiver:          stringOrEmpty(d.Receiver),
 		WithdrawalToken:   stringOrEmpty(d.WithdrawalToken),
@@ -137,7 +140,8 @@ type DepositData struct {
 	SourceAddress      string
 	DestinationAddress string
 
-	Amount *big.Int
+	DepositAmount    *big.Int
+	WithdrawalAmount *big.Int
 
 	TokenAddress            common.Address
 	DestinationTokenAddress common.Address

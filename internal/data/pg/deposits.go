@@ -20,12 +20,13 @@ const (
 	depositsStatus    = "status"
 	depositsId        = "id"
 
-	depositsDepositor       = "depositor"
-	depositsAmount          = "amount"
-	depositsDepositToken    = "deposit_token"
-	depositsReceiver        = "receiver"
-	depositsWithdrawalToken = "withdrawal_token"
-	depositsDepositBlock    = "deposit_block"
+	depositsDepositor        = "depositor"
+	depositsDepositAmount    = "deposit_amount"
+	depositsWithdrawalAmount = "withdrawal_amount"
+	depositsDepositToken     = "deposit_token"
+	depositsReceiver         = "receiver"
+	depositsWithdrawalToken  = "withdrawal_token"
+	depositsDepositBlock     = "deposit_block"
 
 	depositsWithdrawalTxHash  = "withdrawal_tx_hash"
 	depositsWithdrawalChainId = "withdrawal_chain_id"
@@ -143,10 +144,11 @@ func (d *depositsQ) UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids 
 
 func (d *depositsQ) SetDepositData(data data.DepositData) error {
 	fields := map[string]interface{}{
-		depositsAmount:        data.Amount.String(),
-		depositsReceiver:      strings.ToLower(data.DestinationAddress),
-		depositsDepositBlock:  data.Block,
-		depositIsWrappedToken: data.IsWrappedToken,
+		depositsDepositAmount:    data.DepositAmount.String(),
+		depositsWithdrawalAmount: data.WithdrawalAmount.String(),
+		depositsReceiver:         strings.ToLower(data.DestinationAddress),
+		depositsDepositBlock:     data.Block,
+		depositIsWrappedToken:    data.IsWrappedToken,
 		// can be 0x00... in case of native ones
 		depositsDepositToken: strings.ToLower(data.TokenAddress.String()),
 		depositsDepositor:    strings.ToLower(data.SourceAddress),

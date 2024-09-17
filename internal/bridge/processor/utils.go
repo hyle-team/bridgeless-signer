@@ -2,21 +2,22 @@ package processor
 
 import "math/big"
 
-func transformAmount(amount *big.Int, currentDecimals uint64, targetDecimals uint64) {
+func transformAmount(amount *big.Int, currentDecimals uint64, targetDecimals uint64) *big.Int {
+	result, _ := new(big.Int).SetString(amount.String(), 10)
+
 	if currentDecimals == targetDecimals {
-		return
+		return result
 	}
 
 	if currentDecimals < targetDecimals {
 		for i := uint64(0); i < targetDecimals-currentDecimals; i++ {
-			amount.Mul(amount, new(big.Int).SetInt64(10))
+			result.Mul(result, new(big.Int).SetInt64(10))
 		}
-		return
+	} else {
+		for i := uint64(0); i < currentDecimals-targetDecimals; i++ {
+			result.Div(result, new(big.Int).SetInt64(10))
+		}
 	}
 
-	for i := uint64(0); i < currentDecimals-targetDecimals; i++ {
-		amount.Div(amount, new(big.Int).SetInt64(10))
-	}
-
-	return
+	return result
 }
