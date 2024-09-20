@@ -126,7 +126,6 @@ func (p *proxy) parseDestinationOutput(out btcjson.Vout) (addr, chainId string, 
 var supportedScriptTypes = []txscript.ScriptClass{
 	txscript.PubKeyHashTy,
 	txscript.WitnessV0PubKeyHashTy,
-	// TODO: remove or not?
 	txscript.WitnessV1TaprootTy,
 }
 

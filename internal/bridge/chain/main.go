@@ -40,12 +40,14 @@ type Chain struct {
 	BitcoinRpc *rpcclient.Client `fig:"bitcoin_rpc"`
 	// BitcoinReceivers is a list of allowed addresses (of different types) to receive deposits
 	BitcoinReceivers []string `fig:"bitcoin_receivers"`
+	Wallet           string   `fig:"wallet"`
 	Network          Network  `fig:"network"`
 }
 
 type Bitcoin struct {
 	Rpc           *rpcclient.Client
 	Receivers     []btcutil.Address
+	Wallet        string
 	Confirmations uint64
 	Params        *chaincfg.Params
 }
@@ -65,6 +67,9 @@ func (c Chain) Bitcoin() (Bitcoin, error) {
 	}
 	if len(c.BitcoinReceivers) == 0 {
 		return Bitcoin{}, errors.New("receivers list is empty")
+	}
+	if c.Wallet == "" {
+		return Bitcoin{}, errors.New("wallet is not set")
 	}
 
 	var params *chaincfg.Params
@@ -90,6 +95,7 @@ func (c Chain) Bitcoin() (Bitcoin, error) {
 		Receivers:     receivers,
 		Confirmations: c.Confirmations,
 		Params:        params,
+		Wallet:        c.Wallet,
 	}, nil
 }
 
