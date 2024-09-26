@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
+	"gitlab.com/distributed_lab/logan/v3"
 	"math/big"
 	"regexp"
 	"strings"
@@ -29,11 +30,12 @@ type proxy struct {
 	signerAddr     common.Address
 	signerNonce    uint64
 	nonceM         sync.Mutex
+	logger         *logan.Entry
 }
 
 // NewBridgeProxy creates a new bridge proxy for the given chain.
 // We need signer address to obtain the nonce for the signer when forming a new transaction.
-func NewBridgeProxy(chain chain.Evm, signerAddr common.Address) (bridgeTypes.Proxy, error) {
+func NewBridgeProxy(chain chain.Evm, signerAddr common.Address, logger *logan.Entry) (bridgeTypes.Proxy, error) {
 	bridgeAbi, err := abi.JSON(strings.NewReader(contracts.BridgeMetaData.ABI))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse bridge ABI")
@@ -61,6 +63,7 @@ func NewBridgeProxy(chain chain.Evm, signerAddr common.Address) (bridgeTypes.Pro
 		bridgeContract: bridgeContract,
 		signerAddr:     signerAddr,
 		signerNonce:    nonce,
+		logger:         logger,
 	}, nil
 }
 

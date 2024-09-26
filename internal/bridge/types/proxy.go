@@ -18,6 +18,7 @@ var (
 	ErrInvalidDepositedAmount = errors.New("invalid deposited amount")
 	ErrNotImplemented         = errors.New("not implemented")
 	ErrInvalidScriptPubKey    = errors.New("invalid script pub key")
+	ErrFailedUnpackLogs       = errors.New("failed to unpack logs")
 )
 
 type ChainType string

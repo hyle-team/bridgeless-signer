@@ -2,7 +2,6 @@ package evm
 
 import (
 	"context"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
@@ -10,6 +9,16 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 )
+
+var (
+	DepositNative  = "DepositedNative"
+	DepositedERC20 = "DepositedERC20"
+)
+
+var events = []string{
+	DepositNative,
+	DepositedERC20,
+}
 
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
 	txReceipt, err := p.GetTransactionReceipt(common.HexToHash(id.TxHash))
@@ -33,22 +42,68 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		return nil, errors.Wrap(err, "failed to validate confirmations")
 	}
 
-	var event contracts.BridgeBridgeIn
-	if err = p.contractABI.UnpackIntoInterface(&event, DepositEvent, log.Data); err != nil {
+	var unpackedData *data.DepositData
+
+	for _, eventName := range events {
+		switch eventName {
+		case DepositNative:
+			event := new(contracts.BridgeDepositedNative)
+			unpackLog, err := p.unpackLog(event, eventName, log, id)
+			if err != nil && unpackLog == nil {
+				p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
+				continue
+			}
+
+			unpackedData = unpackLog
+			break
+
+		case DepositedERC20:
+			event := new(contracts.BridgeDepositedERC20)
+			unpackLog, err := p.unpackLog(event, eventName, log, id)
+			if err != nil && unpackLog == nil {
+				p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
+				continue
+			}
+
+			unpackedData = unpackLog
+			break
+		}
+	}
+
+	if unpackedData == nil {
+		return nil, bridgeTypes.ErrFailedUnpackLogs
+	}
+
+	return unpackedData, nil
+}
+
+func (p *proxy) unpackLog(eventBody interface{}, eventName string, log *types.Log, id data.DepositIdentifier) (*data.DepositData, error) {
+	if err := p.contractABI.UnpackIntoInterface(&eventBody, eventName, log.Data); err != nil {
 		return nil, errors.Wrap(err, "failed to unpack deposit event")
 	}
-	// parsing indexed event parameter that is always present and not in the parsed even data
-	event.Token = common.HexToAddress(log.Topics[1].Hex())
 
-	return &data.DepositData{
-		DepositIdentifier:  id,
-		DestinationChainId: event.ChainId.String(),
-		DestinationAddress: event.DstAddress,
-		SourceAddress:      event.SrcAddress.String(),
-		DepositAmount:      event.Amount,
-		TokenAddress:       event.Token,
-		Block:              int64(log.BlockNumber),
-	}, nil
+	switch eventName {
+	case DepositedERC20:
+		return &data.DepositData{
+			DepositIdentifier:  id,
+			DestinationChainId: eventBody.(contracts.BridgeDepositedERC20).Network,
+			DestinationAddress: eventBody.(contracts.BridgeDepositedERC20).Receiver,
+			DepositAmount:      eventBody.(contracts.BridgeDepositedERC20).Amount,
+			TokenAddress:       eventBody.(contracts.BridgeDepositedERC20).Token,
+			Block:              int64(log.BlockNumber),
+		}, nil
+
+	case DepositNative:
+		return &data.DepositData{
+			DepositIdentifier:  id,
+			DestinationChainId: eventBody.(contracts.BridgeDepositedNative).Network,
+			DestinationAddress: eventBody.(contracts.BridgeDepositedNative).Receiver,
+			DepositAmount:      eventBody.(contracts.BridgeDepositedNative).Amount,
+			Block:              int64(log.BlockNumber),
+		}, nil
+	default:
+		return nil, errors.Errorf("unknown event %s", eventName)
+	}
 }
 
 func (p *proxy) validateConfirmations(receipt *types.Receipt) error {

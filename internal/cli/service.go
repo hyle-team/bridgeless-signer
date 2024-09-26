@@ -23,7 +23,7 @@ func RunService(ctx context.Context, cfg config.Config) error {
 		rabbitCfg     = cfg.RabbitMQConfig()
 	)
 
-	proxiesRepo, err := proxy.NewProxiesRepository(cfg.Chains(), serviceSigner.Address())
+	proxiesRepo, err := proxy.NewProxiesRepository(cfg.Chains(), serviceSigner.Address(), cfg.Log())
 	if err != nil {
 		return errors.Wrap(err, "failed to create proxiesRepo repository")
 	}

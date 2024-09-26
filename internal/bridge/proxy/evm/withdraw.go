@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"math/big"
@@ -24,21 +25,26 @@ func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transac
 	if IsAddressEmpty(data.DestinationTokenAddress) {
 		// If the address is empty, it indicates that the
 		// native token is being transferred.
-		return p.bridgeContract.BridgeOutNative(
+
+		return p.bridgeContract.WithdrawNative(
 			bridgeOutTransactOpts(p.getTransactionNonce()),
-			common.HexToAddress(data.DestinationAddress),
 			data.WithdrawalAmount,
-			data.OriginTxId(),
+			common.HexToAddress(data.DestinationAddress),
+			stringTo32hash(data.TxHash),
+			p.getTransactionNonce(),
+			[][]byte{data.Signature},
 		)
 	}
 
-	return p.bridgeContract.BridgeOut(
+	return p.bridgeContract.WithdrawERC20(
 		bridgeOutTransactOpts(p.getTransactionNonce()),
-		data.DestinationTokenAddress,
-		common.HexToAddress(data.DestinationAddress),
+		data.TokenAddress,
 		data.WithdrawalAmount,
-		data.OriginTxId(),
+		common.HexToAddress(data.DestinationAddress),
+		stringTo32hash(data.TxHash),
+		p.getTransactionNonce(),
 		data.IsWrappedToken,
+		[][]byte{data.Signature},
 	)
 }
 
@@ -69,4 +75,9 @@ func bridgeOutTransactOpts(nonce *big.Int) *bind.TransactOpts {
 			return transaction, nil
 		},
 	}
+}
+
+func stringTo32hash(str string) (res [32]byte) {
+	copy(res[:], hexutil.MustDecode(str))
+	return res
 }

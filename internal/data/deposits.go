@@ -147,6 +147,7 @@ type DepositData struct {
 	DestinationTokenAddress common.Address
 
 	IsWrappedToken bool
+	Signature      []byte
 
 	Block int64
 }

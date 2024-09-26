@@ -31,6 +31,15 @@ func (s *Signer) SignTx(tx *types.Transaction, chainID *big.Int) (*types.Transac
 	return signedTx, nil
 }
 
+func (s *Signer) SignMessage(message []byte) ([]byte, error) {
+	sig, err := crypto.Sign(message[:], s.privKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return sig, nil
+}
+
 func (s *Signer) Address() common.Address {
 	return s.addr
 }
