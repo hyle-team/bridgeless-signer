@@ -17,30 +17,18 @@ func (p *Processor) ProcessSendWithdrawalRequest(req bridgeTypes.WithdrawalReque
 	if deposit == nil {
 		return true, errors.New("deposit was not found in the database")
 	}
-	if !deposit.WithdrawalAllowed() {
-		return false, errors.New("withdrawal transaction was already sent")
-	}
-
-	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
-	if err != nil {
-		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {
-			return false, bridgeTypes.ErrChainNotSupported
-		}
-		return true, errors.Wrap(err, "failed to get proxy")
-	}
 
 	// rollback if transaction failed to be sent
 	txConn := p.db.New()
 	err = txConn.Transaction(func() error {
 		if tempErr := txConn.SetWithdrawalTxs(data.WithdrawalTx{
 			DepositId: req.DepositDbId,
-			TxHash:    req.Transaction.Hash().Hex(),
 			ChainId:   req.Data.DestinationChainId,
 		}); tempErr != nil {
 			return errors.Wrap(tempErr, "failed to set withdrawal tx")
 		}
 
-		return errors.Wrap(proxy.SendWithdrawalTransaction(req.Transaction), "failed to send withdrawal transaction")
+		return nil
 	})
 	return err != nil, err
 }

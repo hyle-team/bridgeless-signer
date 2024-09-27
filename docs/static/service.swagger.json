@@ -146,6 +146,9 @@
         },
         "withdrawalAmount": {
           "type": "string"
+        },
+        "signature": {
+          "type": "string"
         }
       }
     },

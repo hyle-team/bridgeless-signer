@@ -29,9 +29,7 @@ func (h *ServiceHandler) SubmitWithdrawal(_ context.Context, request *types.With
 	}
 
 	if deposit != nil {
-		if !deposit.Reprocessable() {
-			return ErrTxAlreadySubmitted
-		}
+		// TODO validate signature to find a duplicate
 
 		deposit.Status = types.WithdrawalStatus_REPROCESSING
 		if err = dbconn.UpdateWithdrawalStatus(deposit.Status, deposit.Id); err != nil {

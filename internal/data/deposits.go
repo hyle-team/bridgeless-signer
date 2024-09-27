@@ -65,19 +65,12 @@ type Deposit struct {
 	IsWrappedToken *bool `structs:"is_wrapped_token" db:"is_wrapped_token"`
 
 	SubmitStatus types.SubmitWithdrawalStatus `structs:"submit_status" db:"submit_status"`
+	Signature    *string                      `structs:"signature" db:"signature"`
 }
 
 func (d Deposit) Reprocessable() bool {
 	return d.Status == types.WithdrawalStatus_FAILED ||
 		d.Status == types.WithdrawalStatus_TX_FAILED
-}
-
-func (d Deposit) WithdrawalAllowed() bool {
-	if d.WithdrawalTxHash == nil {
-		return true
-	}
-
-	return d.Status == types.WithdrawalStatus_REPROCESSING
 }
 
 func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
@@ -92,6 +85,7 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 			WithdrawalToken:  d.WithdrawalToken,
 			Receiver:         d.Receiver,
 			BlockNumber:      d.DepositBlock,
+			Signature:        d.Signature,
 			IsWrapped:        d.IsWrappedToken,
 		},
 		DepositTransaction: &types.Transaction{
@@ -124,6 +118,7 @@ func (d Deposit) ToTransaction() bridgetypes.Transaction {
 		Receiver:          stringOrEmpty(d.Receiver),
 		WithdrawalToken:   stringOrEmpty(d.WithdrawalToken),
 		WithdrawalChainId: stringOrEmpty(d.WithdrawalChainId),
+		Signature:         stringOrEmpty(d.Signature),
 	}
 
 	if d.DepositBlock != nil {

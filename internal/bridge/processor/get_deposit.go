@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) (data *bridgeTypes.FormWithdrawalRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) (data *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.DepositIdentifier.ChainId)
@@ -74,7 +74,7 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 		return nil, true, errors.Wrap(err, "failed to save deposit data")
 	}
 
-	return &bridgeTypes.FormWithdrawalRequest{
+	return &bridgeTypes.WithdrawalRequest{
 		DepositDbId: req.DepositDbId,
 		Data:        *depositData,
 		Destination: dstProxy.Type(),

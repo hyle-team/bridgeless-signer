@@ -3,26 +3,32 @@ package processor
 import (
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
-	"math/big"
 )
 
 func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
-	chainId, set := new(big.Int).SetString(req.Data.DestinationChainId, 10)
-	if !set {
-		return nil, false, errors.New("invalid destination chain id")
+	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
+	if err != nil {
+		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {
+			return nil, false, bridgeTypes.ErrChainNotSupported
+		}
+		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
 
-	tx, err := p.signer.SignTx(req.Transaction, chainId)
+	signHash, err := proxy.GetSignHash(req.Data)
 	if err != nil {
-		// TODO: should be reprocessable or not?
-		return res, true, errors.Wrap(err, "failed to sign withdrawal transaction")
+		return nil, true, errors.Wrap(err, "failed to form withdrawal transaction")
 	}
+
+	signature, err := p.signer.SignMessage(signHash)
+	if err != nil {
+		return nil, false, errors.Wrap(err, "failed to sign message")
+	}
+	req.Data.Signature = signature
 
 	return &bridgeTypes.WithdrawalRequest{
 		Data:        req.Data,
 		DepositDbId: req.DepositDbId,
-		Transaction: tx,
 	}, false, nil
 }

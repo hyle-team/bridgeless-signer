@@ -80,10 +80,6 @@ func (p *Producer) SendGetDepositRequest(request bridgeTypes.GetDepositRequest) 
 	return p.publish(rabbitTypes.GetDepositQueue, request)
 }
 
-func (p *Producer) SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalRequest) error {
-	return p.publish(rabbitTypes.FormWithdrawalQueue, request)
-}
-
 func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
 	return p.publish(rabbitTypes.SignWithdrawalQueue, request)
 }

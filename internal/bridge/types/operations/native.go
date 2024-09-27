@@ -1,17 +1,22 @@
 package operations
 
 import (
+	"bytes"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type WithdrawNativeContent struct {
-	amount   []byte
-	receiver []byte
-	txhash   []byte
-	txnonce  []byte
-	chainID  []byte
+	Amount   []byte
+	Receiver []byte
+	Txhash   []byte
+	Txnonce  []byte
+	ChainID  []byte
 }
 
 func (w WithdrawNativeContent) CalculateHash() []byte {
-	return crypto.Keccak256(w.amount, w.receiver, w.txhash, w.txnonce, w.chainID)
+	return crypto.Keccak256(w.Amount, w.Receiver, w.Txhash, w.Txnonce, w.ChainID)
+}
+
+func (w WithdrawNativeContent) Equals(other []byte) bool {
+	return bytes.Equal(other, w.CalculateHash())
 }

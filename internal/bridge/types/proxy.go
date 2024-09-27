@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"
@@ -58,8 +57,7 @@ type Proxy interface {
 	WithdrawalAmountValid(amount *big.Int) bool
 
 	// Ethereum-specific methods
-	FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error)
-	SendWithdrawalTransaction(signedTx *types.Transaction) error
+	GetSignHash(data data.DepositData) ([]byte, error)
 
 	// Bitcoin-specific methods
 	SendBitcoins(map[string]*big.Int) (txHash string, err error)

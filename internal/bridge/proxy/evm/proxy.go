@@ -83,7 +83,7 @@ func (p *proxy) AddressValid(addr string) bool {
 	return common.IsHexAddress(addr)
 }
 
-func (p *proxy) SendBitcoins(map[string]*big.Int) (txHash string, err error) {
+func (p *proxy) SendBitcoins(_ map[string]*big.Int) (txHash string, err error) {
 	return "", bridgeTypes.ErrNotImplemented
 }
 

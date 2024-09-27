@@ -1,19 +1,24 @@
 package operations
 
 import (
+	"bytes"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type WithdrawERC20Content struct {
-	tokenAddress []byte
-	amount       []byte
-	receiver     []byte
-	txhash       []byte
-	txnonce      []byte
-	chainID      []byte
-	isWrapped    []byte
+	TokenAddress []byte
+	Amount       []byte
+	Receiver     []byte
+	TxHash       []byte
+	TxNonce      []byte
+	ChainID      []byte
+	IsWrapped    []byte
 }
 
 func (w WithdrawERC20Content) CalculateHash() []byte {
-	return crypto.Keccak256(w.tokenAddress, w.amount, w.receiver, w.txhash, w.txnonce, w.chainID, w.isWrapped)
+	return crypto.Keccak256(w.TokenAddress, w.Amount, w.Receiver, w.TxHash, w.TxNonce, w.ChainID, w.IsWrapped)
+}
+
+func (w WithdrawERC20Content) Equals(other []byte) bool {
+	return bytes.Equal(other, w.CalculateHash())
 }
