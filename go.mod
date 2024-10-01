@@ -6,14 +6,14 @@ require (
 	github.com/alecthomas/kingpin v2.2.6+incompatible
 	github.com/cosmos/cosmos-sdk v0.46.13
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.21.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/ignite/cli v0.26.1
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.6.1
 	gitlab.com/distributed_lab/figure v2.1.2+incompatible
 	gitlab.com/distributed_lab/kit v1.11.3
 	gitlab.com/distributed_lab/logan v3.8.1+incompatible
-	google.golang.org/genproto/googleapis/api v0.0.0-20240723171418-e6d459c13d2a
+	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142
 	google.golang.org/grpc v1.64.1
 	google.golang.org/protobuf v1.34.2
 )
@@ -151,9 +151,9 @@ require (
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240723171418-e6d459c13d2a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -168,7 +168,7 @@ replace (
 	github.com/cosmos/iavl => github.com/cosmos/iavl v0.19.6
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/hyle-team/bridgeless-core => /Users/dl/go/github.com/hyle-team/bridgeless-core
+	github.com/hyle-team/bridgeless-core => /Users/dl/Projects/bridgeless/bridgeless-core
 
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.29
 	github.com/tidwall/btree => github.com/tidwall/btree v1.5.0

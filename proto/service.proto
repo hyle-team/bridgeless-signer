@@ -18,6 +18,7 @@ enum WithdrawalStatus {
   TX_FAILED = 5;
   TX_SUCCESSFUL = 6;
   REPROCESSING = 7;
+  WITHDRAWAL_SIGNED = 8;
 }
 
 enum SubmitWithdrawalStatus {

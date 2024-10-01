@@ -2,6 +2,7 @@ package pg
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"github.com/lib/pq"
 	"strings"
 
@@ -34,6 +35,8 @@ const (
 	depositsSubmitStatus = "submit_status"
 
 	depositIsWrappedToken = "is_wrapped_token"
+
+	depositSignature = "signature"
 )
 
 type depositsQ struct {
@@ -154,6 +157,20 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 		depositsDepositor:    strings.ToLower(data.SourceAddress),
 		// can be 0x00... in case of native ones
 		depositsWithdrawalToken: strings.ToLower(data.DestinationTokenAddress.String()),
+	}
+
+	return d.db.Exec(squirrel.Update(depositsTable).Where(
+		squirrel.Eq{
+			depositsTxHash:    data.TxHash,
+			depositsTxEventId: data.TxEventId,
+			depositsChainId:   data.ChainId,
+		},
+	).SetMap(fields))
+}
+
+func (d *depositsQ) SetDepositSignature(data data.DepositData) error {
+	fields := map[string]interface{}{
+		depositSignature: strings.ToLower(hex.EncodeToString(data.Signature)),
 	}
 
 	return d.db.Exec(squirrel.Update(depositsTable).Where(

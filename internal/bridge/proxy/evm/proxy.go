@@ -18,7 +18,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-const DepositEvent = "BridgeIn"
+const (
+	DepositNative  = "DepositedNative"
+	DepositedERC20 = "DepositedERC20"
+)
+
+var events = []string{
+	DepositNative,
+	DepositedERC20,
+}
 
 var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
 
@@ -26,7 +34,7 @@ type proxy struct {
 	chain          chain.Evm
 	bridgeContract *contracts.Bridge
 	contractABI    abi.ABI
-	depositEvent   abi.Event
+	depositEvents  []abi.Event
 	signerAddr     common.Address
 	signerNonce    uint64
 	nonceM         sync.Mutex
@@ -41,9 +49,13 @@ func NewBridgeProxy(chain chain.Evm, signerAddr common.Address, logger *logan.En
 		return nil, errors.Wrap(err, "failed to parse bridge ABI")
 	}
 
-	depositEvent, ok := bridgeAbi.Events[DepositEvent]
-	if !ok {
-		return nil, errors.New("wrong bridge ABI events")
+	depositEvents := []abi.Event{}
+	for _, event := range events {
+		depositEvent, ok := bridgeAbi.Events[event]
+		if !ok {
+			return nil, errors.New("wrong bridge ABI events")
+		}
+		depositEvents = append(depositEvents, depositEvent)
 	}
 
 	bridgeContract, err := contracts.NewBridge(chain.BridgeAddress, chain.Rpc)
@@ -59,7 +71,7 @@ func NewBridgeProxy(chain chain.Evm, signerAddr common.Address, logger *logan.En
 	return &proxy{
 		chain:          chain,
 		contractABI:    bridgeAbi,
-		depositEvent:   depositEvent,
+		depositEvents:  depositEvents,
 		bridgeContract: bridgeContract,
 		signerAddr:     signerAddr,
 		signerNonce:    nonce,
@@ -76,7 +88,13 @@ func (p *proxy) isDepositLog(log *types.Log) bool {
 		return false
 	}
 
-	return bytes.Equal(log.Topics[0].Bytes(), p.depositEvent.ID.Bytes()) && len(log.Topics) == 2
+	for _, event := range p.depositEvents {
+		isEqual := bytes.Equal(log.Topics[0].Bytes(), event.ID.Bytes())
+		if isEqual {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *proxy) AddressValid(addr string) bool {

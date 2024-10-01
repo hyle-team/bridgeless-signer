@@ -10,33 +10,37 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *proxy) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, error) {
+func (p *proxy) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, *common.Address, error) {
 	ctx := context.Background()
 	tx, pending, err := p.chain.Rpc.TransactionByHash(ctx, txHash)
 	if err != nil {
 		if err.Error() == "not found" {
-			return nil, bridgeTypes.ErrTxNotFound
+			return nil, nil, bridgeTypes.ErrTxNotFound
 		}
 
-		return nil, errors.Wrap(err, "failed to get transaction by hash")
+		return nil, nil, errors.Wrap(err, "failed to get transaction by hash")
 	}
 	if pending {
-		return nil, bridgeTypes.ErrTxPending
+		return nil, nil, bridgeTypes.ErrTxPending
+	}
+	from, err := types.Sender(types.NewEIP155Signer(tx.ChainId()), tx)
+	if err != nil {
+		from, err = types.Sender(types.HomesteadSigner{}, tx)
 	}
 
 	receipt, err := p.chain.Rpc.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get tx receipt")
+		return nil, nil, errors.Wrap(err, "failed to get tx receipt")
 	}
 	if receipt == nil {
-		return nil, errors.New("receipt is nil")
+		return nil, nil, errors.New("receipt is nil")
 	}
 
-	return receipt, nil
+	return receipt, &from, nil
 }
 
 func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStatus, error) {
-	receipt, err := p.GetTransactionReceipt(common.HexToHash(txHash))
+	receipt, _, err := p.GetTransactionReceipt(common.HexToHash(txHash))
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrTxPending) {
 			return bridgeTypes.TransactionStatusPending, nil

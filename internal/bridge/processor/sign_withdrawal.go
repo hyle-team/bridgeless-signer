@@ -2,6 +2,7 @@ package processor
 
 import (
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 )
 
@@ -26,6 +27,14 @@ func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalReque
 		return nil, false, errors.Wrap(err, "failed to sign message")
 	}
 	req.Data.Signature = signature
+
+	if err = p.db.New().SetDepositSignature(req.Data); err != nil {
+		return nil, true, errors.Wrap(err, "failed to save signature data")
+	}
+
+	if err = p.db.New().UpdateWithdrawalStatus(types.WithdrawalStatus_WITHDRAWAL_SIGNED, req.DepositDbId); err != nil {
+		return nil, true, errors.Wrap(err, "failed to update status")
+	}
 
 	return &bridgeTypes.WithdrawalRequest{
 		Data:        req.Data,

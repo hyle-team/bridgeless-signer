@@ -23,6 +23,7 @@ type DepositsQ interface {
 	UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids ...int64) error
 	SetWithdrawalTxs(txs ...WithdrawalTx) error
 	Transaction(f func() error) error
+	SetDepositSignature(data DepositData) error
 }
 
 type WithdrawalTx struct {
