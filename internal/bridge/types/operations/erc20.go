@@ -6,17 +6,25 @@ import (
 )
 
 type WithdrawERC20Content struct {
-	TokenAddress []byte
-	Amount       []byte
-	Receiver     []byte
-	TxHash       []byte
-	TxNonce      []byte
-	ChainID      []byte
-	IsWrapped    []byte
+	DestinationTokenAddress []byte
+	Amount                  []byte
+	Receiver                []byte
+	TxHash                  []byte
+	TxNonce                 []byte
+	ChainID                 []byte
+	IsWrapped               []byte
 }
 
 func (w WithdrawERC20Content) CalculateHash() []byte {
-	return crypto.Keccak256(w.TokenAddress, w.Amount, w.Receiver, w.TxHash, w.TxNonce, w.ChainID, w.IsWrapped)
+	return crypto.Keccak256(
+		w.DestinationTokenAddress,
+		w.Amount,
+		w.Receiver,
+		w.TxHash,
+		w.TxNonce,
+		w.ChainID,
+		w.IsWrapped,
+	)
 }
 
 func (w WithdrawERC20Content) Equals(other []byte) bool {
