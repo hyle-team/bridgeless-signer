@@ -17,7 +17,7 @@ func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
 }
 
 func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
-	chainID, ok := new(big.Int).SetString(data.DestinationChainId, 10)
+	destinationChainID, ok := new(big.Int).SetString(data.DestinationChainId, 10)
 	if !ok {
 		return nil, errors.New("invalid chain id")
 	}
@@ -28,7 +28,7 @@ func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
 			Receiver: hexutil.MustDecode(data.DestinationAddress),
 			TxHash:   hexutil.MustDecode(data.TxHash),
 			TxNonce:  operations.IntTo32Bytes(data.TxEventId),
-			ChainID:  operations.To32Bytes(chainID.Bytes()),
+			ChainID:  operations.To32Bytes(destinationChainID.Bytes()),
 		}
 		return operation.CalculateHash(), nil
 	}
@@ -38,7 +38,7 @@ func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
 		Receiver:                hexutil.MustDecode(data.DestinationAddress),
 		TxHash:                  hexutil.MustDecode(data.TxHash),
 		TxNonce:                 operations.IntTo32Bytes(data.TxEventId),
-		ChainID:                 operations.To32Bytes(chainID.Bytes()),
+		ChainID:                 operations.To32Bytes(destinationChainID.Bytes()),
 		DestinationTokenAddress: data.DestinationTokenAddress.Bytes(),
 		IsWrapped:               operations.BoolToBytes(data.IsWrappedToken),
 	}

@@ -10,11 +10,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+const notFoundErrorMessage = "not found"
+
 func (p *proxy) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, *common.Address, error) {
 	ctx := context.Background()
 	tx, pending, err := p.chain.Rpc.TransactionByHash(ctx, txHash)
 	if err != nil {
-		if err.Error() == "not found" {
+		if err.Error() == notFoundErrorMessage {
 			return nil, nil, bridgeTypes.ErrTxNotFound
 		}
 
