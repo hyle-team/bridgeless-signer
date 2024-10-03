@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hyle-team/bridgeless-signer/docs"
@@ -19,6 +20,7 @@ var _ types.ServiceServer = &Server{}
 type ServiceHandler interface {
 	SubmitWithdrawal(ctx context.Context, request *types.WithdrawalRequest) error
 	CheckWithdrawal(ctx context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error)
+	CheckWithdrawalWs(w http.ResponseWriter, r *http.Request)
 }
 
 // Server is a GRPC and HTTP gateway application server.
@@ -61,13 +63,21 @@ func (s *Server) RunRESTGateway(ctx context.Context) error {
 	}
 
 	httpRouter.Handle("/static/service.swagger.json", http.FileServer(http.FS(docs.Docs)))
-	httpRouter.HandleFunc("/api", openapiconsole.Handler("TSS service", "/static/service.swagger.json"))
+	httpRouter.HandleFunc("/api", openapiconsole.Handler("Signer service", "/static/service.swagger.json"))
 	httpRouter.Handle("/", grpcGatewayRouter)
+	// TODO: move to chi-router with middlewares and ctx
+	httpRouter.HandleFunc("GET /ws/check/{origin_tx_id}", s.CheckWithdrawalWs)
 
 	srv := &http.Server{Addr: s.gatewayAddr, Handler: httpRouter}
 
 	// graceful shutdown
-	go func() { <-ctx.Done(); srv.Shutdown(ctx) }()
+	go func() {
+		<-ctx.Done()
+		shutdownDeadline, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*2))
+		defer cancel()
+		_ = srv.Shutdown(shutdownDeadline)
+	}()
+
 	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return errors.Wrap(err, "failed to listen and serve")
 	}
@@ -81,4 +91,8 @@ func (s *Server) SubmitWithdrawal(ctx context.Context, request *types.Withdrawal
 
 func (s *Server) CheckWithdrawal(ctx context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error) {
 	return s.handler.CheckWithdrawal(ctx, request)
+}
+
+func (s *Server) CheckWithdrawalWs(w http.ResponseWriter, r *http.Request) {
+	s.handler.CheckWithdrawalWs(w, r)
 }

@@ -38,6 +38,9 @@ func (p *Processor) SubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequ
 
 		return errors.Wrap(p.core.SubmitDeposits(depositTxs...), "failed to submit deposits")
 	})
+	if errors.Is(err, bridgeTypes.ErrTransactionAlreadySubmitted) {
+		return false, err
+	}
 
 	return err != nil, err
 }
