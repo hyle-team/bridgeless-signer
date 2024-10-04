@@ -6,7 +6,7 @@ import (
 
 func To32Bytes(arr []byte) []byte {
 	if len(arr) >= 32 {
-		return arr
+		return arr[:32]
 	}
 
 	res := make([]byte, 32-len(arr))

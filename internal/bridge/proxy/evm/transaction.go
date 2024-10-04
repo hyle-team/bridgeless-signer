@@ -27,7 +27,7 @@ func (p *proxy) GetTransactionReceipt(txHash common.Hash) (*types.Receipt, *comm
 	}
 	from, err := types.Sender(types.NewEIP155Signer(tx.ChainId()), tx)
 	if err != nil {
-		from, err = types.Sender(types.HomesteadSigner{}, tx)
+		return nil, nil, errors.Wrap(err, "failed to get tx sender")
 	}
 
 	receipt, err := p.chain.Rpc.TransactionReceipt(context.Background(), tx.Hash())

@@ -18,6 +18,7 @@ var (
 	ErrNotImplemented         = errors.New("not implemented")
 	ErrInvalidScriptPubKey    = errors.New("invalid script pub key")
 	ErrFailedUnpackLogs       = errors.New("failed to unpack logs")
+	ErrUnsupportedEvent       = errors.New("unsupported event")
 )
 
 type ChainType string

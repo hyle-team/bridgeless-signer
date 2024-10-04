@@ -1,7 +1,6 @@
 package evm
 
 import (
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/types/operations"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
@@ -17,30 +16,17 @@ func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
 }
 
 func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
-	destinationChainID, ok := new(big.Int).SetString(data.DestinationChainId, 10)
-	if !ok {
-		return nil, errors.New("invalid chain id")
-	}
-
 	if IsAddressEmpty(data.DestinationTokenAddress) {
-		operation := operations.WithdrawNativeContent{
-			Amount:   operations.To32Bytes(data.DepositAmount.Bytes()),
-			Receiver: hexutil.MustDecode(data.DestinationAddress),
-			TxHash:   hexutil.MustDecode(data.TxHash),
-			TxNonce:  operations.IntTo32Bytes(data.TxEventId),
-			ChainID:  operations.To32Bytes(destinationChainID.Bytes()),
+		operation, err := operations.NewWithdrawNativeContent(data)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot create WithdrawNativeContent operation")
 		}
 		return operation.CalculateHash(), nil
 	}
 
-	operation := operations.WithdrawERC20Content{
-		Amount:                  operations.To32Bytes(data.DepositAmount.Bytes()),
-		Receiver:                hexutil.MustDecode(data.DestinationAddress),
-		TxHash:                  hexutil.MustDecode(data.TxHash),
-		TxNonce:                 operations.IntTo32Bytes(data.TxEventId),
-		ChainID:                 operations.To32Bytes(destinationChainID.Bytes()),
-		DestinationTokenAddress: data.DestinationTokenAddress.Bytes(),
-		IsWrapped:               operations.BoolToBytes(data.IsWrappedToken),
+	operation, err := operations.NewWithdrawERC20Content(data)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create WithdrawERC20Content operation")
 	}
 	return operation.CalculateHash(), nil
 }

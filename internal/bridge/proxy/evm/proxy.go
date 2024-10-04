@@ -2,7 +2,6 @@ package evm
 
 import (
 	"bytes"
-	"context"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	"gitlab.com/distributed_lab/logan/v3"
 	"math/big"
@@ -35,8 +34,6 @@ type proxy struct {
 	bridgeContract *contracts.Bridge
 	contractABI    abi.ABI
 	depositEvents  []abi.Event
-	signerAddr     common.Address
-	signerNonce    uint64
 	nonceM         sync.Mutex
 	logger         *logan.Entry
 }
@@ -63,18 +60,11 @@ func NewBridgeProxy(chain chain.Evm, signerAddr common.Address, logger *logan.En
 		return nil, errors.Wrap(err, "failed to create bridge contract")
 	}
 
-	nonce, err := chain.Rpc.PendingNonceAt(context.Background(), signerAddr)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get signer nonce")
-	}
-
 	return &proxy{
 		chain:          chain,
 		contractABI:    bridgeAbi,
 		depositEvents:  depositEvents,
 		bridgeContract: bridgeContract,
-		signerAddr:     signerAddr,
-		signerNonce:    nonce,
 		logger:         logger,
 	}, nil
 }
@@ -83,18 +73,18 @@ func (p *proxy) Type() bridgeTypes.ChainType {
 	return bridgeTypes.ChainTypeEVM
 }
 
-func (p *proxy) isDepositLog(log *types.Log) bool {
+func (p *proxy) getDepositLogType(log *types.Log) string {
 	if log == nil || len(log.Topics) == 0 {
-		return false
+		return ""
 	}
 
 	for _, event := range p.depositEvents {
 		isEqual := bytes.Equal(log.Topics[0].Bytes(), event.ID.Bytes())
 		if isEqual {
-			return true
+			return event.Name
 		}
 	}
-	return false
+	return ""
 }
 
 func (p *proxy) AddressValid(addr string) bool {

@@ -25,7 +25,8 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 	}
 
 	log := txReceipt.Logs[id.TxEventId]
-	if !p.isDepositLog(log) {
+	depositType := p.getDepositLogType(log)
+	if depositType == "" {
 		return nil, bridgeTypes.ErrDepositNotFound
 	}
 
@@ -35,46 +36,46 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 
 	var unpackedData *data.DepositData
 
-	for _, eventName := range events {
-		switch eventName {
-		case DepositNative:
-			eventBody := new(contracts.BridgeDepositedNative)
-			if err = p.contractABI.UnpackIntoInterface(eventBody, eventName, log.Data); err != nil {
-				p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
-				continue
-			}
-
-			unpackedData = &data.DepositData{
-				DepositIdentifier:  id,
-				DestinationChainId: eventBody.Network,
-				DestinationAddress: eventBody.Receiver,
-				DepositAmount:      eventBody.Amount,
-				Block:              int64(log.BlockNumber),
-				SourceAddress:      from.String(),
-			}
-
-			break
-
-		case DepositedERC20:
-			eventBody := new(contracts.BridgeDepositedERC20)
-			if err = p.contractABI.UnpackIntoInterface(eventBody, eventName, log.Data); err != nil {
-				p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
-				continue
-			}
-
-			unpackedData = &data.DepositData{
-				DepositIdentifier:  id,
-				DestinationChainId: eventBody.Network,
-				DestinationAddress: eventBody.Receiver,
-				DepositAmount:      eventBody.Amount,
-				TokenAddress:       eventBody.Token,
-				IsWrappedToken:     eventBody.IsWrapped,
-				Block:              int64(log.BlockNumber),
-				SourceAddress:      from.String(),
-			}
-
-			break
+	switch depositType {
+	case DepositNative:
+		eventBody := new(contracts.BridgeDepositedNative)
+		if err = p.contractABI.UnpackIntoInterface(eventBody, depositType, log.Data); err != nil {
+			p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
+			return nil, bridgeTypes.ErrDepositNotFound
 		}
+
+		unpackedData = &data.DepositData{
+			DepositIdentifier:  id,
+			DestinationChainId: eventBody.Network,
+			DestinationAddress: eventBody.Receiver,
+			DepositAmount:      eventBody.Amount,
+			Block:              int64(log.BlockNumber),
+			SourceAddress:      from.String(),
+		}
+
+		break
+
+	case DepositedERC20:
+		eventBody := new(contracts.BridgeDepositedERC20)
+		if err = p.contractABI.UnpackIntoInterface(eventBody, depositType, log.Data); err != nil {
+			p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
+			return nil, bridgeTypes.ErrDepositNotFound
+		}
+
+		unpackedData = &data.DepositData{
+			DepositIdentifier:  id,
+			DestinationChainId: eventBody.Network,
+			DestinationAddress: eventBody.Receiver,
+			DepositAmount:      eventBody.Amount,
+			TokenAddress:       eventBody.Token,
+			IsWrappedToken:     eventBody.IsWrapped,
+			Block:              int64(log.BlockNumber),
+			SourceAddress:      from.String(),
+		}
+
+		break
+	default:
+		return nil, bridgeTypes.ErrUnsupportedEvent
 	}
 
 	if unpackedData == nil {

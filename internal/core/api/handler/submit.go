@@ -29,6 +29,10 @@ func (h *ServiceHandler) SubmitWithdrawal(_ context.Context, request *types.With
 	}
 
 	if deposit != nil {
+		if !deposit.Reprocessable() {
+			return ErrTxAlreadySubmitted
+		}
+
 		deposit.Status = types.WithdrawalStatus_REPROCESSING
 		if err = dbconn.UpdateWithdrawalStatus(deposit.Status, deposit.Id); err != nil {
 			h.logger.WithError(err).Error("failed to update transaction status")

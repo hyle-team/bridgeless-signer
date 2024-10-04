@@ -156,7 +156,8 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 		depositsDepositToken: strings.ToLower(data.TokenAddress.String()),
 		depositsDepositor:    strings.ToLower(data.SourceAddress),
 		// can be 0x00... in case of native ones
-		depositsWithdrawalToken: strings.ToLower(data.DestinationTokenAddress.String()),
+		depositsWithdrawalToken:   strings.ToLower(data.DestinationTokenAddress.String()),
+		depositsWithdrawalChainId: data.DestinationChainId,
 	}
 
 	return d.db.Exec(squirrel.Update(depositsTable).Where(
@@ -171,6 +172,7 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 func (d *depositsQ) SetDepositSignature(data data.DepositData) error {
 	fields := map[string]interface{}{
 		depositSignature: strings.ToLower(hex.EncodeToString(data.Signature)),
+		depositsStatus:   types.WithdrawalStatus_WITHDRAWAL_SIGNED,
 	}
 
 	return d.db.Exec(squirrel.Update(depositsTable).Where(

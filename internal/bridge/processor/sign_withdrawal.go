@@ -2,11 +2,10 @@ package processor
 
 import (
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.SubmitTransactionRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
@@ -24,7 +23,7 @@ func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalReque
 
 	signature, err := p.signer.SignMessage(signHash)
 	if err != nil {
-		return nil, false, errors.Wrap(err, "failed to sign message")
+		return nil, true, errors.Wrap(err, "failed to sign message")
 	}
 	req.Data.Signature = signature
 
@@ -32,12 +31,7 @@ func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalReque
 		return nil, true, errors.Wrap(err, "failed to save signature data")
 	}
 
-	if err = p.db.New().UpdateWithdrawalStatus(types.WithdrawalStatus_WITHDRAWAL_SIGNED, req.DepositDbId); err != nil {
-		return nil, true, errors.Wrap(err, "failed to update status")
-	}
-
-	return &bridgeTypes.WithdrawalRequest{
-		Data:        req.Data,
+	return &bridgeTypes.SubmitTransactionRequest{
 		DepositDbId: req.DepositDbId,
 	}, false, nil
 }

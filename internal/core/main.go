@@ -40,10 +40,6 @@ func RunConsumers(
 				deliveryProcessor: consumerProcessors.NewSignWithdrawalHandler(processor, producer),
 				prefix:            consumer.SignWithdrawalConsumerPrefix,
 			},
-			rabbitTypes.SubmitWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewSubmitWithdrawalHandler(processor, producer),
-				prefix:            consumer.SubmitWithdrawalConsumerPrefix,
-			},
 		}
 	)
 
