@@ -25,6 +25,10 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 	}
 
 	log := txReceipt.Logs[id.TxEventId]
+	if log.Address.Hex() != p.chain.BridgeAddress.Hex() {
+		return nil, bridgeTypes.ErrUnsupportedContract
+	}
+
 	depositType := p.getDepositLogType(log)
 	if depositType == "" {
 		return nil, bridgeTypes.ErrDepositNotFound

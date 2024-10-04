@@ -19,6 +19,7 @@ var (
 	ErrInvalidScriptPubKey    = errors.New("invalid script pub key")
 	ErrFailedUnpackLogs       = errors.New("failed to unpack logs")
 	ErrUnsupportedEvent       = errors.New("unsupported event")
+	ErrUnsupportedContract    = errors.New("unsupported contract")
 )
 
 type ChainType string
