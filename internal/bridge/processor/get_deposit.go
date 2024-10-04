@@ -24,6 +24,8 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 		if errors.Is(err, bridgeTypes.ErrTxFailed) ||
 			errors.Is(err, bridgeTypes.ErrDepositNotFound) ||
 			errors.Is(err, bridgeTypes.ErrInvalidDepositedAmount) ||
+			errors.Is(err, bridgeTypes.ErrUnsupportedEvent) ||
+			errors.Is(err, bridgeTypes.ErrFailedUnpackLogs) ||
 			errors.Is(err, bridgeTypes.ErrInvalidScriptPubKey) {
 			reprocessable = false
 		}
