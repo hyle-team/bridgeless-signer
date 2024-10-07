@@ -146,6 +146,9 @@
         },
         "withdrawalAmount": {
           "type": "string"
+        },
+        "signature": {
+          "type": "string"
         }
       }
     },
@@ -189,7 +192,8 @@
         "TX_PENDING",
         "TX_FAILED",
         "TX_SUCCESSFUL",
-        "REPROCESSING"
+        "REPROCESSING",
+        "WITHDRAWAL_SIGNED"
       ],
       "default": "PROCESSING"
     },

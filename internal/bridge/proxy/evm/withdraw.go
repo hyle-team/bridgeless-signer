@@ -1,11 +1,9 @@
 package evm
 
 import (
-	"context"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/types/operations"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
+	"github.com/pkg/errors"
 	"math/big"
 )
 
@@ -17,56 +15,18 @@ func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
 	return true
 }
 
-func (p *proxy) FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error) {
-	// transact opts prevent the transaction from being sent to
-	// the network, returning the transaction object only
-
+func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
 	if IsAddressEmpty(data.DestinationTokenAddress) {
-		// If the address is empty, it indicates that the
-		// native token is being transferred.
-		return p.bridgeContract.BridgeOutNative(
-			bridgeOutTransactOpts(p.getTransactionNonce()),
-			common.HexToAddress(data.DestinationAddress),
-			data.WithdrawalAmount,
-			data.OriginTxId(),
-		)
+		operation, err := operations.NewWithdrawNativeContent(data)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot create WithdrawNativeContent operation")
+		}
+		return operation.CalculateHash(), nil
 	}
 
-	return p.bridgeContract.BridgeOut(
-		bridgeOutTransactOpts(p.getTransactionNonce()),
-		data.DestinationTokenAddress,
-		common.HexToAddress(data.DestinationAddress),
-		data.WithdrawalAmount,
-		data.OriginTxId(),
-		data.IsWrappedToken,
-	)
-}
-
-func (p *proxy) SendWithdrawalTransaction(signedTx *types.Transaction) error {
-	return p.chain.Rpc.SendTransaction(context.Background(), signedTx)
-}
-
-func (p *proxy) getTransactionNonce() *big.Int {
-	p.nonceM.Lock()
-	defer p.nonceM.Unlock()
-
-	nonce := big.NewInt(0).SetUint64(p.signerNonce)
-	p.signerNonce++
-
-	return nonce
-}
-
-func bridgeOutTransactOpts(nonce *big.Int) *bind.TransactOpts {
-	const gasLimit = 300000
-
-	return &bind.TransactOpts{
-		GasLimit: gasLimit,
-		Nonce:    nonce,
-		// prevent the transaction from being sent to the network
-		NoSend: true,
-		Signer: func(address common.Address, transaction *types.Transaction) (*types.Transaction, error) {
-			// skip signing
-			return transaction, nil
-		},
+	operation, err := operations.NewWithdrawERC20Content(data)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create WithdrawERC20Content operation")
 	}
+	return operation.CalculateHash(), nil
 }

@@ -24,9 +24,7 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Produc
 	// Queues is bound to the default exchange
 	var consumerQueues = []string{
 		rabbitTypes.GetDepositQueue,
-		rabbitTypes.FormWithdrawalQueue,
 		rabbitTypes.SignWithdrawalQueue,
-		rabbitTypes.SubmitWithdrawalQueue,
 		rabbitTypes.SubmitBitcoinWithdrawalQueue,
 		rabbitTypes.SubmitTransactionQueue,
 	}
@@ -80,16 +78,8 @@ func (p *Producer) SendGetDepositRequest(request bridgeTypes.GetDepositRequest) 
 	return p.publish(rabbitTypes.GetDepositQueue, request)
 }
 
-func (p *Producer) SendFormWithdrawalRequest(request bridgeTypes.FormWithdrawalRequest) error {
-	return p.publish(rabbitTypes.FormWithdrawalQueue, request)
-}
-
 func (p *Producer) SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
 	return p.publish(rabbitTypes.SignWithdrawalQueue, request)
-}
-
-func (p *Producer) SendSubmitWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
-	return p.publish(rabbitTypes.SubmitWithdrawalQueue, request)
 }
 
 func (p *Producer) SendSubmitBitcoinWithdrawalRequest(request bridgeTypes.BitcoinWithdrawalRequest) error {
