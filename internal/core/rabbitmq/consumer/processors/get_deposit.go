@@ -3,8 +3,6 @@ package processors
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
@@ -44,8 +42,6 @@ func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessab
 		}
 
 	}()
-
-	time.Sleep(30 * time.Second)
 
 	withdrawReq, reprocessable, err := h.processor.ProcessGetDepositRequest(request)
 	if err != nil {

@@ -25,6 +25,7 @@ require (
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/ethereum/go-ethereum v1.10.26
+	github.com/go-chi/chi/v5 v5.0.7
 	github.com/gorilla/websocket v1.5.0
 	github.com/hyle-team/bridgeless-core v0.0.0-20240911163215-e9a1ef12c6da
 	github.com/lib/pq v1.10.9

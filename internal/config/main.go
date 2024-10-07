@@ -14,36 +14,33 @@ import (
 type Config interface {
 	comfig.Logger
 	pgdb.Databaser
-	comfig.Listenerer
-	api.RESTGatewayConfigurer
 	signer.Signerer
 	chain.Chainer
 	rabbit.Rabbitter
 	core.ConnectorConfigurer
+	api.Listenerer
 }
 
 type config struct {
 	comfig.Logger
 	pgdb.Databaser
-	comfig.Listenerer
 	getter kv.Getter
-	api.RESTGatewayConfigurer
 	signer.Signerer
 	chain.Chainer
 	rabbit.Rabbitter
 	core.ConnectorConfigurer
+	api.Listenerer
 }
 
 func New(getter kv.Getter) Config {
 	return &config{
-		getter:                getter,
-		Databaser:             pgdb.NewDatabaser(getter),
-		Listenerer:            comfig.NewListenerer(getter),
-		Logger:                comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		RESTGatewayConfigurer: api.NewRESTGatewayConfigurer(getter),
-		Signerer:              signer.NewSignerer(getter),
-		Chainer:               chain.NewChainer(getter),
-		Rabbitter:             rabbit.NewRabbitter(getter),
-		ConnectorConfigurer:   core.NewConnectorConfigurer(getter),
+		getter:              getter,
+		Databaser:           pgdb.NewDatabaser(getter),
+		Logger:              comfig.NewLogger(getter, comfig.LoggerOpts{}),
+		Signerer:            signer.NewSignerer(getter),
+		Chainer:             chain.NewChainer(getter),
+		Rabbitter:           rabbit.NewRabbitter(getter),
+		ConnectorConfigurer: core.NewConnectorConfigurer(getter),
+		Listenerer:          api.NewListenerer(getter),
 	}
 }
