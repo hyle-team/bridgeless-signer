@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"
@@ -18,6 +17,9 @@ var (
 	ErrInvalidDepositedAmount = errors.New("invalid deposited amount")
 	ErrNotImplemented         = errors.New("not implemented")
 	ErrInvalidScriptPubKey    = errors.New("invalid script pub key")
+	ErrFailedUnpackLogs       = errors.New("failed to unpack logs")
+	ErrUnsupportedEvent       = errors.New("unsupported event")
+	ErrUnsupportedContract    = errors.New("unsupported contract")
 )
 
 type ChainType string
@@ -57,8 +59,7 @@ type Proxy interface {
 	WithdrawalAmountValid(amount *big.Int) bool
 
 	// Ethereum-specific methods
-	FormWithdrawalTransaction(data data.DepositData) (*types.Transaction, error)
-	SendWithdrawalTransaction(signedTx *types.Transaction) error
+	GetSignHash(data data.DepositData) ([]byte, error)
 
 	// Bitcoin-specific methods
 	SendBitcoins(map[string]*big.Int) (txHash string, err error)

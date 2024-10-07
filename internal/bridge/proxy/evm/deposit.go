@@ -2,7 +2,6 @@ package evm
 
 import (
 	"context"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
@@ -12,10 +11,11 @@ import (
 )
 
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
-	txReceipt, err := p.GetTransactionReceipt(common.HexToHash(id.TxHash))
+	txReceipt, from, err := p.GetTransactionReceipt(common.HexToHash(id.TxHash))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get transaction receipt")
 	}
+
 	if txReceipt.Status != types.ReceiptStatusSuccessful {
 		return nil, bridgeTypes.ErrTxFailed
 	}
@@ -25,7 +25,12 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 	}
 
 	log := txReceipt.Logs[id.TxEventId]
-	if !p.isDepositLog(log) {
+	if log.Address.Hex() != p.chain.BridgeAddress.Hex() {
+		return nil, bridgeTypes.ErrUnsupportedContract
+	}
+
+	depositType := p.getDepositLogType(log)
+	if depositType == "" {
 		return nil, bridgeTypes.ErrDepositNotFound
 	}
 
@@ -33,22 +38,55 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		return nil, errors.Wrap(err, "failed to validate confirmations")
 	}
 
-	var event contracts.BridgeBridgeIn
-	if err = p.contractABI.UnpackIntoInterface(&event, DepositEvent, log.Data); err != nil {
-		return nil, errors.Wrap(err, "failed to unpack deposit event")
-	}
-	// parsing indexed event parameter that is always present and not in the parsed even data
-	event.Token = common.HexToAddress(log.Topics[1].Hex())
+	var unpackedData *data.DepositData
 
-	return &data.DepositData{
-		DepositIdentifier:  id,
-		DestinationChainId: event.ChainId.String(),
-		DestinationAddress: event.DstAddress,
-		SourceAddress:      event.SrcAddress.String(),
-		DepositAmount:      event.Amount,
-		TokenAddress:       event.Token,
-		Block:              int64(log.BlockNumber),
-	}, nil
+	switch depositType {
+	case DepositNative:
+		eventBody := new(contracts.BridgeDepositedNative)
+		if err = p.contractABI.UnpackIntoInterface(eventBody, depositType, log.Data); err != nil {
+			p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
+			return nil, bridgeTypes.ErrDepositNotFound
+		}
+
+		unpackedData = &data.DepositData{
+			DepositIdentifier:  id,
+			DestinationChainId: eventBody.Network,
+			DestinationAddress: eventBody.Receiver,
+			DepositAmount:      eventBody.Amount,
+			Block:              int64(log.BlockNumber),
+			SourceAddress:      from.String(),
+		}
+
+		break
+
+	case DepositedERC20:
+		eventBody := new(contracts.BridgeDepositedERC20)
+		if err = p.contractABI.UnpackIntoInterface(eventBody, depositType, log.Data); err != nil {
+			p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
+			return nil, bridgeTypes.ErrDepositNotFound
+		}
+
+		unpackedData = &data.DepositData{
+			DepositIdentifier:  id,
+			DestinationChainId: eventBody.Network,
+			DestinationAddress: eventBody.Receiver,
+			DepositAmount:      eventBody.Amount,
+			TokenAddress:       eventBody.Token,
+			IsWrappedToken:     eventBody.IsWrapped,
+			Block:              int64(log.BlockNumber),
+			SourceAddress:      from.String(),
+		}
+
+		break
+	default:
+		return nil, bridgeTypes.ErrUnsupportedEvent
+	}
+
+	if unpackedData == nil {
+		return nil, bridgeTypes.ErrFailedUnpackLogs
+	}
+
+	return unpackedData, nil
 }
 
 func (p *proxy) validateConfirmations(receipt *types.Receipt) error {

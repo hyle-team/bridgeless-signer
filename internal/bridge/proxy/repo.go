@@ -8,13 +8,14 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type proxiesRepository struct {
 	proxies map[string]bridgeTypes.Proxy
 }
 
-func NewProxiesRepository(chains []chain.Chain, signer common.Address) (proxyRepo bridgeTypes.ProxiesRepository, err error) {
+func NewProxiesRepository(chains []chain.Chain, signer common.Address, logger *logan.Entry) (proxyRepo bridgeTypes.ProxiesRepository, err error) {
 	proxiesMap := make(map[string]bridgeTypes.Proxy)
 
 	for _, ch := range chains {
@@ -27,7 +28,7 @@ func NewProxiesRepository(chains []chain.Chain, signer common.Address) (proxyRep
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to init evm chain")
 			}
-			proxy, err = evm.NewBridgeProxy(evmChain, signer)
+			proxy, err = evm.NewBridgeProxy(evmChain, signer, logger)
 			if err != nil {
 				return nil, errors.Wrap(err, fmt.Sprintf("failed to create proxy for chain %s", ch.Id))
 			}
@@ -37,7 +38,7 @@ func NewProxiesRepository(chains []chain.Chain, signer common.Address) (proxyRep
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to init bitcoin")
 			}
-			proxy = btc.NewBridgeProxy(bitcoinChain)
+			proxy = btc.NewBridgeProxy(bitcoinChain, logger)
 		default:
 			return nil, errors.Errorf("unknown chain type %s", ch.Type)
 		}

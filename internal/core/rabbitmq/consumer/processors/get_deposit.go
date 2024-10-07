@@ -50,7 +50,7 @@ func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessab
 
 	switch withdrawReq.Destination {
 	case bridgeTypes.ChainTypeEVM:
-		if err = h.producer.SendFormWithdrawalRequest(*withdrawReq); err != nil {
+		if err = h.producer.SendSignWithdrawalRequest(*withdrawReq); err != nil {
 			return true, rprFailCallback, errors.Wrap(err, "failed to send form withdraw request")
 		}
 	case bridgeTypes.ChainTypeBitcoin:

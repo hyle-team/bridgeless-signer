@@ -43,17 +43,9 @@ func RunConsumers(
 				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, producer),
 				prefix:            consumer.GetDepositConsumerPrefix,
 			},
-			rabbitTypes.FormWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewFormWithdrawalHandler(processor, producer),
-				prefix:            consumer.FormWithdrawalConsumerPrefix,
-			},
 			rabbitTypes.SignWithdrawalQueue: {
 				deliveryProcessor: consumerProcessors.NewSignWithdrawalHandler(processor, producer),
 				prefix:            consumer.SignWithdrawalConsumerPrefix,
-			},
-			rabbitTypes.SubmitWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewSubmitWithdrawalHandler(processor, producer),
-				prefix:            consumer.SubmitWithdrawalConsumerPrefix,
 			},
 		}
 	)

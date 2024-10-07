@@ -134,9 +134,13 @@ func watchWithdrawalStatus(ctxt context.Context, ws *websocket.Conn, connClosed 
 		// is it a time for websocket closing
 		if slices.Contains(
 			[]types.WithdrawalStatus{
+				// transaction is sent
 				types.WithdrawalStatus_TX_PENDING,
 				types.WithdrawalStatus_TX_SUCCESSFUL,
 				types.WithdrawalStatus_TX_FAILED,
+				// ready to be sent
+				types.WithdrawalStatus_WITHDRAWAL_SIGNED,
+				// data invalid or something goes wrong
 				types.WithdrawalStatus_INVALID,
 				types.WithdrawalStatus_FAILED,
 			}, deposit.Status,

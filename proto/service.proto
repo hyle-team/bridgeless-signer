@@ -18,6 +18,7 @@ enum WithdrawalStatus {
   TX_FAILED = 5;
   TX_SUCCESSFUL = 6;
   REPROCESSING = 7;
+  WITHDRAWAL_SIGNED = 8;
 }
 
 enum SubmitWithdrawalStatus {
@@ -40,6 +41,7 @@ message DepositData {
   optional string withdrawal_token = 8;
   optional bool is_wrapped = 9;
   optional string withdrawal_amount = 10;
+  optional string signature = 11;
 }
 
 message CheckWithdrawalResponse {
