@@ -1,7 +1,7 @@
 package gosdk
 
 import (
-	"github.com/hyle-team/bridgeless-signer/internal/utils/zano/types"
+	"github.com/hyle-team/bridgeless-signer/pkg/zano/types"
 	"github.com/pkg/errors"
 )
 

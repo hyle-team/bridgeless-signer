@@ -1,8 +1,8 @@
 package gosdk
 
 import (
-	"dosdk/types"
 	"fmt"
+	"github.com/hyle-team/bridgeless-signer/pkg/zano/types"
 	"log"
 	"testing"
 )

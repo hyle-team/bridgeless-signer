@@ -68,6 +68,7 @@ func (c *Client) Call(method string, res interface{}, params interface{}) error 
 	if rpcResponse.Error != nil {
 		return errors.New(fmt.Sprintf("RPC Error: Code=%d, Message=%s\n", rpcResponse.Error.Code, rpcResponse.Error.Message))
 	}
+	fmt.Printf("RPC Result: %s\n", string(rpcResponse.Result))
 
 	if err = json.Unmarshal(rpcResponse.Result, res); err != nil {
 		return errors.Wrap(err, "failed to unmarshal result")
