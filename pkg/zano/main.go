@@ -74,14 +74,15 @@ func (z ZanoSDK) GetTransaction(txid string) (*types.GetTxResponse, error) {
 }
 
 // assetId must be non-empty and without prefix 0x
-func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (resp *types.EmitAssetResponse, err error) {
+func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (*types.EmitAssetResponse, error) {
 	req := types.EmitAssetParams{
 		AssetID:                assetId,
 		Destination:            destinations,
 		DoNotSplitDestinations: false,
 	}
 
-	if err = z.client.Call(emitAssetMethod, resp, req); err != nil {
+	resp := new(types.EmitAssetResponse)
+	if err := z.client.Call(emitAssetMethod, resp, req); err != nil {
 		return nil, err
 	}
 
@@ -90,14 +91,15 @@ func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (re
 
 // https://docs.zano.org/docs/build/rpc-api/wallet-rpc-api/deploy_asset
 // Asset ID inside destinations can be ommited
-func (z ZanoSDK) DeployAsset(AssetDescriptor types.AssetDescriptor, destinations []types.Destination) (resp *types.DeployAssetResponse, err error) {
+func (z ZanoSDK) DeployAsset(AssetDescriptor types.AssetDescriptor, destinations []types.Destination) (*types.DeployAssetResponse, error) {
 	req := types.DeployAssetParams{
 		AssetDescriptor:        AssetDescriptor,
 		Destinations:           destinations,
 		DoNotSplitDestinations: false,
 	}
 
-	if err = z.client.Call(deployAssetMethod, resp, req); err != nil {
+	resp := new(types.DeployAssetResponse)
+	if err := z.client.Call(deployAssetMethod, resp, req); err != nil {
 		return nil, err
 	}
 

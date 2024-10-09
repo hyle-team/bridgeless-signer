@@ -10,14 +10,14 @@ type ServiceEntrie struct {
 
 type Destination struct {
 	Address string `json:"address"`
-	Amount  int64  `json:"amount"`
+	Amount  string `json:"amount"`
 	AssetID string `json:"asset_id"`
 }
 
 type TransferParams struct {
 	Comment                 string          `json:"comment"`
 	Destinations            []Destination   `json:"destinations"`
-	Fee                     int64           `json:"fee"`
+	Fee                     string          `json:"fee"`
 	HideReceiver            bool            `json:"hide_receiver"`
 	Mixin                   int             `json:"mixin"`
 	PaymentID               string          `json:"payment_id"`
@@ -49,11 +49,11 @@ type GetTxResponse struct {
 }
 
 type Transaction struct {
-	Amount                int64          `json:"amount"`
+	Amount                string         `json:"amount"`
 	Comment               string         `json:"comment"`
 	Contract              []Contract     `json:"contract"`
 	EmployedEntries       interface{}    `json:"employed_entries"`
-	Fee                   int64          `json:"fee"`
+	Fee                   string         `json:"fee"`
 	Height                int            `json:"height"`
 	IsIncome              bool           `json:"is_income"`
 	IsMining              bool           `json:"is_mining"`
@@ -92,7 +92,7 @@ type PrivateDetailes struct {
 	BPledge int    `json:"b_pledge"`
 	C       string `json:"c"`
 	T       string `json:"t"`
-	ToPay   int    `json:"to_pay"`
+	ToPay   string `json:"to_pay"`
 }
 
 type ServiceEntry struct {
@@ -104,7 +104,7 @@ type ServiceEntry struct {
 }
 
 type SubTransfer struct {
-	Amount   int64  `json:"amount"`
+	Amount   string `json:"amount"`
 	AssetID  string `json:"asset_id"`
 	IsIncome bool   `json:"is_income"`
 }
@@ -126,9 +126,9 @@ type AssetDescriptor struct {
 	MetaInfo       string `json:"meta_info"`
 	Owner          string `json:"owner"`
 	Ticker         string `json:"ticker"`
-	TotalMaxSupply int    `json:"total_max_supply"`
+	TotalMaxSupply string `json:"total_max_supply"`
 	OwnerEthPubKey string `json:"owner_eth_pub_key"`
-	CurrentSupply  int    `json:"current_supply"`
+	CurrentSupply  string `json:"current_supply"`
 }
 
 type DeployAssetParams struct {
