@@ -41,7 +41,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 	var unpackedData *data.DepositData
 
 	switch depositType {
-	case DepositNative:
+	case EventDepositedNative:
 		eventBody := new(contracts.BridgeDepositedNative)
 		if err = p.contractABI.UnpackIntoInterface(eventBody, depositType, log.Data); err != nil {
 			p.logger.Debug(errors.Wrap(err, "failed to unpack event"))
@@ -59,7 +59,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 
 		break
 
-	case DepositedERC20:
+	case EventDepositedERC20:
 		eventBody := new(contracts.BridgeDepositedERC20)
 		if err = p.contractABI.UnpackIntoInterface(eventBody, depositType, log.Data); err != nil {
 			p.logger.Debug(errors.Wrap(err, "failed to unpack event"))

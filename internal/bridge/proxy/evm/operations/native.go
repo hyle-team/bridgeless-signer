@@ -23,12 +23,17 @@ func NewWithdrawNativeContent(event data.DepositData) (*WithdrawNativeContent, e
 		return nil, errors.New("invalid chain id")
 	}
 
+	txHash, err := HexToBytes32(event.TxHash)
+	if err != nil {
+		return nil, errors.New("failed to convert tx hash to bytes")
+	}
+
 	return &WithdrawNativeContent{
-		Amount:   To32Bytes(event.DepositAmount.Bytes()),
+		Amount:   ToBytes32(event.DepositAmount.Bytes()),
 		Receiver: hexutil.MustDecode(event.DestinationAddress),
-		TxHash:   hexutil.MustDecode(event.TxHash),
-		TxNonce:  IntTo32Bytes(event.TxEventId),
-		ChainID:  To32Bytes(destinationChainID.Bytes()),
+		TxHash:   txHash,
+		TxNonce:  IntToBytes32(event.TxEventId),
+		ChainID:  ToBytes32(destinationChainID.Bytes()),
 	}, nil
 }
 

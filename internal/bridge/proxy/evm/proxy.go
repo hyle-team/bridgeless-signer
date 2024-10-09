@@ -18,13 +18,13 @@ import (
 )
 
 const (
-	DepositNative  = "DepositedNative"
-	DepositedERC20 = "DepositedERC20"
+	EventDepositedNative = "DepositedNative"
+	EventDepositedERC20  = "DepositedERC20"
 )
 
 var events = []string{
-	DepositNative,
-	DepositedERC20,
+	EventDepositedNative,
+	EventDepositedERC20,
 }
 
 var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
@@ -39,14 +39,13 @@ type proxy struct {
 }
 
 // NewBridgeProxy creates a new bridge proxy for the given chain.
-// We need signer address to obtain the nonce for the signer when forming a new transaction.
-func NewBridgeProxy(chain chain.Evm, signerAddr common.Address, logger *logan.Entry) (bridgeTypes.Proxy, error) {
+func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (bridgeTypes.Proxy, error) {
 	bridgeAbi, err := abi.JSON(strings.NewReader(contracts.BridgeMetaData.ABI))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse bridge ABI")
 	}
 
-	depositEvents := []abi.Event{}
+	var depositEvents []abi.Event
 	for _, event := range events {
 		depositEvent, ok := bridgeAbi.Events[event]
 		if !ok {

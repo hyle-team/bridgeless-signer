@@ -17,13 +17,12 @@ import (
 func RunService(ctx context.Context, cfg config.Config) error {
 	var (
 		wg            = sync.WaitGroup{}
-		serviceSigner = cfg.Signer()
 		coreCfg       = cfg.CoreConnectorConfig()
 		coreConnector = coreconnector.NewConnector(coreCfg.Connection, coreCfg.Settings)
 		rabbitCfg     = cfg.RabbitMQConfig()
 	)
 
-	proxiesRepo, err := proxy.NewProxiesRepository(cfg.Chains(), serviceSigner.Address(), cfg.Log())
+	proxiesRepo, err := proxy.NewProxiesRepository(cfg.Chains(), cfg.Log())
 	if err != nil {
 		return errors.Wrap(err, "failed to create proxiesRepo repository")
 	}
@@ -33,7 +32,7 @@ func RunService(ctx context.Context, cfg config.Config) error {
 		return errors.Wrap(err, "failed to create publisher")
 	}
 
-	processor := bridgeprocessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), serviceSigner, coreConnector)
+	processor := bridgeprocessor.New(proxiesRepo, pg.NewDepositsQ(cfg.DB()), cfg.Signer(), coreConnector)
 
 	core.RunServer(ctx, &wg, cfg, proxiesRepo, producer)
 	core.RunConsumers(ctx, &wg, cfg, producer, processor)
