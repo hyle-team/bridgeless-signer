@@ -16,7 +16,10 @@ import (
 	"time"
 )
 
-const paramOriginTxId = "origin_tx_id"
+const (
+	paramOriginTxId = "origin_tx_id"
+	pollingPeriod   = 1 * time.Second
+)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -62,7 +65,11 @@ func watchConnectionClosing(ws *websocket.Conn, done chan struct{}) {
 	defer close(done)
 
 	for {
-		// collecting only errors and close message to signalize writer
+		// collecting errors and close message to signalize writer.
+		// note: `ReadMessage` is a blocking operation.
+		// note: infinite loop will be broken either by close message or
+		//       closed connection by writer goroutine, which immediately
+		//       sends an error to a reader.
 		mt, _, err := ws.ReadMessage()
 		if err != nil || mt == websocket.CloseMessage {
 			break
@@ -80,8 +87,12 @@ func watchWithdrawalStatus(ctxt context.Context, ws *websocket.Conn, connClosed 
 		prevStatus types.WithdrawalStatus = -1
 
 		cancelled, graceful bool
-		// TODO: make ticker configurable
-		ticker     = time.NewTicker(1 * time.Second)
+		ticker              = time.NewTicker(pollingPeriod)
+
+		// function to repeat iteration after some period or break the loop
+		// in case of a cancellation signal. If the signal is produced by
+		// app context, websocket connection would be closed gracefully with
+		// the corresponding `CloseGoingAway` status
 		tillCancel = func() {
 			select {
 			case <-connClosed:
@@ -96,7 +107,11 @@ func watchWithdrawalStatus(ctxt context.Context, ws *websocket.Conn, connClosed 
 
 	defer ticker.Stop()
 
-	// fast-start without waiting for initial tick
+	// fast-starting without waiting for initial tick.
+	// This shenanigan is just a classic `do-while` construction
+	// with missing init statement and condition expression.
+	// Using `tillCancel` as a post statement allows us to run
+	// first iteration without waiting for ticker to tick.
 	for ; ; tillCancel() {
 		if cancelled {
 			if graceful {
@@ -132,19 +147,7 @@ func watchWithdrawalStatus(ctxt context.Context, ws *websocket.Conn, connClosed 
 		}
 
 		// is it a time for websocket closing
-		if slices.Contains(
-			[]types.WithdrawalStatus{
-				// transaction is sent
-				types.WithdrawalStatus_TX_PENDING,
-				types.WithdrawalStatus_TX_SUCCESSFUL,
-				types.WithdrawalStatus_TX_FAILED,
-				// ready to be sent
-				types.WithdrawalStatus_WITHDRAWAL_SIGNED,
-				// data invalid or something goes wrong
-				types.WithdrawalStatus_INVALID,
-				types.WithdrawalStatus_FAILED,
-			}, deposit.Status,
-		) {
+		if slices.Contains(data.FinalWithdrawalStatuses, deposit.Status) {
 			err = ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
 				logger.WithError(err).Error("failed to send close msg after finish")
