@@ -45,13 +45,13 @@ func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (bridgeTypes.Proxy, er
 		return nil, errors.Wrap(err, "failed to parse bridge ABI")
 	}
 
-	var depositEvents []abi.Event
-	for _, event := range events {
+	depositEvents := make([]abi.Event, len(events))
+	for i, event := range events {
 		depositEvent, ok := bridgeAbi.Events[event]
 		if !ok {
 			return nil, errors.New("wrong bridge ABI events")
 		}
-		depositEvents = append(depositEvents, depositEvent)
+		depositEvents[i] = depositEvent
 	}
 
 	bridgeContract, err := contracts.NewBridge(chain.BridgeAddress, chain.Rpc)
@@ -83,6 +83,7 @@ func (p *proxy) getDepositLogType(log *types.Log) string {
 			return event.Name
 		}
 	}
+
 	return ""
 }
 
