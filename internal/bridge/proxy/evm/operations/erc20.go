@@ -25,15 +25,10 @@ func NewWithdrawERC20Content(event data.DepositData) (*WithdrawERC20Content, err
 		return nil, errors.New("invalid chain id")
 	}
 
-	txHash, err := HexToBytes32(event.TxHash)
-	if err != nil {
-		return nil, errors.New("failed to convert tx hash to bytes")
-	}
-
 	return &WithdrawERC20Content{
 		Amount:                  ToBytes32(event.DepositAmount.Bytes()),
 		Receiver:                hexutil.MustDecode(event.DestinationAddress),
-		TxHash:                  txHash,
+		TxHash:                  hexutil.MustDecode(event.TxHash),
 		TxNonce:                 IntToBytes32(event.TxEventId),
 		ChainID:                 ToBytes32(destinationChainID.Bytes()),
 		DestinationTokenAddress: event.DestinationTokenAddress.Bytes(),
