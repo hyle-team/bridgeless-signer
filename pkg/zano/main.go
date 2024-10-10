@@ -6,10 +6,15 @@ import (
 )
 
 const (
+	// wallet methods
 	searchForTransactionsMethod = "search_for_transactions"
 	deployAssetMethod           = "deploy_asset"
 	emitAssetMethod             = "emit_asset"
 	transferMethod              = "transfer"
+
+	sendExtSignedAssetTxMethod = "send_ext_signed_asset_tx"
+	// node methods
+	decryptTxDetailsMethod = "decrypt_tx_details"
 )
 
 type ZanoSDK struct {
@@ -34,7 +39,7 @@ func (z ZanoSDK) Transfer(comment string, service []types.ServiceEntrie, destina
 		Comment:                 comment,
 		Destinations:            destinations,
 		ServiceEntries:          service,
-		Fee:                     10000000000,
+		Fee:                     "10000000000",
 		HideReceiver:            true,
 		Mixin:                   15,
 		PaymentID:               "",
@@ -43,7 +48,7 @@ func (z ZanoSDK) Transfer(comment string, service []types.ServiceEntrie, destina
 	}
 
 	resp := new(types.TransferResponse)
-	if err := z.client.Call(transferMethod, resp, req); err != nil {
+	if err := z.client.Call(transferMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -66,7 +71,7 @@ func (z ZanoSDK) GetTransaction(txid string) (*types.GetTxResponse, error) {
 		TxID:           txid,
 	}
 	resp := new(types.GetTxResponse)
-	if err := z.client.Call(searchForTransactionsMethod, resp, req); err != nil {
+	if err := z.client.Call(searchForTransactionsMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -82,7 +87,7 @@ func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (*t
 	}
 
 	resp := new(types.EmitAssetResponse)
-	if err := z.client.Call(emitAssetMethod, resp, req); err != nil {
+	if err := z.client.Call(emitAssetMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -91,15 +96,49 @@ func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (*t
 
 // https://docs.zano.org/docs/build/rpc-api/wallet-rpc-api/deploy_asset
 // Asset ID inside destinations can be ommited
-func (z ZanoSDK) DeployAsset(AssetDescriptor types.AssetDescriptor, destinations []types.Destination) (*types.DeployAssetResponse, error) {
+func (z ZanoSDK) DeployAsset(assetDescriptor types.AssetDescriptor, destinations []types.Destination) (*types.DeployAssetResponse, error) {
 	req := types.DeployAssetParams{
-		AssetDescriptor:        AssetDescriptor,
+		AssetDescriptor:        assetDescriptor,
 		Destinations:           destinations,
 		DoNotSplitDestinations: false,
 	}
 
 	resp := new(types.DeployAssetResponse)
-	if err := z.client.Call(deployAssetMethod, resp, req); err != nil {
+	if err := z.client.Call(deployAssetMethod, resp, req, true); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// TxDetails returns decrypted tx info
+func (z ZanoSDK) TxDetails(outputAddress, txBlob, txID, txSecretKey string) (*types.DecryptTxDetailsResponse, error) {
+	req := types.DecryptTxDetailsParams{
+		OutputsAddresses: outputAddress,
+		TxBlob:           txBlob,
+		TxID:             txID,
+		TxSecretKey:      txSecretKey,
+	}
+
+	resp := new(types.DecryptTxDetailsResponse)
+	if err := z.client.Call(decryptTxDetailsMethod, resp, req, false); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// SendExtSignedAssetTX submit signed tx to chain
+func (z ZanoSDK) SendExtSignedAssetTX(ethSig, finalizedTx, unsignedTx string, unlockTransfersOnFail bool) (*types.SendExtSignedAssetTXResult, error) {
+	req := types.SendExtSignedAssetTXParams{
+		EthSig:                ethSig,
+		FinalizedTx:           finalizedTx,
+		UnlockTransfersOnFail: unlockTransfersOnFail,
+		UnsignedTx:            unsignedTx,
+	}
+
+	resp := new(types.SendExtSignedAssetTXResult)
+	if err := z.client.Call(sendExtSignedAssetTxMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 

@@ -1,5 +1,6 @@
 package types
 
+// wallet
 type ServiceEntrie struct {
 	Body        string `json:"body"`
 	Flags       int    `json:"flags"`
@@ -116,7 +117,15 @@ type EmitAssetParams struct {
 }
 
 type EmitAssetResponse struct {
-	TxID string `json:"tx_id"`
+	DataForExternalSigning DataForExternalSigning `json:"data_for_external_signing"`
+	TxID                   string                 `json:"tx_id"`
+}
+
+type DataForExternalSigning struct {
+	FinalizedTx      string   `json:"finalized_tx"`
+	OutputsAddresses []string `json:"outputs_addresses"`
+	TxSecretKey      string   `json:"tx_secret_key"`
+	UnsignedTx       string   `json:"unsigned_tx"`
 }
 
 type AssetDescriptor struct {
@@ -140,4 +149,38 @@ type DeployAssetParams struct {
 type DeployAssetResponse struct {
 	NewAssetId string `json:"new_asset_id"`
 	TxID       string `json:"tx_id"`
+}
+
+type DecryptTxDetailsParams struct {
+	OutputsAddresses string `json:"outputs_addresses"`
+	TxBlob           string `json:"tx_blob"`
+	TxID             string `json:"tx_id"`
+	TxSecretKey      string `json:"tx_secret_key"`
+}
+
+type SendExtSignedAssetTXParams struct {
+	EthSig                string `json:"eth_sig"`
+	FinalizedTx           string `json:"finalized_tx"`
+	UnlockTransfersOnFail bool   `json:"unlock_transfers_on_fail"`
+	UnsignedTx            string `json:"unsigned_tx"`
+}
+
+type SendExtSignedAssetTXResult struct {
+	TransfersWereUnlocked bool   `json:"transfer_were_unlocked"`
+	Status                string `json:"status"`
+}
+
+// RPC
+type DecryptTxDetailsResponse struct {
+	DecodedOutputs []TxOutput `json:"decoded_outputs"`
+	Status         string     `json:"status"`
+	TxInJSON       string     `json:"tx_in_json"`
+	VerifiedTxID   string     `json:"verified_tx_id"`
+}
+
+type TxOutput struct {
+	Address  string `json:"address"`
+	Amount   int    `json:"amount"`
+	AssetID  string `json:"asset_id"`
+	OutIndex int    `json:"out_index"`
 }

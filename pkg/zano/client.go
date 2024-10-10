@@ -33,23 +33,28 @@ type RPCError struct {
 }
 
 type Client struct {
-	url       string
+	walletRPC string
+	nodeRPC   string
 	idCounter atomic.Uint32
 }
 
 func NewClient(url string) *Client {
 	return &Client{
-		url: url,
+		walletRPC: url,
 	}
 }
 
-func (c *Client) Call(method string, res interface{}, params interface{}) error {
+func (c *Client) Call(method string, res interface{}, params interface{}, isWalletMethod bool) error {
 	req, err := c.prepareMessage(method, params)
 	if err != nil {
 		return errors.Wrap(err, "failed to prepare request")
 	}
 
-	resp, err := http.Post(c.url, "application/json", req)
+	rpc := c.nodeRPC
+	if isWalletMethod {
+		rpc = c.walletRPC
+	}
+	resp, err := http.Post(rpc, "application/json", req)
 	if err != nil {
 		return errors.Wrap(err, "failed to send request")
 	}
