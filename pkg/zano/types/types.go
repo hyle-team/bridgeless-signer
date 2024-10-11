@@ -11,7 +11,7 @@ type ServiceEntrie struct {
 
 type Destination struct {
 	Address string `json:"address"`
-	Amount  string `json:"amount"`
+	Amount  int64  `json:"amount"`
 	AssetID string `json:"asset_id"`
 }
 
@@ -112,11 +112,21 @@ type SubTransfer struct {
 
 type EmitAssetParams struct {
 	AssetID                string        `json:"asset_id"`
-	Destination            []Destination `json:"destination"`
+	Destinations           []Destination `json:"destinations"`
 	DoNotSplitDestinations bool          `json:"do_not_split_destinations"`
 }
 
 type EmitAssetResponse struct {
+	DataForExternalSigning DataForExternalSigning `json:"data_for_external_signing"`
+	TxID                   string                 `json:"tx_id"`
+}
+
+type BurnAssetParams struct {
+	AssetID    string `json:"asset_id"`
+	BurnAmount string `json:"burn_amount"`
+}
+
+type BurnAssetResponse struct {
 	DataForExternalSigning DataForExternalSigning `json:"data_for_external_signing"`
 	TxID                   string                 `json:"tx_id"`
 }
@@ -152,14 +162,15 @@ type DeployAssetResponse struct {
 }
 
 type DecryptTxDetailsParams struct {
-	OutputsAddresses string `json:"outputs_addresses"`
-	TxBlob           string `json:"tx_blob"`
-	TxID             string `json:"tx_id"`
-	TxSecretKey      string `json:"tx_secret_key"`
+	OutputsAddresses []string `json:"outputs_addresses"`
+	TxBlob           string   `json:"tx_blob"`
+	TxID             string   `json:"tx_id"`
+	TxSecretKey      string   `json:"tx_secret_key"`
 }
 
 type SendExtSignedAssetTXParams struct {
 	EthSig                string `json:"eth_sig"`
+	ExpectedTxID          string `json:"expected_tx_id"`
 	FinalizedTx           string `json:"finalized_tx"`
 	UnlockTransfersOnFail bool   `json:"unlock_transfers_on_fail"`
 	UnsignedTx            string `json:"unsigned_tx"`

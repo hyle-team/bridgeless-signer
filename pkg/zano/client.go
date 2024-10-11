@@ -38,9 +38,10 @@ type Client struct {
 	idCounter atomic.Uint32
 }
 
-func NewClient(url string) *Client {
+func NewClient(walletRPC, nodeRPC string) *Client {
 	return &Client{
-		walletRPC: url,
+		walletRPC: walletRPC,
+		nodeRPC:   nodeRPC,
 	}
 }
 
