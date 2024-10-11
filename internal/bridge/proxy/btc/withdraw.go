@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+const hexPrefix = "0x"
+
 func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 	if len(data) == 0 {
 		return "", errors.New("empty data")
@@ -40,7 +42,7 @@ func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 		return "", errors.Wrap(err, "failed to send transaction")
 	}
 
-	return hash.String(), nil
+	return hexPrefix + hash.String(), nil
 }
 
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {

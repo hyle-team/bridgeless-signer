@@ -5,39 +5,55 @@ import (
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
+	"net"
 )
 
-type RESTGatewayConfigurer interface {
-	RESTGatewayConfig() RESTGatewayConfig
+type Listenerer interface {
+	GRPCListener() net.Listener
+	HTTPListener() net.Listener
 }
 
-type RESTGatewayConfig struct {
-	Address string `fig:"addr,required"`
+const (
+	grpcKey = "listener-grpc"
+	httpKey = "listener-http"
+)
+
+func NewListenerer(getter kv.Getter) Listenerer {
+	return &listener{getter: getter}
 }
 
-func NewRESTGatewayConfigurer(getter kv.Getter) RESTGatewayConfigurer {
-	return &gatewayConfigurer{
-		getter: getter,
-	}
+type listener struct {
+	getter   kv.Getter
+	grpcOnce comfig.Once
+	httpOnce comfig.Once
 }
 
-type gatewayConfigurer struct {
-	getter kv.Getter
-	once   comfig.Once
+func (l *listener) GRPCListener() net.Listener {
+	return l.listener(&l.grpcOnce, grpcKey)
 }
 
-func (c *gatewayConfigurer) RESTGatewayConfig() RESTGatewayConfig {
-	return c.once.Do(func() interface{} {
-		const yamlKey = "rest_gateway"
-		var conf RESTGatewayConfig
+func (l *listener) HTTPListener() net.Listener {
+	return l.listener(&l.httpOnce, httpKey)
+}
 
-		if err := figure.
-			Out(&conf).
-			From(kv.MustGetStringMap(c.getter, yamlKey)).
-			Please(); err != nil {
-			panic(errors.Wrap(err, "failed to configure REST gateway"))
+func (l *listener) listener(once *comfig.Once, key string) net.Listener {
+	return once.Do(func() interface{} {
+		var config struct {
+			Addr string `fig:"addr,required"`
+		}
+		err := figure.
+			Out(&config).
+			From(kv.MustGetStringMap(l.getter, key)).
+			Please()
+		if err != nil {
+			panic(errors.Wrap(err, "failed to load listener config"))
 		}
 
-		return conf
-	}).(RESTGatewayConfig)
+		lsnr, err := net.Listen("tcp", config.Addr)
+		if err != nil {
+			panic(errors.Wrap(err, "failed to bind listener address"))
+		}
+
+		return lsnr
+	}).(net.Listener)
 }

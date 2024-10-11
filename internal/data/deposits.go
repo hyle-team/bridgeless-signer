@@ -12,6 +12,17 @@ import (
 const OriginTxIdPattern = "%s-%d-%s"
 
 var ErrAlreadySubmitted = errors.New("transaction already submitted")
+var FinalWithdrawalStatuses = []types.WithdrawalStatus{
+	// transaction is sent
+	types.WithdrawalStatus_TX_PENDING,
+	types.WithdrawalStatus_TX_SUCCESSFUL,
+	types.WithdrawalStatus_TX_FAILED,
+	// ready to be sent
+	types.WithdrawalStatus_WITHDRAWAL_SIGNED,
+	// data invalid or something goes wrong
+	types.WithdrawalStatus_INVALID,
+	types.WithdrawalStatus_FAILED,
+}
 
 type DepositsQ interface {
 	New() DepositsQ

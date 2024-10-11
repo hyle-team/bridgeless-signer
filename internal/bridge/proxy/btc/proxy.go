@@ -12,7 +12,7 @@ import (
 // minSatoshisPerOutput calculated for P2PKH
 const minSatoshisPerOutput = 547
 
-var txHashPattern = regexp.MustCompile("^[a-fA-F0-9]{64}$")
+var txHashPattern = regexp.MustCompile("^0x[a-fA-F0-9]{64}$")
 
 type proxy struct {
 	chain  chain.Bitcoin

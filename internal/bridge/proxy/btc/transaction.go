@@ -9,7 +9,7 @@ import (
 )
 
 func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStatus, error) {
-	tx, err := p.getTx(txHash)
+	tx, err := p.getTransaction(txHash)
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrTxNotFound) {
 			return bridgeTypes.TransactionStatusNotFound, nil
@@ -26,7 +26,8 @@ func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStat
 	}
 }
 
-func (p *proxy) getTx(txHash string) (*btcjson.TxRawResult, error) {
+func (p *proxy) getTransaction(txHash string) (*btcjson.TxRawResult, error) {
+	txHash = strings.TrimPrefix(txHash, "0x")
 	hash, err := chainhash.NewHashFromStr(txHash)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse tx hash")

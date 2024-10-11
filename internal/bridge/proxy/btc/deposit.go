@@ -26,7 +26,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		dstDataIdx = depositIdx + 1
 	)
 
-	tx, err := p.getTx(id.TxHash)
+	tx, err := p.getTransaction(id.TxHash)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get transaction")
 	}
@@ -77,7 +77,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 }
 
 func (p *proxy) parseSenderAddress(in btcjson.Vin) (addr string, err error) {
-	prevTx, err := p.getTx(in.Txid)
+	prevTx, err := p.getTransaction(in.Txid)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get previous transaction to identify sender")
 	}

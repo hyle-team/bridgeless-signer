@@ -4,7 +4,7 @@ import (
 	"math/big"
 )
 
-func To32Bytes(arr []byte) []byte {
+func ToBytes32(arr []byte) []byte {
 	if len(arr) >= 32 {
 		return arr[:32]
 	}
@@ -13,8 +13,8 @@ func To32Bytes(arr []byte) []byte {
 	return append(res, arr...)
 }
 
-func IntTo32Bytes(amount int) []byte {
-	return To32Bytes(big.NewInt(int64(amount)).Bytes())
+func IntToBytes32(amount int) []byte {
+	return ToBytes32(big.NewInt(int64(amount)).Bytes())
 }
 
 func BoolToBytes(b bool) []byte {
