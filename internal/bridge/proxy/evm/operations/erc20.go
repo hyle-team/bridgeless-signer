@@ -26,7 +26,7 @@ func NewWithdrawERC20Content(event data.DepositData) (*WithdrawERC20Content, err
 	}
 
 	return &WithdrawERC20Content{
-		Amount:                  ToBytes32(event.DepositAmount.Bytes()),
+		Amount:                  ToBytes32(event.WithdrawalAmount.Bytes()),
 		Receiver:                hexutil.MustDecode(event.DestinationAddress),
 		TxHash:                  hexutil.MustDecode(event.TxHash),
 		TxNonce:                 IntToBytes32(event.TxEventId),
