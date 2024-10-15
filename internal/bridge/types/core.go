@@ -7,8 +7,9 @@ import (
 )
 
 var (
-	ErrPairNotFound      = errors.New("pair not found")
-	ErrTokenInfoNotFound = errors.New("token info not found")
+	ErrPairNotFound                = errors.New("pair not found")
+	ErrTokenInfoNotFound           = errors.New("token info not found")
+	ErrTransactionAlreadySubmitted = errors.New("transaction already submitted")
 )
 
 type TokenPairer interface {

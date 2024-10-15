@@ -1,7 +1,7 @@
 package types
 
 // wallet
-type ServiceEntrie struct {
+type ServiceEntry struct {
 	Body        string `json:"body"`
 	Flags       int    `json:"flags"`
 	Instruction string `json:"instruction"`
@@ -16,15 +16,15 @@ type Destination struct {
 }
 
 type TransferParams struct {
-	Comment                 string          `json:"comment"`
-	Destinations            []Destination   `json:"destinations"`
-	Fee                     string          `json:"fee"`
-	HideReceiver            bool            `json:"hide_receiver"`
-	Mixin                   int             `json:"mixin"`
-	PaymentID               string          `json:"payment_id"`
-	PushPayer               bool            `json:"push_payer"`
-	ServiceEntries          []ServiceEntrie `json:"service_entries"`
-	ServiceEntriesPermanent bool            `json:"service_entries_permanent"`
+	Comment                 string         `json:"comment"`
+	Destinations            []Destination  `json:"destinations"`
+	Fee                     string         `json:"fee"`
+	HideReceiver            bool           `json:"hide_receiver"`
+	Mixin                   int            `json:"mixin"`
+	PaymentID               string         `json:"payment_id"`
+	PushPayer               bool           `json:"push_payer"`
+	ServiceEntries          []ServiceEntry `json:"service_entries"`
+	ServiceEntriesPermanent bool           `json:"service_entries_permanent"`
 }
 
 type TransferResponse struct {
@@ -94,14 +94,6 @@ type PrivateDetailes struct {
 	C       string `json:"c"`
 	T       string `json:"t"`
 	ToPay   string `json:"to_pay"`
-}
-
-type ServiceEntry struct {
-	Body        string `json:"body"`
-	Flags       int    `json:"flags"`
-	Instruction string `json:"instruction"`
-	Security    string `json:"security"`
-	ServiceID   string `json:"service_id"`
 }
 
 type SubTransfer struct {

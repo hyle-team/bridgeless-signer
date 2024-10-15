@@ -16,6 +16,8 @@ const (
 	sendExtSignedAssetTxMethod = "send_ext_signed_asset_tx"
 	// node methods
 	decryptTxDetailsMethod = "decrypt_tx_details"
+
+	defaultMixin = 15
 )
 
 type ZanoSDK struct {
@@ -29,11 +31,11 @@ func NewZanoSDK(walletRPC, nodeRPC string) *ZanoSDK {
 }
 
 // Transfer Make new payment transaction from the wallet
-// service []types.ServiceEntrie can be empty.
+// service []types.ServiceEntry can be empty.
 // wallet rpc api method
-func (z ZanoSDK) Transfer(comment string, service []types.ServiceEntrie, destinations []types.Destination) (*types.TransferResponse, error) {
+func (z ZanoSDK) Transfer(comment string, service []types.ServiceEntry, destinations []types.Destination) (*types.TransferResponse, error) {
 	if service == nil || len(service) == 0 {
-		service = []types.ServiceEntrie{}
+		service = []types.ServiceEntry{}
 	}
 	if destinations == nil || len(destinations) == 0 {
 		return nil, errors.New("destinations must be non-empty")
@@ -44,7 +46,7 @@ func (z ZanoSDK) Transfer(comment string, service []types.ServiceEntrie, destina
 		ServiceEntries:          service,
 		Fee:                     "10000000000",
 		HideReceiver:            true,
-		Mixin:                   15,
+		Mixin:                   defaultMixin,
 		PaymentID:               "",
 		PushPayer:               false,
 		ServiceEntriesPermanent: true,
@@ -83,7 +85,7 @@ func (z ZanoSDK) GetTransaction(txid string) (*types.GetTxResponse, error) {
 	return resp, nil
 }
 
-// EmitAsset Emmit new coins of the the asset, that is controlled by this wallet.
+// EmitAsset Emmit new coins of the asset, that is controlled by this wallet.
 // assetId must be non-empty and without prefix 0x
 // wallet rpc api method
 func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (*types.EmitAssetResponse, error) {

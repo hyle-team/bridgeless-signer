@@ -1,7 +1,7 @@
 package evm
 
 import (
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/types/operations"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm/operations"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"
@@ -21,6 +21,7 @@ func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot create WithdrawNativeContent operation")
 		}
+
 		return operation.CalculateHash(), nil
 	}
 
@@ -28,5 +29,6 @@ func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create WithdrawERC20Content operation")
 	}
+
 	return operation.CalculateHash(), nil
 }

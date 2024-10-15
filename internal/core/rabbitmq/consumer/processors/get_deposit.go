@@ -3,7 +3,6 @@ package processors
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"

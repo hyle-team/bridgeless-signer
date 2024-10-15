@@ -1,8 +1,11 @@
-package handler
+package server
 
 import (
 	"context"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	"github.com/hyle-team/bridgeless-signer/internal/core/api/ctx"
+	"github.com/hyle-team/bridgeless-signer/internal/core/api/requests"
+	apiTypes "github.com/hyle-team/bridgeless-signer/internal/core/api/types"
 
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
@@ -10,38 +13,44 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (h *ServiceHandler) CheckWithdrawal(_ context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error) {
-	wr, err := h.CheckWithdrawalRequest(request)
+func (grpcImplementation) CheckWithdrawal(ctxt context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error) {
+	var (
+		proxies = ctx.Proxies(ctxt)
+		db      = ctx.DB(ctxt)
+		logger  = ctx.Logger(ctxt)
+	)
+
+	wr, err := requests.CheckWithdrawalRequest(request, proxies)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	dbconn := h.db.New()
 	depositIdentifier := data.DepositIdentifier{
 		TxHash:    wr.Deposit.TxHash,
 		TxEventId: int(wr.Deposit.TxEventIndex),
 		ChainId:   wr.Deposit.ChainId,
 	}
-	tx, err := dbconn.Get(depositIdentifier)
+
+	tx, err := db.Get(depositIdentifier)
 	if err != nil {
-		h.logger.WithError(err).Error("failed to get deposit")
-		return nil, ErrInternal
+		logger.WithError(err).Error("failed to get deposit")
+		return nil, apiTypes.ErrInternal
 	}
 	if tx == nil {
 		return nil, status.Error(codes.NotFound, "deposit not found")
 	}
 
 	if tx.Status == types.WithdrawalStatus_TX_PENDING && tx.WithdrawalTxHash != nil {
-		proxy, err := h.proxies.Proxy(*tx.WithdrawalChainId)
+		proxy, err := proxies.Proxy(*tx.WithdrawalChainId)
 		if err != nil {
-			h.logger.WithError(err).Error("failed to get proxy")
-			return nil, ErrInternal // should not happen if the chain is supported, but just in case
+			logger.WithError(err).Error("failed to get proxy")
+			return nil, apiTypes.ErrInternal // should not happen if the chain is supported, but just in case
 		}
 
 		st, err := proxy.GetTransactionStatus(*tx.WithdrawalTxHash)
 		if err != nil {
-			h.logger.WithError(err).Error("failed to get tx receipt")
-			return nil, ErrInternal
+			logger.WithError(err).Error("failed to get tx receipt")
+			return nil, apiTypes.ErrInternal
 		}
 
 		if st != bridgeTypes.TransactionStatusPending {
@@ -52,9 +61,9 @@ func (h *ServiceHandler) CheckWithdrawal(_ context.Context, request *types.Check
 				tx.Status = types.WithdrawalStatus_TX_SUCCESSFUL
 			}
 			// updating in the db
-			if err = dbconn.UpdateWithdrawalStatus(tx.Status, tx.Id); err != nil {
-				h.logger.WithError(err).Error("failed to update transaction status")
-				return nil, ErrInternal
+			if err = db.UpdateWithdrawalStatus(tx.Status, tx.Id); err != nil {
+				logger.WithError(err).Error("failed to update transaction status")
+				return nil, apiTypes.ErrInternal
 			}
 		}
 	}
