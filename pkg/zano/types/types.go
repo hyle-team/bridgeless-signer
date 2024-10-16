@@ -11,7 +11,7 @@ type ServiceEntry struct {
 
 type Destination struct {
 	Address string `json:"address"`
-	Amount  int64  `json:"amount"`
+	Amount  uint64 `json:"amount"`
 	AssetID string `json:"asset_id"`
 }
 
@@ -50,11 +50,11 @@ type GetTxResponse struct {
 }
 
 type Transaction struct {
-	Amount                string         `json:"amount"`
+	Amount                uint64         `json:"amount"`
 	Comment               string         `json:"comment"`
 	Contract              []Contract     `json:"contract"`
 	EmployedEntries       interface{}    `json:"employed_entries"`
-	Fee                   string         `json:"fee"`
+	Fee                   uint64         `json:"fee"`
 	Height                int            `json:"height"`
 	IsIncome              bool           `json:"is_income"`
 	IsMining              bool           `json:"is_mining"`
@@ -97,7 +97,7 @@ type PrivateDetailes struct {
 }
 
 type SubTransfer struct {
-	Amount   string `json:"amount"`
+	Amount   uint64 `json:"amount"`
 	AssetID  string `json:"asset_id"`
 	IsIncome bool   `json:"is_income"`
 }
