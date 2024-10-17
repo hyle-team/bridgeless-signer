@@ -4,7 +4,10 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"
+	"regexp"
 )
+
+var DefaultTransactionHashPattern = regexp.MustCompile("^0x[a-fA-F0-9]{64}$")
 
 var (
 	ErrChainNotSupported      = errors.New("chain not supported")
@@ -27,12 +30,13 @@ type ChainType string
 const (
 	ChainTypeEVM     ChainType = "evm"
 	ChainTypeBitcoin ChainType = "bitcoin"
+	ChainTypeZano    ChainType = "zano"
 	ChainTypeOther   ChainType = "other"
 )
 
 func (c ChainType) Validate() error {
 	switch c {
-	case ChainTypeEVM, ChainTypeBitcoin, ChainTypeOther:
+	case ChainTypeEVM, ChainTypeBitcoin, ChainTypeZano, ChainTypeOther:
 		return nil
 	default:
 		return errors.New("invalid chain type")
@@ -63,6 +67,9 @@ type Proxy interface {
 
 	// Bitcoin-specific methods
 	SendBitcoins(map[string]*big.Int) (txHash string, err error)
+
+	// Zano-specific methods
+	// EmitAsset(data data.DepositData)
 }
 
 type ProxiesRepository interface {

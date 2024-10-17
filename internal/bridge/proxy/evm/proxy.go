@@ -5,7 +5,6 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	"gitlab.com/distributed_lab/logan/v3"
 	"math/big"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -26,8 +25,6 @@ var events = []string{
 	EventDepositedNative,
 	EventDepositedERC20,
 }
-
-var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
 
 type proxy struct {
 	chain          chain.Evm
@@ -96,5 +93,5 @@ func (p *proxy) SendBitcoins(_ map[string]*big.Int) (txHash string, err error) {
 }
 
 func (p *proxy) TransactionHashValid(hash string) bool {
-	return txHashPattern.MatchString(hash)
+	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
 }

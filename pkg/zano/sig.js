@@ -3,12 +3,14 @@ const { ethers } = require("ethers");
 const { exit } = require('process');
 const fs = require('fs');
 
-const noderpc ="http://37.27.100.59:10505/json_rpc"
+const noderpc =""
 
 const firstWallet  = "http://localhost:10500/json_rpc"
 const secondWallet = "http://localhost:10505/json_rpc"
 const secondKey    = ""
 const firstKey     = ""
+
+let hashes = []
 
 
 /// Define an async function that takes method name and parameters
@@ -101,7 +103,7 @@ async function deploy_asset()
     }
 }
 
-async function emmit_asset()
+async function emmit_asset(asset_id)
 {
     try {
 
@@ -130,7 +132,7 @@ async function emmit_asset()
             jsonrpc: "2.0",
             method: "emit_asset",
             params: {
-                asset_id: "693271afac4c26971fe3ebe5d87853c625795966960ff05588ae42450fb96074",
+                asset_id: asset_id,
                 destinations: [{
                     address: "ZxDphM9gFU359BXfg2BsPi4xrfapivmTi1c1pvogvD3dbAdha4iCosCWup8YkyitrvdAH15Cin65C2AFpA3AF6cJ2amvcNF7w",
                     amount: 100000000000,
@@ -214,6 +216,7 @@ async function emmit_asset()
         const res_sign = await callJsonRpc(requestSendSigned, secondWallet);
         //fs.writeFileSync('sign_response.json', JSON.stringify(res_sign, null, 2));
         console.log("sign_response response: " + JSON.stringify(res_sign, null, 2));
+        hashes.push(res_decrypt.result.verified_tx_id)
     }
     catch (error) {
         console.error('Error occurred:', error);
@@ -276,12 +279,12 @@ async function main()
         //
         // //asset id 7d51ecaad2e3458e0d62b146f33079c6ea307841b09a44b777e0c01eb11b98bf
         // */
-        await emmit_asset();
-        await emmit_asset();
+        await emmit_asset("693271afac4c26971fe3ebe5d87853c625795966960ff05588ae42450fb96074");
+        await emmit_asset("693271afac4c26971fe3ebe5d87853c625795966960ff05588ae42450fb96074");
         //await test_sign()
         //await whitelist_add("cab92cb5338d7b9f533c404c884cadb3ba579601074a6216e28f0d4da13e2c14")
         //await balance()
-
+        console.log(hashes)
 
 
 

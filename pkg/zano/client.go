@@ -1,4 +1,4 @@
-package gosdk
+package zano
 
 import (
 	"bytes"
@@ -55,6 +55,7 @@ func (c *Client) Call(method string, res interface{}, params interface{}, isWall
 	if isWalletMethod {
 		rpc = c.walletRPC
 	}
+
 	resp, err := http.Post(rpc, "application/json", req)
 	if err != nil {
 		return errors.Wrap(err, "failed to send request")
@@ -79,6 +80,7 @@ func (c *Client) Call(method string, res interface{}, params interface{}, isWall
 	if err = json.Unmarshal(rpcResponse.Result, res); err != nil {
 		return errors.Wrap(err, "failed to unmarshal result")
 	}
+
 	return nil
 }
 
@@ -93,8 +95,8 @@ func (c *Client) prepareMessage(method string, params interface{}) (*bytes.Buffe
 	requestBody, err := json.Marshal(request)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal request")
-
 	}
+
 	return bytes.NewBuffer(requestBody), err
 }
 

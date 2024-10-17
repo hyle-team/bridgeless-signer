@@ -1,4 +1,4 @@
-package gosdk
+package zano
 
 import (
 	"crypto/ecdsa"
@@ -38,23 +38,28 @@ func Test_sign(t *testing.T) {
 }
 
 func Test_transfer(t *testing.T) {
-	zano := NewZanoSDK(firstWallet, "")
+	zano := NewSDK(firstWallet, "")
 	dst := make([]types.Destination, 0)
 	dst = append(dst, types.Destination{
 		Address: "ZxCuASh1nm3PzJThzA5fJf6BpnpBVZCj8iyKYEtnMsVBXzjxrvuh5X9TmWzDxezSPKjJLzAscgtgFWNJRKMT2WZL16fiGvfdm",
 		Amount:  123,
-		AssetID: "7d3f348fbebfffc4e61a3686189cf870ea393e1c88b8f636acbfdacf9e4b2db2",
+		AssetID: "d6329b5b1f7c0805b5c345f4957554002a2f557845f64d7645dae0e051a6498a",
 	})
 
 	res, err := zano.Transfer("second creation", nil, dst)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(res)
+	fmt.Println(res.TxHash)
+	res, err = zano.Transfer("second creation", nil, dst)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res.TxHash)
 }
 
 func Test_getTx(t *testing.T) {
-	zano := NewZanoSDK(secondWallet, "")
+	zano := NewSDK(secondWallet, "")
 
 	res, err := zano.GetTransaction("")
 	if err != nil {
@@ -65,7 +70,7 @@ func Test_getTx(t *testing.T) {
 }
 
 func Test_deployAsset(t *testing.T) {
-	zano := NewZanoSDK(secondWallet, "")
+	zano := NewSDK(secondWallet, "")
 
 	description := types.AssetDescriptor{
 		DecimalPoint:   12,
@@ -94,7 +99,7 @@ func Test_deployAsset(t *testing.T) {
 
 func Test_emitAsset(t *testing.T) {
 	// pass nodeRPC url instead of ""
-	zano := NewZanoSDK(secondWallet, "http://37.27.100.59:10505/json_rpc")
+	zano := NewSDK(secondWallet, "http://37.27.100.59:10505/json_rpc")
 
 	dst := []types.Destination{{
 		Address: "ZxDphM9gFU359BXfg2BsPi4xrfapivmTi1c1pvogvD3dbAdha4iCosCWup8YkyitrvdAH15Cin65C2AFpA3AF6cJ2amvcNF7w",
@@ -103,7 +108,7 @@ func Test_emitAsset(t *testing.T) {
 	}}
 
 	// emit asset returns raw data what can be used to decrypt tx data
-	res, err := zano.EmitAsset("cab92cb5338d7b9f533c404c884cadb3ba579601074a6216e28f0d4da13e2c14", dst)
+	res, err := zano.EmitAsset("cab92cb5338d7b9f533c404c884cadb3ba579601074a6216e28f0d4da13e2c14", dst...)
 	if err != nil {
 		log.Fatal(1, err)
 	}
@@ -138,7 +143,7 @@ func Test_emitAsset(t *testing.T) {
 
 func Test_BurnAsset(t *testing.T) {
 	// pass nodeRPC url instead of ""
-	zano := NewZanoSDK(secondWallet, "http://37.27.100.59:10505/json_rpc")
+	zano := NewSDK(secondWallet, "http://37.27.100.59:10505/json_rpc")
 
 	// emit asset returns raw data what can be used to decrypt tx data
 	res, err := zano.BurnAsset("7d3f348fbebfffc4e61a3686189cf870ea393e1c88b8f636acbfdacf9e4b2db2", "123")

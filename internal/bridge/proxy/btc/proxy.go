@@ -6,13 +6,10 @@ import (
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
-	"regexp"
 )
 
 // minSatoshisPerOutput calculated for P2PKH
 const minSatoshisPerOutput = 547
-
-var txHashPattern = regexp.MustCompile("^0x[a-fA-F0-9]{64}$")
 
 type proxy struct {
 	chain  chain.Bitcoin
@@ -37,5 +34,5 @@ func (p *proxy) AddressValid(addr string) bool {
 }
 
 func (p *proxy) TransactionHashValid(hash string) bool {
-	return txHashPattern.MatchString(hash)
+	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
 }

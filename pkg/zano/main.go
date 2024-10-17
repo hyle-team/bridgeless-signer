@@ -1,4 +1,4 @@
-package gosdk
+package zano
 
 import (
 	"github.com/hyle-team/bridgeless-signer/pkg/zano/types"
@@ -20,12 +20,12 @@ const (
 	defaultMixin = 15
 )
 
-type ZanoSDK struct {
+type Sdk struct {
 	client *Client
 }
 
-func NewZanoSDK(walletRPC, nodeRPC string) *ZanoSDK {
-	return &ZanoSDK{
+func NewSDK(walletRPC, nodeRPC string) *Sdk {
+	return &Sdk{
 		client: NewClient(walletRPC, nodeRPC),
 	}
 }
@@ -33,7 +33,7 @@ func NewZanoSDK(walletRPC, nodeRPC string) *ZanoSDK {
 // Transfer Make new payment transaction from the wallet
 // service []types.ServiceEntry can be empty.
 // wallet rpc api method
-func (z ZanoSDK) Transfer(comment string, service []types.ServiceEntry, destinations []types.Destination) (*types.TransferResponse, error) {
+func (z Sdk) Transfer(comment string, service []types.ServiceEntry, destinations []types.Destination) (*types.TransferResponse, error) {
 	if service == nil || len(service) == 0 {
 		service = []types.ServiceEntry{}
 	}
@@ -67,7 +67,7 @@ func (z ZanoSDK) Transfer(comment string, service []types.ServiceEntry, destinat
 // If GetTxResponse contains nill in each field (in, out, pool) it means that transaction
 // in pending and there aren`t ways to send some value from this asset
 // wallet rpc api method
-func (z ZanoSDK) GetTransaction(txid string) (*types.GetTxResponse, error) {
+func (z Sdk) GetTransaction(txid string) (*types.GetTxResponse, error) {
 	req := types.GetTxParams{
 		FilterByHeight: false,
 		In:             true,
@@ -88,7 +88,11 @@ func (z ZanoSDK) GetTransaction(txid string) (*types.GetTxResponse, error) {
 // EmitAsset Emmit new coins of the asset, that is controlled by this wallet.
 // assetId must be non-empty and without prefix 0x
 // wallet rpc api method
-func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (*types.EmitAssetResponse, error) {
+func (z Sdk) EmitAsset(assetId string, destinations ...types.Destination) (*types.EmitAssetResponse, error) {
+	if len(destinations) == 0 {
+		return nil, errors.New("destinations must be non-empty")
+	}
+
 	req := types.EmitAssetParams{
 		AssetID:                assetId,
 		Destinations:           destinations,
@@ -107,7 +111,7 @@ func (z ZanoSDK) EmitAsset(assetId string, destinations []types.Destination) (*t
 // https://docs.zano.org/docs/build/rpc-api/wallet-rpc-api/burn_asset/
 // assetId must be non-empty and without prefix 0x
 // wallet rpc api method
-func (z ZanoSDK) BurnAsset(assetId string, amount string) (*types.BurnAssetResponse, error) {
+func (z Sdk) BurnAsset(assetId string, amount string) (*types.BurnAssetResponse, error) {
 	req := types.BurnAssetParams{
 		AssetID:    assetId,
 		BurnAmount: amount,
@@ -125,7 +129,7 @@ func (z ZanoSDK) BurnAsset(assetId string, amount string) (*types.BurnAssetRespo
 // https://docs.zano.org/docs/build/rpc-api/wallet-rpc-api/deploy_asset
 // Asset ID inside destinations can be omitted
 // wallet rpc api method
-func (z ZanoSDK) DeployAsset(assetDescriptor types.AssetDescriptor, destinations []types.Destination) (*types.DeployAssetResponse, error) {
+func (z Sdk) DeployAsset(assetDescriptor types.AssetDescriptor, destinations []types.Destination) (*types.DeployAssetResponse, error) {
 	req := types.DeployAssetParams{
 		AssetDescriptor:        assetDescriptor,
 		Destinations:           destinations,
@@ -142,7 +146,7 @@ func (z ZanoSDK) DeployAsset(assetDescriptor types.AssetDescriptor, destinations
 
 // TxDetails Decrypts transaction private information. Should be used only with your own local daemon for security reasons.
 // node rpc api method
-func (z ZanoSDK) TxDetails(outputAddress []string, txBlob, txID, txSecretKey string) (*types.DecryptTxDetailsResponse, error) {
+func (z Sdk) TxDetails(outputAddress []string, txBlob, txID, txSecretKey string) (*types.DecryptTxDetailsResponse, error) {
 	req := types.DecryptTxDetailsParams{
 		OutputsAddresses: outputAddress,
 		TxBlob:           txBlob,
@@ -160,7 +164,7 @@ func (z ZanoSDK) TxDetails(outputAddress []string, txBlob, txID, txSecretKey str
 
 // SendExtSignedAssetTX Inserts externally made asset ownership signature into the given transaction and broadcasts it.
 // wallet rpc api method
-func (z ZanoSDK) SendExtSignedAssetTX(ethSig, expectedTXID, finalizedTx, unsignedTx string, unlockTransfersOnFail bool) (*types.SendExtSignedAssetTXResult, error) {
+func (z Sdk) SendExtSignedAssetTX(ethSig, expectedTXID, finalizedTx, unsignedTx string, unlockTransfersOnFail bool) (*types.SendExtSignedAssetTXResult, error) {
 	req := types.SendExtSignedAssetTXParams{
 		EthSig:                ethSig,
 		ExpectedTxID:          expectedTXID,
