@@ -1,10 +1,11 @@
 package types
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	coretypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/pkg/errors"
 )
+
+const DefaultNativeTokenAddress = "0x0000000000000000000000000000000000000000"
 
 var (
 	ErrPairNotFound                = errors.New("pair not found")
@@ -15,7 +16,7 @@ var (
 type TokenPairer interface {
 	GetDestinationTokenInfo(
 		srcChainId string,
-		srcTokenAddr common.Address,
+		srcTokenAddr string,
 		dstChainId string,
 	) (coretypes.TokenInfo, error)
 }

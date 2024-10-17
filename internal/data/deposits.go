@@ -2,7 +2,6 @@ package data
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -150,8 +149,8 @@ type DepositData struct {
 	DepositAmount    *big.Int
 	WithdrawalAmount *big.Int
 
-	TokenAddress            common.Address
-	DestinationTokenAddress common.Address
+	TokenAddress            string
+	DestinationTokenAddress string
 
 	IsWrappedToken bool
 	Signature      []byte

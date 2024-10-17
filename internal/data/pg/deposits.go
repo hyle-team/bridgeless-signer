@@ -153,10 +153,10 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 		depositsDepositBlock:     data.Block,
 		depositIsWrappedToken:    data.IsWrappedToken,
 		// can be 0x00... in case of native ones
-		depositsDepositToken: strings.ToLower(data.TokenAddress.String()),
+		depositsDepositToken: strings.ToLower(data.TokenAddress),
 		depositsDepositor:    strings.ToLower(data.SourceAddress),
 		// can be 0x00... in case of native ones
-		depositsWithdrawalToken:   strings.ToLower(data.DestinationTokenAddress.String()),
+		depositsWithdrawalToken:   strings.ToLower(data.DestinationTokenAddress),
 		depositsWithdrawalChainId: data.DestinationChainId,
 	}
 

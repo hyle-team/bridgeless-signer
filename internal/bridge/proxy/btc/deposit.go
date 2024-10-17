@@ -71,8 +71,9 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		DestinationAddress: addr,
 		SourceAddress:      depositor,
 		DepositAmount:      amount,
-		// no token address here
-		Block: block.Height,
+		// as Bitcoin does not have any other currencies
+		TokenAddress: bridgeTypes.DefaultNativeTokenAddress,
+		Block:        block.Height,
 	}, nil
 }
 

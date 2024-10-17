@@ -8,6 +8,7 @@ import (
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
@@ -52,6 +53,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 			DepositIdentifier:  id,
 			DestinationChainId: eventBody.Network,
 			DestinationAddress: eventBody.Receiver,
+			TokenAddress:       bridgeTypes.DefaultNativeTokenAddress,
 			DepositAmount:      eventBody.Amount,
 			Block:              int64(log.BlockNumber),
 			SourceAddress:      from.String(),
@@ -71,7 +73,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 			DestinationChainId: eventBody.Network,
 			DestinationAddress: eventBody.Receiver,
 			DepositAmount:      eventBody.Amount,
-			TokenAddress:       eventBody.Token,
+			TokenAddress:       strings.ToLower(eventBody.Token.String()),
 			IsWrappedToken:     eventBody.IsWrapped,
 			Block:              int64(log.BlockNumber),
 			SourceAddress:      from.String(),

@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/common"
 	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
@@ -11,12 +10,12 @@ import (
 
 func (c *Connector) GetDestinationTokenInfo(
 	srcChainId string,
-	srcTokenAddr common.Address,
+	srcTokenAddr string,
 	dstChainId string,
 ) (bridgetypes.TokenInfo, error) {
 	req := bridgetypes.QueryGetTokenPair{
 		SrcChain:   srcChainId,
-		SrcAddress: strings.ToLower(srcTokenAddr.String()),
+		SrcAddress: strings.ToLower(srcTokenAddr),
 		DstChain:   dstChainId,
 	}
 
