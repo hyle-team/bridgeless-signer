@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
@@ -18,6 +19,12 @@ import (
 const (
 	defaultDecimals                  = 8
 	defaultDepositorAddressOutputIdx = 0
+
+	dstSeparator = "-"
+	// address + chainId
+	dstParamsCount = 2
+	dstEthAddrLen  = 42
+	dstZanoAddrLen = 71
 )
 
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
@@ -109,19 +116,33 @@ func (p *proxy) parseDestinationOutput(out btcjson.Vout) (addr, chainId string, 
 	}
 
 	scriptRaw, err := hex.DecodeString(out.ScriptPubKey.Hex)
+	if err != nil {
+		return addr, chainId, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, err.Error())
+	}
+
 	if scriptRaw[0] != txscript.OP_RETURN && len(scriptRaw) <= 3 {
 		return addr, chainId, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "destination data missing")
 	}
 
 	// Omitting: OP_RETURN OP_PUSH [return data length] (first three bytes)
-	dstData := scriptRaw[3:]
+	dstData := string(scriptRaw[3:])
 
-	params := strings.Split(string(dstData), "-")
-	if len(params) != 2 {
+	params := strings.Split(dstData, dstSeparator)
+	if len(params) != dstParamsCount {
 		return addr, chainId, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "invalid destination params count")
 	}
 
-	return params[0], params[1], nil
+	switch len(params[0]) {
+	case dstEthAddrLen:
+		addr = params[0]
+	case dstZanoAddrLen:
+		addr = base58.Encode([]byte(params[0]))
+	default:
+		err = errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "invalid destination address parameter")
+	}
+	chainId = params[1]
+
+	return
 }
 
 var supportedScriptTypes = []txscript.ScriptClass{

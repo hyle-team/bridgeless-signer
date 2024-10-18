@@ -16,10 +16,9 @@ type GetDepositRequest struct {
 }
 
 type ZanoSignedWithdrawalRequest struct {
-	Signature      string
-	ExpectedTxHash string
-	FinalizedTx    string
-	UnsignedTx     string
+	DepositDbId int64
+	Data        data.DepositData
+	Transaction SignedTransaction
 }
 
 func (r WithdrawalRequest) Id() int64 {

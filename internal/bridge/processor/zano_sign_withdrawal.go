@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessSignZanoWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.SignedTransaction, reprocessable bool, err error) {
+func (p *Processor) ProcessSignZanoWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.ZanoSignedWithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
@@ -31,9 +31,14 @@ func (p *Processor) ProcessSignZanoWithdrawalRequest(req bridgeTypes.WithdrawalR
 	encodedSignature := hexutil.Encode(signature)
 	// stripping redundant hex-prefix and recovery byte (two hex-characters)
 	strippedSignature := encodedSignature[2 : len(encodedSignature)-2]
-
-	return &bridgeTypes.SignedTransaction{
+	signedTx := bridgeTypes.SignedTransaction{
 		Signature:           strippedSignature,
 		UnsignedTransaction: *unsignedTx,
+	}
+
+	return &bridgeTypes.ZanoSignedWithdrawalRequest{
+		DepositDbId: req.DepositDbId,
+		Data:        req.Data,
+		Transaction: signedTx,
 	}, false, nil
 }

@@ -52,5 +52,5 @@ func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.WithdrawalRequest
 		return false, errors.Wrap(err, "failed to set withdrawals")
 	}
 
-	return true, nil
+	return false, nil
 }
