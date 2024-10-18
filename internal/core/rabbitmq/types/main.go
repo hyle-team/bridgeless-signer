@@ -34,16 +34,16 @@ const (
 
 var ErrorMaxResendReached = errors.New("max resend count reached")
 
-type Producer interface {
-	SendGetDepositRequest(request bridgeTypes.GetDepositRequest) error
-	SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
+type Publisher interface {
+	PublishGetDepositRequest(request bridgeTypes.GetDepositRequest) error
+	PublishSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
 
-	SendEthereumSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	PublishEthereumSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
 
-	SendBitcoinSendWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	PublishBitcoinSendWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
 
-	SendZanoSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
-	SendZanoSendWithdrawalRequest(request bridgeTypes.ZanoSignedWithdrawalRequest) error
+	PublishZanoSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	PublishZanoSendWithdrawalRequest(request bridgeTypes.ZanoSignedWithdrawalRequest) error
 	DeliveryResender
 }
 

@@ -12,16 +12,16 @@ import (
 
 type GetDepositHandler struct {
 	processor *processor.Processor
-	producer  rabbitTypes.Producer
+	publisher rabbitTypes.Publisher
 }
 
 func NewGetDepositHandler(
 	processor *processor.Processor,
-	producer rabbitTypes.Producer,
+	publisher rabbitTypes.Publisher,
 ) rabbitTypes.DeliveryProcessor {
 	return &GetDepositHandler{
 		processor: processor,
-		producer:  producer,
+		publisher: publisher,
 	}
 }
 
@@ -51,11 +51,11 @@ func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessab
 	reprocessable = true
 	switch withdrawReq.Destination {
 	case bridgeTypes.ChainTypeEVM:
-		err = h.producer.SendEthereumSignWithdrawalRequest(*withdrawReq)
+		err = h.publisher.PublishEthereumSignWithdrawalRequest(*withdrawReq)
 	case bridgeTypes.ChainTypeBitcoin:
-		err = h.producer.SendBitcoinSendWithdrawalRequest(*withdrawReq)
+		err = h.publisher.PublishBitcoinSendWithdrawalRequest(*withdrawReq)
 	case bridgeTypes.ChainTypeZano:
-		err = h.producer.SendZanoSignWithdrawalRequest(*withdrawReq)
+		err = h.publisher.PublishZanoSignWithdrawalRequest(*withdrawReq)
 	default:
 		err = errors.New(fmt.Sprintf("invalid destination type: %v", withdrawReq.Destination))
 		reprocessable = false

@@ -9,16 +9,16 @@ import (
 
 type BitcoinSendWithdrawalHandler struct {
 	processor *processor.Processor
-	producer  rabbitTypes.Producer
+	publisher rabbitTypes.Publisher
 }
 
 func NewBitcoinSendWithdrawalHandler(
 	processor *processor.Processor,
-	producer rabbitTypes.Producer,
+	publisher rabbitTypes.Publisher,
 ) rabbitTypes.BatchProcessor[bridgeTypes.WithdrawalRequest] {
 	return &BitcoinSendWithdrawalHandler{
 		processor: processor,
-		producer:  producer,
+		publisher: publisher,
 	}
 }
 
@@ -46,7 +46,7 @@ func (h *BitcoinSendWithdrawalHandler) ProcessBatch(batch []bridgeTypes.Withdraw
 
 	for _, entry := range batch {
 		submitTxReq := bridgeTypes.SubmitTransactionRequest{DepositDbId: entry.DepositDbId}
-		if err = h.producer.SendSubmitTransactionRequest(submitTxReq); err != nil {
+		if err = h.publisher.PublishSubmitTransactionRequest(submitTxReq); err != nil {
 			return true, rprFailCallback, errors.Wrap(err, "failed to send submit transaction request")
 		}
 	}

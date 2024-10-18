@@ -12,16 +12,16 @@ import (
 
 type EthereumSignWithdrawalHandler struct {
 	processor *processor.Processor
-	producer  rabbitTypes.Producer
+	publisher rabbitTypes.Publisher
 }
 
 func NewEthereumSignWithdrawalHandler(
 	processor *processor.Processor,
-	producer rabbitTypes.Producer,
+	publisher rabbitTypes.Publisher,
 ) rabbitTypes.DeliveryProcessor {
 	return &EthereumSignWithdrawalHandler{
 		processor: processor,
-		producer:  producer,
+		publisher: publisher,
 	}
 }
 
@@ -48,7 +48,7 @@ func (h *EthereumSignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) 
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process eth sign withdrawal request")
 	}
 
-	if err = h.producer.SendSubmitTransactionRequest(*submitReq); err != nil {
+	if err = h.publisher.PublishSubmitTransactionRequest(*submitReq); err != nil {
 		return true, rprFailCallback, errors.Wrap(err, "failed to send submit withdraw request")
 	}
 

@@ -63,7 +63,7 @@ func (grpcImplementation) SubmitWithdrawal(ctxt context.Context, request *types.
 		}
 	}
 
-	if err = producer.SendGetDepositRequest(bridgeTypes.GetDepositRequest{
+	if err = producer.PublishGetDepositRequest(bridgeTypes.GetDepositRequest{
 		DepositDbId:       deposit.Id,
 		DepositIdentifier: depositIdentifier,
 	}); err != nil {

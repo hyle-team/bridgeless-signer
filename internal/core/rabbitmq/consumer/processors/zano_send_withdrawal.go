@@ -12,16 +12,16 @@ import (
 
 type ZanoSendWithdrawalHandler struct {
 	processor *processor.Processor
-	producer  rabbitTypes.Producer
+	publisher rabbitTypes.Publisher
 }
 
 func NewZanoSendWithdrawalHandler(
 	processor *processor.Processor,
-	producer rabbitTypes.Producer,
+	publisher rabbitTypes.Publisher,
 ) rabbitTypes.DeliveryProcessor {
 	return &ZanoSendWithdrawalHandler{
 		processor: processor,
-		producer:  producer,
+		publisher: publisher,
 	}
 }
 
@@ -48,7 +48,7 @@ func (h *ZanoSendWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (rep
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process zano send withdrawal request")
 	}
 
-	if err = h.producer.SendSubmitTransactionRequest(*submitReq); err != nil {
+	if err = h.publisher.PublishSubmitTransactionRequest(*submitReq); err != nil {
 		return true, rprFailCallback, errors.Wrap(err, "failed to send submit withdraw request")
 	}
 

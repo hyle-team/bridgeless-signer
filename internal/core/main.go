@@ -32,7 +32,7 @@ func RunConsumers(
 	ctx context.Context,
 	wg *sync.WaitGroup,
 	cfg config.Config,
-	producer rabbitTypes.Producer,
+	publisher rabbitTypes.Publisher,
 	processor *bridgeProcessor.Processor,
 ) {
 	var (
@@ -40,19 +40,19 @@ func RunConsumers(
 		rabbitCfg    = cfg.RabbitMQConfig()
 		consumersMap = map[string]baseConsumer{
 			rabbitTypes.GetDepositQueue: {
-				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, producer),
+				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, publisher),
 				prefix:            consumer.GetDepositConsumerPrefix,
 			},
 			rabbitTypes.EthSignWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewEthereumSignWithdrawalHandler(processor, producer),
+				deliveryProcessor: consumerProcessors.NewEthereumSignWithdrawalHandler(processor, publisher),
 				prefix:            consumer.EthSignWithdrawalConsumerPrefix,
 			},
 			rabbitTypes.ZanoSignWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewZanoSignWithdrawalHandler(processor, producer),
+				deliveryProcessor: consumerProcessors.NewZanoSignWithdrawalHandler(processor, publisher),
 				prefix:            consumer.ZanoSignWithdrawalConsumerPrefix,
 			},
 			rabbitTypes.ZanoSendWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewZanoSendWithdrawalHandler(processor, producer),
+				deliveryProcessor: consumerProcessors.NewZanoSendWithdrawalHandler(processor, publisher),
 				prefix:            consumer.ZanoSendWithdrawalConsumerPrefix,
 			},
 		}
@@ -73,7 +73,7 @@ func RunConsumers(
 						WithField(serviceComponent, componentConsumer).
 						WithField(componentPart, consumerName),
 					consumerCfg.deliveryProcessor,
-					producer,
+					publisher,
 				)
 
 				if err := cns.Consume(ctx, queue); err != nil {
@@ -93,7 +93,7 @@ func RunConsumers(
 				WithField(serviceComponent, componentConsumer).
 				WithField(componentPart, consumer.SubmitTransactionConsumerPrefix),
 			consumerProcessors.NewSubmitTransactionHandler(processor),
-			producer,
+			publisher,
 			rabbitCfg.TxSubmitterOpts,
 		)
 		if err := cns.Consume(ctx, rabbitTypes.SubmitTransactionQueue); err != nil {
@@ -108,8 +108,8 @@ func RunConsumers(
 			logger.
 				WithField(serviceComponent, componentConsumer).
 				WithField(componentPart, consumer.BitcoinSendWithdrawalConsumerPrefix),
-			consumerProcessors.NewBitcoinSendWithdrawalHandler(processor, producer),
-			producer,
+			consumerProcessors.NewBitcoinSendWithdrawalHandler(processor, publisher),
+			publisher,
 			rabbitCfg.BitcoinSubmitterOpts,
 		)
 		if err := cns.Consume(ctx, rabbitTypes.BtcSendWithdrawalQueue); err != nil {
@@ -124,7 +124,7 @@ func RunServer(
 	wg *sync.WaitGroup,
 	cfg config.Config,
 	proxiesRepo bridgeTypes.ProxiesRepository,
-	producer rabbitTypes.Producer,
+	producer rabbitTypes.Publisher,
 ) {
 	logger := cfg.Log()
 	srv := server.NewServer(
