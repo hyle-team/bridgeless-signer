@@ -10,22 +10,22 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type SignEthWithdrawalHandler struct {
+type ZanoSignWithdrawalHandler struct {
 	processor *processor.Processor
 	producer  rabbitTypes.Producer
 }
 
-func NewSignEthWithdrawalHandler(
+func NewZanoSignWithdrawalHandler(
 	processor *processor.Processor,
 	producer rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
-	return &SignEthWithdrawalHandler{
+	return &ZanoSignWithdrawalHandler{
 		processor: processor,
 		producer:  producer,
 	}
 }
 
-func (h *SignEthWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
+func (h *ZanoSignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
 	var request bridgeTypes.WithdrawalRequest
 	if err = json.Unmarshal(delivery.Body, &request); err != nil {
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
@@ -43,13 +43,13 @@ func (h *SignEthWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (repr
 
 	}()
 
-	submitReq, reprocessable, err := h.processor.ProcessSignEthWithdrawalRequest(request)
+	signedWithdrawReq, reprocessable, err := h.processor.ProcessZanoSignWithdrawalRequest(request)
 	if err != nil {
-		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process sign withdrawal request")
+		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process zano sign withdrawal request")
 	}
 
-	if err = h.producer.SendSubmitTransactionRequest(*submitReq); err != nil {
-		return true, rprFailCallback, errors.Wrap(err, "failed to send submit withdraw request")
+	if err = h.producer.SendZanoSendWithdrawalRequest(*signedWithdrawReq); err != nil {
+		return true, rprFailCallback, errors.Wrap(err, "failed to send zano send withdraw request")
 	}
 
 	return false, nil, nil

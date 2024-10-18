@@ -48,18 +48,18 @@ func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessab
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
 	}
 
+	reprocessable = true
 	switch withdrawReq.Destination {
 	case bridgeTypes.ChainTypeEVM:
-		if err = h.producer.SendSignEthWithdrawalRequest(*withdrawReq); err != nil {
-			return true, rprFailCallback, errors.Wrap(err, "failed to send form withdraw request")
-		}
+		err = h.producer.SendEthereumSignWithdrawalRequest(*withdrawReq)
 	case bridgeTypes.ChainTypeBitcoin:
-		if err = h.producer.SendSubmitBitcoinWithdrawalRequest(*withdrawReq); err != nil {
-			return true, rprFailCallback, errors.Wrap(err, "failed to send submit withdraw request")
-		}
+		err = h.producer.SendBitcoinSendWithdrawalRequest(*withdrawReq)
+	case bridgeTypes.ChainTypeZano:
+		err = h.producer.SendZanoSignWithdrawalRequest(*withdrawReq)
 	default:
-		return false, nil, errors.New(fmt.Sprintf("invalid destination type: %v", withdrawReq.Destination))
+		err = errors.New(fmt.Sprintf("invalid destination type: %v", withdrawReq.Destination))
+		reprocessable = false
 	}
 
-	return false, nil, nil
+	return reprocessable, rprFailCallback, errors.Wrap(err, "failed to send deposit processing request")
 }

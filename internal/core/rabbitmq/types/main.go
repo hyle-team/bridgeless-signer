@@ -24,19 +24,26 @@ const (
 	HeaderDelayKey      = "delay"
 	HeaderRetryCountKey = "x-retry-count"
 
-	GetDepositQueue              = "get-deposit-queue"
-	SignEthWithdrawalQueue       = "sign-eth-withdrawal-queue"
-	SubmitBitcoinWithdrawalQueue = "submit-bitcoin-withdrawal-queue"
-	SubmitTransactionQueue       = "submit-transaction-queue"
+	GetDepositQueue         = "get-deposit-queue"
+	EthSignWithdrawalQueue  = "eth-sign-withdrawal-queue"
+	BtcSendWithdrawalQueue  = "btc-send-withdrawal-queue"
+	ZanoSignWithdrawalQueue = "zano-sign-withdrawal-queue"
+	ZanoSendWithdrawalQueue = "zano-send-withdrawal-queue"
+	SubmitTransactionQueue  = "submit-transaction-queue"
 )
 
 var ErrorMaxResendReached = errors.New("max resend count reached")
 
 type Producer interface {
 	SendGetDepositRequest(request bridgeTypes.GetDepositRequest) error
-	SendSignEthWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
-	SendSubmitBitcoinWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
 	SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
+
+	SendEthereumSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+
+	SendBitcoinSendWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+
+	SendZanoSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	SendZanoSendWithdrawalRequest(request bridgeTypes.ZanoSignedWithdrawalRequest) error
 	DeliveryResender
 }
 

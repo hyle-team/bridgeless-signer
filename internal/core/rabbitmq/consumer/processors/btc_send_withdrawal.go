@@ -7,22 +7,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-type SubmitBitcoinWithdrawalHandler struct {
+type BitcoinSendWithdrawalHandler struct {
 	processor *processor.Processor
 	producer  rabbitTypes.Producer
 }
 
-func NewSubmitBitcoinWithdrawalHandler(
+func NewBitcoinSendWithdrawalHandler(
 	processor *processor.Processor,
 	producer rabbitTypes.Producer,
 ) rabbitTypes.BatchProcessor[bridgeTypes.WithdrawalRequest] {
-	return &SubmitBitcoinWithdrawalHandler{
+	return &BitcoinSendWithdrawalHandler{
 		processor: processor,
 		producer:  producer,
 	}
 }
 
-func (h *SubmitBitcoinWithdrawalHandler) ProcessBatch(batch []bridgeTypes.WithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
+func (h *BitcoinSendWithdrawalHandler) ProcessBatch(batch []bridgeTypes.WithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
 	if len(batch) == 0 {
 		return false, nil, nil
 	}
@@ -39,7 +39,7 @@ func (h *SubmitBitcoinWithdrawalHandler) ProcessBatch(batch []bridgeTypes.Withdr
 
 	}()
 
-	reprocessable, err = h.processor.SendBitcoinWithdrawals(batch...)
+	reprocessable, err = h.processor.ProcessSendBitcoinWithdrawals(batch...)
 	if err != nil {
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process send bitcoin withdrawal request")
 	}

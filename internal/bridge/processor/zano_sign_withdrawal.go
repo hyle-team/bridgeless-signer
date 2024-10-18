@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessSignZanoWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.ZanoSignedWithdrawalRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessZanoSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.ZanoSignedWithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)

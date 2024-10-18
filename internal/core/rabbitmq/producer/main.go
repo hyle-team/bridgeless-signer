@@ -24,9 +24,11 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Produc
 	// Queues is bound to the default exchange
 	var consumerQueues = []string{
 		rabbitTypes.GetDepositQueue,
-		rabbitTypes.SignEthWithdrawalQueue,
-		rabbitTypes.SubmitBitcoinWithdrawalQueue,
+		rabbitTypes.EthSignWithdrawalQueue,
+		rabbitTypes.BtcSendWithdrawalQueue,
 		rabbitTypes.SubmitTransactionQueue,
+		rabbitTypes.ZanoSignWithdrawalQueue,
+		rabbitTypes.ZanoSendWithdrawalQueue,
 	}
 
 	for _, queue := range consumerQueues {
@@ -78,12 +80,20 @@ func (p *Producer) SendGetDepositRequest(request bridgeTypes.GetDepositRequest) 
 	return p.publish(rabbitTypes.GetDepositQueue, request)
 }
 
-func (p *Producer) SendSignEthWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
-	return p.publish(rabbitTypes.SignEthWithdrawalQueue, request)
+func (p *Producer) SendEthereumSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
+	return p.publish(rabbitTypes.EthSignWithdrawalQueue, request)
 }
 
-func (p *Producer) SendSubmitBitcoinWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
-	return p.publish(rabbitTypes.SubmitBitcoinWithdrawalQueue, request)
+func (p *Producer) SendBitcoinSendWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
+	return p.publish(rabbitTypes.BtcSendWithdrawalQueue, request)
+}
+
+func (p *Producer) SendZanoSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error {
+	return p.publish(rabbitTypes.ZanoSignWithdrawalQueue, request)
+}
+
+func (p *Producer) SendZanoSendWithdrawalRequest(request bridgeTypes.ZanoSignedWithdrawalRequest) error {
+	return p.publish(rabbitTypes.ZanoSendWithdrawalQueue, request)
 }
 
 func (p *Producer) SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error {

@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) SubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequest) (reprocessable bool, err error) {
+func (p *Processor) ProcessSubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequest) (reprocessable bool, err error) {
 	if len(reqs) == 0 {
 		return false, nil
 	}

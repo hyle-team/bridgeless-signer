@@ -35,7 +35,7 @@ func (s SubmitTransactionHandler) ProcessBatch(batch []bridgeTypes.SubmitTransac
 		}
 	}()
 
-	reprocessable, err = s.processor.SubmitTransactions(batch...)
+	reprocessable, err = s.processor.ProcessSubmitTransactions(batch...)
 	if err != nil {
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process submit transaction request")
 	}

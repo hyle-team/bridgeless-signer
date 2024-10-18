@@ -43,9 +43,17 @@ func RunConsumers(
 				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, producer),
 				prefix:            consumer.GetDepositConsumerPrefix,
 			},
-			rabbitTypes.SignEthWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewSignEthWithdrawalHandler(processor, producer),
-				prefix:            consumer.SignWithdrawalConsumerPrefix,
+			rabbitTypes.EthSignWithdrawalQueue: {
+				deliveryProcessor: consumerProcessors.NewEthereumSignWithdrawalHandler(processor, producer),
+				prefix:            consumer.EthSignWithdrawalConsumerPrefix,
+			},
+			rabbitTypes.ZanoSignWithdrawalQueue: {
+				deliveryProcessor: consumerProcessors.NewZanoSignWithdrawalHandler(processor, producer),
+				prefix:            consumer.ZanoSignWithdrawalConsumerPrefix,
+			},
+			rabbitTypes.ZanoSendWithdrawalQueue: {
+				deliveryProcessor: consumerProcessors.NewZanoSendWithdrawalHandler(processor, producer),
+				prefix:            consumer.ZanoSendWithdrawalConsumerPrefix,
 			},
 		}
 	)
@@ -96,16 +104,16 @@ func RunConsumers(
 		defer wg.Done()
 		cns := consumer.NewBatch[bridgeTypes.WithdrawalRequest](
 			rabbitCfg.NewChannel(),
-			consumer.SubmitBitcoinWithdrawalConsumerPrefix,
+			consumer.BitcoinSendWithdrawalConsumerPrefix,
 			logger.
 				WithField(serviceComponent, componentConsumer).
-				WithField(componentPart, consumer.SubmitBitcoinWithdrawalConsumerPrefix),
-			consumerProcessors.NewSubmitBitcoinWithdrawalHandler(processor, producer),
+				WithField(componentPart, consumer.BitcoinSendWithdrawalConsumerPrefix),
+			consumerProcessors.NewBitcoinSendWithdrawalHandler(processor, producer),
 			producer,
 			rabbitCfg.BitcoinSubmitterOpts,
 		)
-		if err := cns.Consume(ctx, rabbitTypes.SubmitBitcoinWithdrawalQueue); err != nil {
-			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.SubmitBitcoinWithdrawalConsumerPrefix))
+		if err := cns.Consume(ctx, rabbitTypes.BtcSendWithdrawalQueue); err != nil {
+			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.BitcoinSendWithdrawalConsumerPrefix))
 		}
 	}()
 
