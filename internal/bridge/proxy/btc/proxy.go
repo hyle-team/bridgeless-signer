@@ -36,3 +36,11 @@ func (p *proxy) AddressValid(addr string) bool {
 func (p *proxy) TransactionHashValid(hash string) bool {
 	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
 }
+
+func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedTransaction, error) {
+	return nil, bridgeTypes.ErrNotImplemented
+}
+
+func (p *proxy) EmitAssetSigned(transaction bridgeTypes.SignedTransaction) (txHash string, err error) {
+	return "", bridgeTypes.ErrNotImplemented
+}

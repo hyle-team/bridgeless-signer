@@ -15,14 +15,14 @@ type SubmitBitcoinWithdrawalHandler struct {
 func NewSubmitBitcoinWithdrawalHandler(
 	processor *processor.Processor,
 	producer rabbitTypes.Producer,
-) rabbitTypes.BatchProcessor[bridgeTypes.BitcoinWithdrawalRequest] {
+) rabbitTypes.BatchProcessor[bridgeTypes.WithdrawalRequest] {
 	return &SubmitBitcoinWithdrawalHandler{
 		processor: processor,
 		producer:  producer,
 	}
 }
 
-func (h *SubmitBitcoinWithdrawalHandler) ProcessBatch(batch []bridgeTypes.BitcoinWithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
+func (h *SubmitBitcoinWithdrawalHandler) ProcessBatch(batch []bridgeTypes.WithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
 	if len(batch) == 0 {
 		return false, nil, nil
 	}

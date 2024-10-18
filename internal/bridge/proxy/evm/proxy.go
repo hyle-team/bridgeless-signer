@@ -3,6 +3,7 @@ package evm
 import (
 	"bytes"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
+	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
 	"math/big"
 	"strings"
@@ -94,4 +95,12 @@ func (p *proxy) SendBitcoins(_ map[string]*big.Int) (txHash string, err error) {
 
 func (p *proxy) TransactionHashValid(hash string) bool {
 	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
+}
+
+func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedTransaction, error) {
+	return nil, bridgeTypes.ErrNotImplemented
+}
+
+func (p *proxy) EmitAssetSigned(transaction bridgeTypes.SignedTransaction) (txHash string, err error) {
+	return "", bridgeTypes.ErrNotImplemented
 }

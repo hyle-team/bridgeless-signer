@@ -42,6 +42,10 @@ func (p *proxy) SendBitcoins(m map[string]*big.Int) (txHash string, err error) {
 	return "", bridgeTypes.ErrNotImplemented
 }
 
+func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
+	return nil, bridgeTypes.ErrNotImplemented
+}
+
 func NewBridgeProxy(logger *logan.Entry, sdk *zano.Sdk) bridgeTypes.Proxy {
 	return &proxy{logger, sdk}
 }

@@ -10,22 +10,22 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type SignWithdrawalHandler struct {
+type SignEthWithdrawalHandler struct {
 	processor *processor.Processor
 	producer  rabbitTypes.Producer
 }
 
-func NewSignWithdrawalHandler(
+func NewSignEthWithdrawalHandler(
 	processor *processor.Processor,
 	producer rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
-	return &SignWithdrawalHandler{
+	return &SignEthWithdrawalHandler{
 		processor: processor,
 		producer:  producer,
 	}
 }
 
-func (h *SignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
+func (h *SignEthWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
 	var request bridgeTypes.WithdrawalRequest
 	if err = json.Unmarshal(delivery.Body, &request); err != nil {
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
@@ -43,7 +43,7 @@ func (h *SignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reproce
 
 	}()
 
-	submitReq, reprocessable, err := h.processor.ProcessSignWithdrawalRequest(request)
+	submitReq, reprocessable, err := h.processor.ProcessSignEthWithdrawalRequest(request)
 	if err != nil {
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process sign withdrawal request")
 	}

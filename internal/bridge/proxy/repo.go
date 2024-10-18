@@ -35,7 +35,7 @@ func NewProxiesRepository(chains []chain.Chain, logger *logan.Entry) (proxyRepo 
 			var bitcoinChain chain.Bitcoin
 			bitcoinChain, err = ch.Bitcoin()
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to init bitcoin")
+				return nil, errors.Wrap(err, "failed to init bitcoin chain")
 			}
 			proxy = btc.NewBridgeProxy(bitcoinChain, logger)
 		default:

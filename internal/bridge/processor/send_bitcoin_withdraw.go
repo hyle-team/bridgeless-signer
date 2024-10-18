@@ -7,7 +7,7 @@ import (
 	"math/big"
 )
 
-func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.BitcoinWithdrawalRequest) (reprocessable bool, err error) {
+func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.WithdrawalRequest) (reprocessable bool, err error) {
 	if len(reqs) == 0 {
 		return false, nil
 	}

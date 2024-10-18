@@ -15,13 +15,15 @@ type GetDepositRequest struct {
 	DepositIdentifier data.DepositIdentifier
 }
 
-type BitcoinWithdrawalRequest struct {
-	DepositDbId int64
-	Data        data.DepositData
+type ZanoSignedWithdrawalRequest struct {
+	Signature      string
+	ExpectedTxHash string
+	FinalizedTx    string
+	UnsignedTx     string
 }
 
-func (b BitcoinWithdrawalRequest) Id() int64 {
-	return b.DepositDbId
+func (r WithdrawalRequest) Id() int64 {
+	return r.DepositDbId
 }
 
 type SubmitTransactionRequest struct {

@@ -43,8 +43,8 @@ func RunConsumers(
 				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, producer),
 				prefix:            consumer.GetDepositConsumerPrefix,
 			},
-			rabbitTypes.SignWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewSignWithdrawalHandler(processor, producer),
+			rabbitTypes.SignEthWithdrawalQueue: {
+				deliveryProcessor: consumerProcessors.NewSignEthWithdrawalHandler(processor, producer),
 				prefix:            consumer.SignWithdrawalConsumerPrefix,
 			},
 		}
@@ -94,7 +94,7 @@ func RunConsumers(
 	}()
 	go func() {
 		defer wg.Done()
-		cns := consumer.NewBatch[bridgeTypes.BitcoinWithdrawalRequest](
+		cns := consumer.NewBatch[bridgeTypes.WithdrawalRequest](
 			rabbitCfg.NewChannel(),
 			consumer.SubmitBitcoinWithdrawalConsumerPrefix,
 			logger.

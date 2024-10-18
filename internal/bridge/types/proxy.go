@@ -4,10 +4,7 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"
-	"regexp"
 )
-
-var DefaultTransactionHashPattern = regexp.MustCompile("^0x[a-fA-F0-9]{64}$")
 
 var (
 	ErrChainNotSupported      = errors.New("chain not supported")
@@ -62,6 +59,8 @@ type Proxy interface {
 	TransactionHashValid(hash string) bool
 	WithdrawalAmountValid(amount *big.Int) bool
 
+	// TODO: remove chain-specific methods and switch to type-casting
+
 	// Ethereum-specific methods
 	GetSignHash(data data.DepositData) ([]byte, error)
 
@@ -69,10 +68,22 @@ type Proxy interface {
 	SendBitcoins(map[string]*big.Int) (txHash string, err error)
 
 	// Zano-specific methods
-	// EmitAsset(data data.DepositData)
+	EmitAssetUnsigned(data data.DepositData) (*UnsignedTransaction, error)
+	EmitAssetSigned(transaction SignedTransaction) (txHash string, err error)
 }
 
 type ProxiesRepository interface {
 	Proxy(chainId string) (Proxy, error)
 	SupportsChain(chainId string) bool
+}
+
+type SignedTransaction struct {
+	UnsignedTransaction
+	Signature string
+}
+
+type UnsignedTransaction struct {
+	ExpectedTxHash string
+	FinalizedTx    string
+	Data           string
 }

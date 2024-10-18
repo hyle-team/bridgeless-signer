@@ -5,8 +5,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const DefaultNativeTokenAddress = "0x0000000000000000000000000000000000000000"
-
 var (
 	ErrPairNotFound                = errors.New("pair not found")
 	ErrTokenInfoNotFound           = errors.New("token info not found")

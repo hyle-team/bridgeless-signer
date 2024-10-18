@@ -25,7 +25,7 @@ const (
 	HeaderRetryCountKey = "x-retry-count"
 
 	GetDepositQueue              = "get-deposit-queue"
-	SignWithdrawalQueue          = "sign-withdrawal-queue"
+	SignEthWithdrawalQueue       = "sign-eth-withdrawal-queue"
 	SubmitBitcoinWithdrawalQueue = "submit-bitcoin-withdrawal-queue"
 	SubmitTransactionQueue       = "submit-transaction-queue"
 )
@@ -34,8 +34,8 @@ var ErrorMaxResendReached = errors.New("max resend count reached")
 
 type Producer interface {
 	SendGetDepositRequest(request bridgeTypes.GetDepositRequest) error
-	SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
-	SendSubmitBitcoinWithdrawalRequest(request bridgeTypes.BitcoinWithdrawalRequest) error
+	SendSignEthWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	SendSubmitBitcoinWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
 	SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
 	DeliveryResender
 }
