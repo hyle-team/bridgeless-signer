@@ -60,21 +60,18 @@ func (z Sdk) Transfer(comment string, service []types.ServiceEntry, destinations
 	return resp, nil
 }
 
-// GetTransaction Search for transactions in the wallet by few parameters
+// GetTransactions Search for transactions in the wallet by few parameters
 // Pass a hash without 0x prefix
-// If past non-existed tx hash node will return a node last tx
 // If past empty string instead of a hash node will return all tx for this wallet
-// If GetTxResponse contains nill in each field (in, out, pool) it means that transaction
-// in pending and there aren`t ways to send some value from this asset
 // wallet rpc api method
-func (z Sdk) GetTransaction(txid string) (*types.GetTxResponse, error) {
+func (z Sdk) GetTransactions(txid string) (*types.GetTxResponse, error) {
 	req := types.GetTxParams{
 		FilterByHeight: false,
 		In:             true,
 		MaxHeight:      0,
 		MinHeight:      0,
 		Out:            true,
-		Pool:           false,
+		Pool:           true,
 		TxID:           txid,
 	}
 	resp := new(types.GetTxResponse)

@@ -20,11 +20,6 @@ func (p *proxy) Type() bridgeTypes.ChainType {
 	return bridgeTypes.ChainTypeZano
 }
 
-func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStatus, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
 	//TODO implement me
 	panic("implement me")

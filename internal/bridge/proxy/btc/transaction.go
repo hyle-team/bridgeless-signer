@@ -27,7 +27,7 @@ func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStat
 }
 
 func (p *proxy) getTransaction(txHash string) (*btcjson.TxRawResult, error) {
-	txHash = strings.TrimPrefix(txHash, "0x")
+	txHash = strings.TrimPrefix(txHash, bridgeTypes.HexPrefix)
 	hash, err := chainhash.NewHashFromStr(txHash)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse tx hash")

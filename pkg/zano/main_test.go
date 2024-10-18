@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"log"
 	"testing"
+	"time"
 )
 
 const (
@@ -38,7 +39,7 @@ func Test_sign(t *testing.T) {
 }
 
 func Test_transfer(t *testing.T) {
-	zano := NewSDK(firstWallet, "")
+	zano := NewSDK(secondWallet, "")
 	dst := make([]types.Destination, 0)
 	dst = append(dst, types.Destination{
 		Address: "ZxCuASh1nm3PzJThzA5fJf6BpnpBVZCj8iyKYEtnMsVBXzjxrvuh5X9TmWzDxezSPKjJLzAscgtgFWNJRKMT2WZL16fiGvfdm",
@@ -50,23 +51,38 @@ func Test_transfer(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println(res.TxHash)
-	res, err = zano.Transfer("second creation", nil, dst)
+
+	txs, err := zano.GetTransactions(res.TxHash)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(res.TxHash)
+	fmt.Println(len(txs.In))
+	fmt.Println(len(txs.Out))
+	fmt.Println(len(txs.Pool))
+
+	time.Sleep(time.Second * 2)
+
+	txs, err = zano.GetTransactions(res.TxHash)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(len(txs.In))
+	fmt.Println(len(txs.Out))
+	fmt.Println(len(txs.Pool))
 }
 
 func Test_getTx(t *testing.T) {
-	zano := NewSDK(secondWallet, "")
+	zano := NewSDK(firstWallet, "")
 
-	res, err := zano.GetTransaction("")
+	res, err := zano.GetTransactions("299fb99efaec9feb5a7bc8d4c2f81d193386192b27eed3a03e68b3d2e7ad2a7c")
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(len(res.In))
 	fmt.Println(len(res.Out))
+	fmt.Println(len(res.Pool))
 }
 
 func Test_deployAsset(t *testing.T) {
