@@ -1,9 +1,9 @@
 package zano
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/zano"
 	"gitlab.com/distributed_lab/logan/v3"
 	"math/big"
 	"regexp"
@@ -13,7 +13,7 @@ var addressPattern = regexp.MustCompile(`^[1-9A-HJ-NP-Za-km-z]{97}$`)
 
 type proxy struct {
 	logger *logan.Entry
-	client *zano.Sdk
+	chain  chain.Zano
 }
 
 func (p *proxy) Type() bridgeTypes.ChainType {
@@ -41,6 +41,6 @@ func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
 	return nil, bridgeTypes.ErrNotImplemented
 }
 
-func NewBridgeProxy(logger *logan.Entry, sdk *zano.Sdk) bridgeTypes.Proxy {
-	return &proxy{logger, sdk}
+func NewBridgeProxy(chain chain.Zano, logger *logan.Entry) bridgeTypes.Proxy {
+	return &proxy{logger, chain}
 }

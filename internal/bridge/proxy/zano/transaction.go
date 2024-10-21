@@ -24,7 +24,7 @@ func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStat
 
 func (p *proxy) GetTransaction(txHash string, searchIn, searchOut, searchPool bool) (res *zanoTypes.Transaction, pool bool, err error) {
 	txHash = strings.TrimPrefix(txHash, bridgeTypes.HexPrefix)
-	resp, err := p.client.GetTransactions(txHash)
+	resp, err := p.chain.Client.GetTransactions(txHash)
 	if err != nil {
 		return res, false, errors.Wrap(err, "failed to get transaction")
 	}

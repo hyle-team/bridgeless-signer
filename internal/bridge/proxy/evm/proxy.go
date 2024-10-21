@@ -2,19 +2,17 @@ package evm
 
 import (
 	"bytes"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
-	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"gitlab.com/distributed_lab/logan/v3"
-	"math/big"
-	"strings"
-	"sync"
-
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3"
+	"math/big"
+	"strings"
 )
 
 const (
@@ -28,12 +26,10 @@ var events = []string{
 }
 
 type proxy struct {
-	chain          chain.Evm
-	bridgeContract *contracts.Bridge
-	contractABI    abi.ABI
-	depositEvents  []abi.Event
-	nonceM         sync.Mutex
-	logger         *logan.Entry
+	chain         chain.Evm
+	contractABI   abi.ABI
+	depositEvents []abi.Event
+	logger        *logan.Entry
 }
 
 // NewBridgeProxy creates a new bridge proxy for the given chain.
@@ -52,17 +48,11 @@ func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (bridgeTypes.Proxy, er
 		depositEvents[i] = depositEvent
 	}
 
-	bridgeContract, err := contracts.NewBridge(chain.BridgeAddress, chain.Rpc)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create bridge contract")
-	}
-
 	return &proxy{
-		chain:          chain,
-		contractABI:    bridgeAbi,
-		depositEvents:  depositEvents,
-		bridgeContract: bridgeContract,
-		logger:         logger,
+		chain:         chain,
+		contractABI:   bridgeAbi,
+		depositEvents: depositEvents,
+		logger:        logger,
 	}, nil
 }
 

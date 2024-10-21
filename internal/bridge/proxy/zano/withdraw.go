@@ -24,13 +24,13 @@ func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedT
 		AssetID: "",
 	}
 
-	raw, err := p.client.EmitAsset(data.DestinationTokenAddress, destination)
+	raw, err := p.chain.Client.EmitAsset(data.DestinationTokenAddress, destination)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to emit unsigned asset")
 	}
 
 	signingData := raw.DataForExternalSigning
-	txDetails, err := p.client.TxDetails(
+	txDetails, err := p.chain.Client.TxDetails(
 		signingData.OutputsAddresses,
 		signingData.UnsignedTx,
 		// leaving empty
@@ -48,7 +48,7 @@ func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedT
 }
 
 func (p *proxy) EmitAssetSigned(signedTx bridgeTypes.SignedTransaction) (string, error) {
-	_, err := p.client.SendExtSignedAssetTX(
+	_, err := p.chain.Client.SendExtSignedAssetTX(
 		signedTx.Signature,
 		signedTx.ExpectedTxHash,
 		signedTx.FinalizedTx,
@@ -60,5 +60,5 @@ func (p *proxy) EmitAssetSigned(signedTx bridgeTypes.SignedTransaction) (string,
 		return "", errors.Wrap(err, "failed to emit signed asset")
 	}
 
-	return signedTx.ExpectedTxHash, nil
+	return bridgeTypes.HexPrefix + signedTx.ExpectedTxHash, nil
 }
