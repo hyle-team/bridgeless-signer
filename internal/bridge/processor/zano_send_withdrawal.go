@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/zano"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
@@ -16,8 +17,15 @@ func (p *Processor) ProcessZanoSendWithdrawalRequest(req bridgeTypes.ZanoSignedW
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
+	if proxy.Type() != bridgeTypes.ChainTypeZano {
+		return nil, false, bridgeTypes.ErrChainNotSupported
+	}
+	zanoProxy, ok := proxy.(zano.BridgeProxy)
+	if !ok {
+		return nil, false, bridgeTypes.ErrChainNotSupported
+	}
 
-	hash, err := proxy.EmitAssetSigned(req.Transaction)
+	hash, err := zanoProxy.EmitAssetSigned(req.Transaction)
 	if err != nil {
 		return nil, true, errors.Wrap(err, "failed to broadcast withdrawal")
 	}

@@ -5,11 +5,16 @@ import (
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
-	"math/big"
 	"regexp"
 )
 
 var addressPattern = regexp.MustCompile(`^[1-9A-HJ-NP-Za-km-z]{97}$`)
+
+type BridgeProxy interface {
+	bridgeTypes.Proxy
+	EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedTransaction, error)
+	EmitAssetSigned(transaction bridgeTypes.SignedTransaction) (txHash string, err error)
+}
 
 type proxy struct {
 	logger *logan.Entry
@@ -33,14 +38,6 @@ func (p *proxy) TransactionHashValid(hash string) bool {
 	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
 }
 
-func (p *proxy) SendBitcoins(m map[string]*big.Int) (txHash string, err error) {
-	return "", bridgeTypes.ErrNotImplemented
-}
-
-func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
-	return nil, bridgeTypes.ErrNotImplemented
-}
-
-func NewBridgeProxy(chain chain.Zano, logger *logan.Entry) bridgeTypes.Proxy {
+func NewBridgeProxy(chain chain.Zano, logger *logan.Entry) BridgeProxy {
 	return &proxy{logger, chain}
 }

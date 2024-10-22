@@ -58,18 +58,6 @@ type Proxy interface {
 	AddressValid(addr string) bool
 	TransactionHashValid(hash string) bool
 	WithdrawalAmountValid(amount *big.Int) bool
-
-	// TODO: remove chain-specific methods and switch to type-casting
-
-	// Ethereum-specific methods
-	GetSignHash(data data.DepositData) ([]byte, error)
-
-	// Bitcoin-specific methods
-	SendBitcoins(map[string]*big.Int) (txHash string, err error)
-
-	// Zano-specific methods
-	EmitAssetUnsigned(data data.DepositData) (*UnsignedTransaction, error)
-	EmitAssetSigned(transaction SignedTransaction) (txHash string, err error)
 }
 
 type ProxiesRepository interface {

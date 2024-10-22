@@ -2,6 +2,7 @@ package processor
 
 import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/zano"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
@@ -16,8 +17,15 @@ func (p *Processor) ProcessZanoSignWithdrawalRequest(req bridgeTypes.WithdrawalR
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
+	if proxy.Type() != bridgeTypes.ChainTypeZano {
+		return nil, false, bridgeTypes.ErrChainNotSupported
+	}
+	zanoProxy, ok := proxy.(zano.BridgeProxy)
+	if !ok {
+		return nil, false, bridgeTypes.ErrChainNotSupported
+	}
 
-	unsignedTx, err := proxy.EmitAssetUnsigned(req.Data)
+	unsignedTx, err := zanoProxy.EmitAssetUnsigned(req.Data)
 	if err != nil {
 		return nil, true, errors.Wrap(err, "failed to emit unsigned tx")
 	}

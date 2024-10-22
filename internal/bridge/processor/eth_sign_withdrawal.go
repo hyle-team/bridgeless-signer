@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
@@ -15,8 +16,15 @@ func (p *Processor) ProcessEthSignWithdrawalRequest(req bridgeTypes.WithdrawalRe
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
+	if proxy.Type() != bridgeTypes.ChainTypeEVM {
+		return nil, false, bridgeTypes.ErrChainNotSupported
+	}
+	evmProxy, ok := proxy.(evm.BridgeProxy)
+	if !ok {
+		return nil, false, bridgeTypes.ErrChainNotSupported
+	}
 
-	signHash, err := proxy.GetSignHash(req.Data)
+	signHash, err := evmProxy.GetSignHash(req.Data)
 	if err != nil {
 		return nil, true, errors.Wrap(err, "failed to form withdrawal transaction")
 	}

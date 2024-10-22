@@ -11,7 +11,6 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/logan/v3"
-	"math/big"
 	"strings"
 )
 
@@ -25,6 +24,11 @@ var events = []string{
 	EventDepositedERC20,
 }
 
+type BridgeProxy interface {
+	bridgeTypes.Proxy
+	GetSignHash(data data.DepositData) ([]byte, error)
+}
+
 type proxy struct {
 	chain         chain.Evm
 	contractABI   abi.ABI
@@ -33,7 +37,7 @@ type proxy struct {
 }
 
 // NewBridgeProxy creates a new bridge proxy for the given chain.
-func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (bridgeTypes.Proxy, error) {
+func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (BridgeProxy, error) {
 	bridgeAbi, err := abi.JSON(strings.NewReader(contracts.BridgeMetaData.ABI))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse bridge ABI")
@@ -79,18 +83,6 @@ func (p *proxy) AddressValid(addr string) bool {
 	return common.IsHexAddress(addr)
 }
 
-func (p *proxy) SendBitcoins(_ map[string]*big.Int) (txHash string, err error) {
-	return "", bridgeTypes.ErrNotImplemented
-}
-
 func (p *proxy) TransactionHashValid(hash string) bool {
 	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
-}
-
-func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedTransaction, error) {
-	return nil, bridgeTypes.ErrNotImplemented
-}
-
-func (p *proxy) EmitAssetSigned(transaction bridgeTypes.SignedTransaction) (txHash string, err error) {
-	return "", bridgeTypes.ErrNotImplemented
 }
