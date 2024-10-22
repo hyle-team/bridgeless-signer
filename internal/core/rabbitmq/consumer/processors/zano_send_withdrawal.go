@@ -12,12 +12,12 @@ import (
 
 type ZanoSendWithdrawalHandler struct {
 	processor *processor.Processor
-	publisher rabbitTypes.Publisher
+	publisher rabbitTypes.Producer
 }
 
 func NewZanoSendWithdrawalHandler(
 	processor *processor.Processor,
-	publisher rabbitTypes.Publisher,
+	publisher rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
 	return &ZanoSendWithdrawalHandler{
 		processor: processor,

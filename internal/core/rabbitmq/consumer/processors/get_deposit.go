@@ -12,12 +12,12 @@ import (
 
 type GetDepositHandler struct {
 	processor *processor.Processor
-	publisher rabbitTypes.Publisher
+	publisher rabbitTypes.Producer
 }
 
 func NewGetDepositHandler(
 	processor *processor.Processor,
-	publisher rabbitTypes.Publisher,
+	publisher rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
 	return &GetDepositHandler{
 		processor: processor,

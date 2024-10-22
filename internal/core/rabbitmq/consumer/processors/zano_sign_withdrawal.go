@@ -12,12 +12,12 @@ import (
 
 type ZanoSignWithdrawalHandler struct {
 	processor *processor.Processor
-	publisher rabbitTypes.Publisher
+	publisher rabbitTypes.Producer
 }
 
 func NewZanoSignWithdrawalHandler(
 	processor *processor.Processor,
-	publisher rabbitTypes.Publisher,
+	publisher rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
 	return &ZanoSignWithdrawalHandler{
 		processor: processor,

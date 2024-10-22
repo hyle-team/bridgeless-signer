@@ -12,12 +12,12 @@ import (
 
 type EthereumSignWithdrawalHandler struct {
 	processor *processor.Processor
-	publisher rabbitTypes.Publisher
+	publisher rabbitTypes.Producer
 }
 
 func NewEthereumSignWithdrawalHandler(
 	processor *processor.Processor,
-	publisher rabbitTypes.Publisher,
+	publisher rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
 	return &EthereumSignWithdrawalHandler{
 		processor: processor,

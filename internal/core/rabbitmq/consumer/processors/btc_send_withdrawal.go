@@ -9,12 +9,12 @@ import (
 
 type BitcoinSendWithdrawalHandler struct {
 	processor *processor.Processor
-	publisher rabbitTypes.Publisher
+	publisher rabbitTypes.Producer
 }
 
 func NewBitcoinSendWithdrawalHandler(
 	processor *processor.Processor,
-	publisher rabbitTypes.Publisher,
+	publisher rabbitTypes.Producer,
 ) rabbitTypes.BatchProcessor[bridgeTypes.WithdrawalRequest] {
 	return &BitcoinSendWithdrawalHandler{
 		processor: processor,

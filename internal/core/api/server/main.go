@@ -41,7 +41,7 @@ func NewServer(
 	http net.Listener,
 	db data.DepositsQ,
 	proxies bridgeTypes.ProxiesRepository,
-	producer rabbitTypes.Publisher,
+	producer rabbitTypes.Producer,
 	logger *logan.Entry,
 ) api.Server {
 	return &server{

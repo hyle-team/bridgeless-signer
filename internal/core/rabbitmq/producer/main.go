@@ -1,4 +1,4 @@
-package publisher
+package producer
 
 import (
 	"fmt"
@@ -8,16 +8,16 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Publisher struct {
+type Producer struct {
 	channel *amqp.Channel
 
 	maxRetryCount uint
 	delays        []int32
 }
 
-// New creates a new Publisher instance.
+// New creates a new Producer instance.
 // It ensures that the exchange and queues are created.
-func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Publisher, error) {
+func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Producer, error) {
 
 	// Queues is bound to the default exchange
 	var consumerQueues = []string{
@@ -58,7 +58,7 @@ func New(ch *amqp.Channel, resendParams config.ResendParams) (rabbitTypes.Publis
 		}
 	}
 
-	return &Publisher{
+	return &Producer{
 		channel:       ch,
 		maxRetryCount: resendParams.MaxRetryCount,
 		delays:        resendParams.Delays,

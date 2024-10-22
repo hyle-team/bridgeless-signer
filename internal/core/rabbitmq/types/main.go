@@ -34,7 +34,7 @@ const (
 
 var ErrorMaxResendReached = errors.New("max resend count reached")
 
-type Publisher interface {
+type Producer interface {
 	PublishGetDepositRequest(request bridgeTypes.GetDepositRequest) error
 	PublishSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
 

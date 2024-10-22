@@ -48,12 +48,12 @@ func Proxies(ctx context.Context) bridgeTypes.ProxiesRepository {
 	return ctx.Value(proxiesKey).(bridgeTypes.ProxiesRepository)
 }
 
-func ProducerProvider(producer rabbitTypes.Publisher) func(context.Context) context.Context {
+func ProducerProvider(producer rabbitTypes.Producer) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, producerKey, producer)
 	}
 }
 
-func Producer(ctx context.Context) rabbitTypes.Publisher {
-	return ctx.Value(producerKey).(rabbitTypes.Publisher)
+func Producer(ctx context.Context) rabbitTypes.Producer {
+	return ctx.Value(producerKey).(rabbitTypes.Producer)
 }
