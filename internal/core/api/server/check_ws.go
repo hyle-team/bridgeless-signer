@@ -7,7 +7,7 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/ctx"
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/requests"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"github.com/hyle-team/bridgeless-signer/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -34,7 +34,7 @@ func CheckWithdrawalWs(w http.ResponseWriter, r *http.Request) {
 	)
 
 	req, err := requests.CheckWithdrawalRequest(
-		&types.CheckWithdrawalRequest{
+		&resources.CheckWithdrawalRequest{
 			OriginTxId: chi.URLParam(r, paramOriginTxId),
 		}, proxies,
 	)
@@ -78,13 +78,13 @@ func watchConnectionClosing(ws *websocket.Conn, done chan struct{}) {
 }
 
 func watchWithdrawalStatus(ctxt context.Context, ws *websocket.Conn, connClosed chan struct{}, id data.DepositIdentifier) {
-	defer ws.Close()
+	defer func() { _ = ws.Close() }()
 
 	var (
 		db     = ctx.DB(ctxt)
 		logger = ctx.Logger(ctxt)
 
-		prevStatus types.WithdrawalStatus = -1
+		prevStatus resources.WithdrawalStatus = -1
 
 		cancelled, graceful bool
 		ticker              = time.NewTicker(pollingPeriod)

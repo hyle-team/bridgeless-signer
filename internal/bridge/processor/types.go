@@ -1,12 +1,14 @@
-package types
+package processor
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/zano"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 )
 
 type WithdrawalRequest struct {
 	DepositDbId int64
-	Destination ChainType
+	Destination types.ChainType
 	Data        data.DepositData
 }
 
@@ -18,7 +20,7 @@ type GetDepositRequest struct {
 type ZanoSignedWithdrawalRequest struct {
 	DepositDbId int64
 	Data        data.DepositData
-	Transaction SignedTransaction
+	Transaction zano.SignedTransaction
 }
 
 func (r WithdrawalRequest) Id() int64 {

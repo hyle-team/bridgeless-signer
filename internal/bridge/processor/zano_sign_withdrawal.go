@@ -2,12 +2,13 @@ package processor
 
 import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/zano"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessZanoSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.ZanoSignedWithdrawalRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessZanoSignWithdrawalRequest(req WithdrawalRequest) (res *ZanoSignedWithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
@@ -30,7 +31,7 @@ func (p *Processor) ProcessZanoSignWithdrawalRequest(req bridgeTypes.WithdrawalR
 		return nil, true, errors.Wrap(err, "failed to emit unsigned tx")
 	}
 
-	signData := hexutil.MustDecode(bridgeTypes.HexPrefix + unsignedTx.ExpectedTxHash)
+	signData := hexutil.MustDecode(bridge.HexPrefix + unsignedTx.ExpectedTxHash)
 	signature, err := p.signer.SignMessage(signData)
 	if err != nil {
 		return nil, true, errors.Wrap(err, "failed to sign message")
@@ -39,12 +40,12 @@ func (p *Processor) ProcessZanoSignWithdrawalRequest(req bridgeTypes.WithdrawalR
 	encodedSignature := hexutil.Encode(signature)
 	// stripping redundant hex-prefix and recovery byte (two hex-characters)
 	strippedSignature := encodedSignature[2 : len(encodedSignature)-2]
-	signedTx := bridgeTypes.SignedTransaction{
+	signedTx := zano.SignedTransaction{
 		Signature:           strippedSignature,
 		UnsignedTransaction: *unsignedTx,
 	}
 
-	return &bridgeTypes.ZanoSignedWithdrawalRequest{
+	return &ZanoSignedWithdrawalRequest{
 		DepositDbId: req.DepositDbId,
 		Data:        req.Data,
 		Transaction: signedTx,

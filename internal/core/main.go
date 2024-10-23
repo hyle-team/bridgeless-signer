@@ -86,7 +86,7 @@ func RunConsumers(
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		cns := consumer.NewBatch[bridgeTypes.SubmitTransactionRequest](
+		cns := consumer.NewBatch[bridgeProcessor.SubmitTransactionRequest](
 			rabbitCfg.NewChannel(),
 			consumer.SubmitTransactionConsumerPrefix,
 			logger.
@@ -102,7 +102,7 @@ func RunConsumers(
 	}()
 	go func() {
 		defer wg.Done()
-		cns := consumer.NewBatch[bridgeTypes.WithdrawalRequest](
+		cns := consumer.NewBatch[bridgeProcessor.WithdrawalRequest](
 			rabbitCfg.NewChannel(),
 			consumer.BitcoinSendWithdrawalConsumerPrefix,
 			logger.

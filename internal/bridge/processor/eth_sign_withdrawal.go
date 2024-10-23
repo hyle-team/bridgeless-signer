@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessEthSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.SubmitTransactionRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessEthSignWithdrawalRequest(req WithdrawalRequest) (res *SubmitTransactionRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
@@ -39,7 +39,7 @@ func (p *Processor) ProcessEthSignWithdrawalRequest(req bridgeTypes.WithdrawalRe
 		return nil, true, errors.Wrap(err, "failed to save signature data")
 	}
 
-	return &bridgeTypes.SubmitTransactionRequest{
+	return &SubmitTransactionRequest{
 		DepositDbId: req.DepositDbId,
 	}, false, nil
 }

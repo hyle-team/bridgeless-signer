@@ -15,7 +15,6 @@ var (
 	ErrTxNotConfirmed         = errors.New("transaction not confirmed")
 	ErrInvalidReceiverAddress = errors.New("invalid receiver address")
 	ErrInvalidDepositedAmount = errors.New("invalid deposited amount")
-	ErrNotImplemented         = errors.New("not implemented")
 	ErrInvalidScriptPubKey    = errors.New("invalid script pub key")
 	ErrFailedUnpackLogs       = errors.New("failed to unpack logs")
 	ErrUnsupportedEvent       = errors.New("unsupported event")
@@ -63,15 +62,4 @@ type Proxy interface {
 type ProxiesRepository interface {
 	Proxy(chainId string) (Proxy, error)
 	SupportsChain(chainId string) bool
-}
-
-type SignedTransaction struct {
-	UnsignedTransaction
-	Signature string
-}
-
-type UnsignedTransaction struct {
-	ExpectedTxHash string
-	FinalizedTx    string
-	Data           string
 }

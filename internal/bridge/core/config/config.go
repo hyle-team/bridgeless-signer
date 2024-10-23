@@ -3,7 +3,6 @@ package config
 import (
 	"crypto/tls"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/core"
-	pkgTypes "github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
@@ -80,10 +79,10 @@ func (c *configurer) CoreConnectorConfig() ConnectorConfig {
 }
 
 var accountHook = figure.Hooks{
-	"types.Account": func(value interface{}) (reflect.Value, error) {
+	"core.Account": func(value interface{}) (reflect.Value, error) {
 		switch v := value.(type) {
 		case string:
-			acc, err := pkgTypes.NewAccount(v)
+			acc, err := core.New(v)
 			if err != nil {
 				return reflect.Value{}, errors.Wrap(err, "failed to create account")
 			}

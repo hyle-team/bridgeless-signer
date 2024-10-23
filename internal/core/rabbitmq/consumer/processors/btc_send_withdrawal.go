@@ -2,7 +2,6 @@ package processors
 
 import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/pkg/errors"
 )
@@ -15,14 +14,14 @@ type BitcoinSendWithdrawalHandler struct {
 func NewBitcoinSendWithdrawalHandler(
 	processor *processor.Processor,
 	publisher rabbitTypes.Producer,
-) rabbitTypes.BatchProcessor[bridgeTypes.WithdrawalRequest] {
+) rabbitTypes.BatchProcessor[processor.WithdrawalRequest] {
 	return &BitcoinSendWithdrawalHandler{
 		processor: processor,
 		publisher: publisher,
 	}
 }
 
-func (h *BitcoinSendWithdrawalHandler) ProcessBatch(batch []bridgeTypes.WithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
+func (h *BitcoinSendWithdrawalHandler) ProcessBatch(batch []processor.WithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
 	if len(batch) == 0 {
 		return false, nil, nil
 	}
@@ -45,7 +44,7 @@ func (h *BitcoinSendWithdrawalHandler) ProcessBatch(batch []bridgeTypes.Withdraw
 	}
 
 	for _, entry := range batch {
-		submitTxReq := bridgeTypes.SubmitTransactionRequest{DepositDbId: entry.DepositDbId}
+		submitTxReq := processor.SubmitTransactionRequest{DepositDbId: entry.DepositDbId}
 		if err = h.publisher.PublishSubmitTransactionRequest(submitTxReq); err != nil {
 			return true, rprFailCallback, errors.Wrap(err, "failed to send submit transaction request")
 		}

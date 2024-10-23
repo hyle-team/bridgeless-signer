@@ -2,8 +2,8 @@ package types
 
 import (
 	"context"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 )

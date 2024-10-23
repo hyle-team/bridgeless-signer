@@ -36,7 +36,8 @@ func (c *chainer) Chains() []Chain {
 				figure.BaseHooks,
 				figure.EthereumHooks,
 				bitcoinHooks,
-				interfaceHook).
+				interfaceHook,
+			).
 			From(kv.MustGetStringMap(c.getter, "chains")).
 			Please(); err != nil {
 			panic(errors.Wrap(err, "failed to figure out chains"))

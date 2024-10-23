@@ -2,19 +2,19 @@ package server
 
 import (
 	"context"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/ctx"
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/requests"
 	apiTypes "github.com/hyle-team/bridgeless-signer/internal/core/api/types"
+	"github.com/hyle-team/bridgeless-signer/resources"
 
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (grpcImplementation) SubmitWithdrawal(ctxt context.Context, request *types.WithdrawalRequest) (*types.Empty, error) {
+func (grpcImplementation) SubmitWithdrawal(ctxt context.Context, request *resources.WithdrawalRequest) (*resources.Empty, error) {
 	var (
 		proxies  = ctx.Proxies(ctxt)
 		db       = ctx.DB(ctxt)
@@ -42,7 +42,7 @@ func (grpcImplementation) SubmitWithdrawal(ctxt context.Context, request *types.
 			return nil, apiTypes.ErrTxAlreadySubmitted
 		}
 
-		deposit.Status = types.WithdrawalStatus_REPROCESSING
+		deposit.Status = resources.WithdrawalStatus_REPROCESSING
 		if err = db.UpdateWithdrawalStatus(deposit.Status, deposit.Id); err != nil {
 			logger.WithError(err).Error("failed to update transaction status")
 			return nil, apiTypes.ErrInternal
@@ -50,8 +50,8 @@ func (grpcImplementation) SubmitWithdrawal(ctxt context.Context, request *types.
 	} else {
 		deposit = &data.Deposit{
 			DepositIdentifier: depositIdentifier,
-			Status:            types.WithdrawalStatus_PROCESSING,
-			SubmitStatus:      types.SubmitWithdrawalStatus_NOT_SUBMITTED,
+			Status:            resources.WithdrawalStatus_PROCESSING,
+			SubmitStatus:      resources.SubmitWithdrawalStatus_NOT_SUBMITTED,
 		}
 
 		if deposit.Id, err = db.Insert(*deposit); err != nil {

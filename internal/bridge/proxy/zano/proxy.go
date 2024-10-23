@@ -1,6 +1,7 @@
 package zano
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
@@ -12,8 +13,8 @@ var addressPattern = regexp.MustCompile(`^[1-9A-HJ-NP-Za-km-z]{97}$`)
 
 type BridgeProxy interface {
 	bridgeTypes.Proxy
-	EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedTransaction, error)
-	EmitAssetSigned(transaction bridgeTypes.SignedTransaction) (txHash string, err error)
+	EmitAssetUnsigned(data data.DepositData) (*UnsignedTransaction, error)
+	EmitAssetSigned(transaction SignedTransaction) (txHash string, err error)
 }
 
 type proxy struct {
@@ -35,7 +36,7 @@ func (p *proxy) AddressValid(addr string) bool {
 }
 
 func (p *proxy) TransactionHashValid(hash string) bool {
-	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
+	return bridge.DefaultTransactionHashPattern.MatchString(hash)
 }
 
 func NewBridgeProxy(chain chain.Zano, logger *logan.Entry) BridgeProxy {

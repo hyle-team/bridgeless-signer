@@ -1,8 +1,8 @@
 package evm
 
 import (
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm/operations"
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"

@@ -1,7 +1,7 @@
 package zano
 
 import (
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	zanoTypes "github.com/hyle-team/bridgeless-signer/pkg/zano/types"
 	"github.com/pkg/errors"
@@ -16,7 +16,7 @@ func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
 	return true
 }
 
-func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedTransaction, error) {
+func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*UnsignedTransaction, error) {
 	destination := zanoTypes.Destination{
 		Address: data.DestinationAddress,
 		Amount:  data.WithdrawalAmount.Uint64(),
@@ -40,14 +40,14 @@ func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*bridgeTypes.UnsignedT
 		return nil, errors.Wrap(err, "failed to parse tx details")
 	}
 
-	return &bridgeTypes.UnsignedTransaction{
+	return &UnsignedTransaction{
 		ExpectedTxHash: txDetails.VerifiedTxID,
 		FinalizedTx:    signingData.FinalizedTx,
 		Data:           signingData.UnsignedTx,
 	}, nil
 }
 
-func (p *proxy) EmitAssetSigned(signedTx bridgeTypes.SignedTransaction) (string, error) {
+func (p *proxy) EmitAssetSigned(signedTx SignedTransaction) (string, error) {
 	_, err := p.chain.Client.SendExtSignedAssetTX(
 		signedTx.Signature,
 		signedTx.ExpectedTxHash,

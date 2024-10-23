@@ -3,7 +3,7 @@ package producer
 import (
 	"encoding/json"
 	"fmt"
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"

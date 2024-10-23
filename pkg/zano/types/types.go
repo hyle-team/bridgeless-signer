@@ -183,7 +183,7 @@ type DecryptTxDetailsResponse struct {
 
 type TxOutput struct {
 	Address  string `json:"address"`
-	Amount   int    `json:"amount"`
+	Amount   uint64 `json:"amount"`
 	AssetID  string `json:"asset_id"`
 	OutIndex int    `json:"out_index"`
 }

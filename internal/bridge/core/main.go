@@ -15,7 +15,6 @@ import (
 	coretypes "github.com/hyle-team/bridgeless-core/types"
 	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/types"
-	pkgTypes "github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
@@ -23,10 +22,10 @@ import (
 var _ types.Bridger = &Connector{}
 
 type ConnectorSettings struct {
-	Account     pkgTypes.Account `fig:"account_private_key,required"`
-	ChainId     string           `fig:"chain_id,required"`
-	Denom       string           `fig:"denom,required"`
-	MinGasPrice uint64           `fig:"min_gas_price"`
+	Account     Account `fig:"account_private_key,required"`
+	ChainId     string  `fig:"chain_id,required"`
+	Denom       string  `fig:"denom,required"`
+	MinGasPrice uint64  `fig:"min_gas_price"`
 }
 
 type Connector struct {

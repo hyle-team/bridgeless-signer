@@ -8,6 +8,7 @@ import (
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
@@ -79,7 +80,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		SourceAddress:      depositor,
 		DepositAmount:      amount,
 		// as Bitcoin does not have any other currencies
-		TokenAddress: bridgeTypes.DefaultNativeTokenAddress,
+		TokenAddress: bridge.DefaultNativeTokenAddress,
 		Block:        block.Height,
 	}, nil
 }

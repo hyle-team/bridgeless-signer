@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
@@ -84,5 +85,5 @@ func (p *proxy) AddressValid(addr string) bool {
 }
 
 func (p *proxy) TransactionHashValid(hash string) bool {
-	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
+	return bridge.DefaultTransactionHashPattern.MatchString(hash)
 }

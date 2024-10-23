@@ -3,12 +3,12 @@ package pg
 import (
 	"database/sql"
 	"encoding/hex"
+	"github.com/hyle-team/bridgeless-signer/resources"
 	"github.com/lib/pq"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/kit/pgdb"
 )
@@ -78,7 +78,7 @@ FROM (
 WHERE deposits.id = unnested_data.deposit_id
 `
 
-	return d.db.ExecRaw(query, types.WithdrawalStatus_TX_PENDING, hashes, chains, ids)
+	return d.db.ExecRaw(query, resources.WithdrawalStatus_TX_PENDING, hashes, chains, ids)
 }
 
 func (d *depositsQ) Insert(deposit data.Deposit) (int64, error) {
@@ -129,7 +129,7 @@ func (d *depositsQ) Select(selector data.DepositsSelector) ([]data.Deposit, erro
 	return deposits, nil
 }
 
-func (d *depositsQ) UpdateWithdrawalStatus(status types.WithdrawalStatus, ids ...int64) error {
+func (d *depositsQ) UpdateWithdrawalStatus(status resources.WithdrawalStatus, ids ...int64) error {
 	stmt := squirrel.Update(depositsTable).
 		Set(depositsStatus, status).
 		Where(squirrel.Eq{depositsId: ids})
@@ -137,7 +137,7 @@ func (d *depositsQ) UpdateWithdrawalStatus(status types.WithdrawalStatus, ids ..
 	return d.db.Exec(stmt)
 }
 
-func (d *depositsQ) UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids ...int64) error {
+func (d *depositsQ) UpdateSubmitStatus(status resources.SubmitWithdrawalStatus, ids ...int64) error {
 	stmt := squirrel.Update(depositsTable).
 		Set(depositsSubmitStatus, status).
 		Where(squirrel.Eq{depositsId: ids})
@@ -172,7 +172,7 @@ func (d *depositsQ) SetDepositData(data data.DepositData) error {
 func (d *depositsQ) SetDepositSignature(data data.DepositData) error {
 	fields := map[string]interface{}{
 		depositSignature: strings.ToLower(hex.EncodeToString(data.Signature)),
-		depositsStatus:   types.WithdrawalStatus_WITHDRAWAL_SIGNED,
+		depositsStatus:   resources.WithdrawalStatus_WITHDRAWAL_SIGNED,
 	}
 
 	return d.db.Exec(squirrel.Update(depositsTable).Where(
@@ -201,7 +201,7 @@ func (d *depositsQ) applySelector(selector data.DepositsSelector, sql squirrel.S
 	}
 
 	if selector.Submitted != nil {
-		sql = sql.Where(squirrel.Eq{depositsSubmitStatus: types.SubmitWithdrawalStatus_NOT_SUBMITTED})
+		sql = sql.Where(squirrel.Eq{depositsSubmitStatus: resources.SubmitWithdrawalStatus_NOT_SUBMITTED})
 	}
 
 	return sql

@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
@@ -53,7 +54,7 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 			DepositIdentifier:  id,
 			DestinationChainId: eventBody.Network,
 			DestinationAddress: eventBody.Receiver,
-			TokenAddress:       bridgeTypes.DefaultNativeTokenAddress,
+			TokenAddress:       bridge.DefaultNativeTokenAddress,
 			DepositAmount:      eventBody.Amount,
 			Block:              int64(log.BlockNumber),
 			SourceAddress:      from.String(),

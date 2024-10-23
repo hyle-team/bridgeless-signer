@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/hyle-team/bridgeless-signer/pkg/types";
+option go_package = "github.com/hyle-team/bridgeless-signer/resources";
 
 message Deposit {
   string tx_hash = 1;

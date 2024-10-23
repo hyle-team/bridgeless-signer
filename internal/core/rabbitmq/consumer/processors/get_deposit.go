@@ -26,7 +26,7 @@ func NewGetDepositHandler(
 }
 
 func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
-	var request bridgeTypes.GetDepositRequest
+	var request processor.GetDepositRequest
 	if err = json.Unmarshal(delivery.Body, &request); err != nil {
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
 	}

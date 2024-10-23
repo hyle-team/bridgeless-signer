@@ -1,0 +1,229 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Service"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/check/{originTxId}": {
+      "get": {
+        "operationId": "Service_CheckWithdrawal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CheckWithdrawalResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "originTxId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Service"
+        ]
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "Service_SubmitWithdrawal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WithdrawalRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Service"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "CheckWithdrawalResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/WithdrawalStatus"
+        },
+        "depositTransaction": {
+          "$ref": "#/definitions/Transaction"
+        },
+        "depositData": {
+          "$ref": "#/definitions/DepositData"
+        },
+        "withdrawalTransaction": {
+          "$ref": "#/definitions/Transaction"
+        },
+        "submitStatus": {
+          "$ref": "#/definitions/SubmitWithdrawalStatus"
+        }
+      }
+    },
+    "Deposit": {
+      "type": "object",
+      "properties": {
+        "txHash": {
+          "type": "string"
+        },
+        "txEventIndex": {
+          "type": "string",
+          "format": "int64"
+        },
+        "chainId": {
+          "type": "string"
+        }
+      }
+    },
+    "DepositData": {
+      "type": "object",
+      "properties": {
+        "eventIndex": {
+          "type": "string",
+          "format": "int64"
+        },
+        "blockNumber": {
+          "type": "string",
+          "format": "int64"
+        },
+        "depositor": {
+          "type": "string"
+        },
+        "depositAmount": {
+          "type": "string"
+        },
+        "depositToken": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "withdrawalToken": {
+          "type": "string"
+        },
+        "isWrapped": {
+          "type": "boolean"
+        },
+        "withdrawalAmount": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        }
+      }
+    },
+    "Empty": {
+      "type": "object"
+    },
+    "SubmitWithdrawalStatus": {
+      "type": "string",
+      "enum": [
+        "NOT_SUBMITTED",
+        "SUBMIT_FAILED",
+        "SUCCESSFUL"
+      ],
+      "default": "NOT_SUBMITTED"
+    },
+    "Transaction": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "chainId": {
+          "type": "string"
+        }
+      }
+    },
+    "WithdrawalRequest": {
+      "type": "object",
+      "properties": {
+        "deposit": {
+          "$ref": "#/definitions/Deposit"
+        }
+      }
+    },
+    "WithdrawalStatus": {
+      "type": "string",
+      "enum": [
+        "PROCESSING",
+        "INVALID",
+        "FAILED",
+        "TX_PENDING",
+        "TX_FAILED",
+        "TX_SUCCESSFUL",
+        "REPROCESSING",
+        "WITHDRAWAL_SIGNED"
+      ],
+      "default": "PROCESSING"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

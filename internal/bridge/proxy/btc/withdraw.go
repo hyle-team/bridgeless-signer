@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/btcutil"
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/pkg/errors"
 	"math/big"
 	"strings"

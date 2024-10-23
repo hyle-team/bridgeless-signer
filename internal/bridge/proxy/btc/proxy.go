@@ -2,6 +2,7 @@ package btc
 
 import (
 	"github.com/btcsuite/btcd/btcutil"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"gitlab.com/distributed_lab/logan/v3"
@@ -35,5 +36,5 @@ func (p *proxy) AddressValid(addr string) bool {
 }
 
 func (p *proxy) TransactionHashValid(hash string) bool {
-	return bridgeTypes.DefaultTransactionHashPattern.MatchString(hash)
+	return bridge.DefaultTransactionHashPattern.MatchString(hash)
 }

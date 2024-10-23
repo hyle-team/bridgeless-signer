@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -26,7 +25,7 @@ func NewEthereumSignWithdrawalHandler(
 }
 
 func (h *EthereumSignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
-	var request bridgeTypes.WithdrawalRequest
+	var request processor.WithdrawalRequest
 	if err = json.Unmarshal(delivery.Body, &request); err != nil {
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
 	}
