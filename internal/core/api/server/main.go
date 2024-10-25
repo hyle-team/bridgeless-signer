@@ -113,8 +113,14 @@ func (s *server) httpRouter(ctxt context.Context) http.Handler {
 }
 
 func (s *server) grpcServer() *grpc.Server {
-	interceptor := grpc.UnaryInterceptor(api.GRPCContextExtenderInterceptor(s.ctxExtenders...))
-	srv := grpc.NewServer(interceptor)
+	srv := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			ContextExtenderInterceptor(s.ctxExtenders...),
+			LoggerInterceptor(s.logger),
+			// RecoveryInterceptor should be the last one
+			RecoveryInterceptor(s.logger),
+		),
+	)
 
 	grpcServer.RegisterServiceServer(srv, grpcImplementation{})
 	reflection.Register(srv)
