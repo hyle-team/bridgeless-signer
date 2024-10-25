@@ -1,7 +1,7 @@
 package evm
 
 import (
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm/operations"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
@@ -13,7 +13,7 @@ type Operation interface {
 }
 
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
-	if amount.Cmp(big.NewInt(0)) != 1 {
+	if amount.Cmp(bridge.ZeroAmount) != 1 {
 		return false
 	}
 
@@ -24,7 +24,7 @@ func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
 	var operation Operation
 	var err error
 
-	if data.DestinationTokenAddress == bridgeTypes.DefaultNativeTokenAddress {
+	if data.DestinationTokenAddress == bridge.DefaultNativeTokenAddress {
 		operation, err = operations.NewWithdrawNativeContent(data)
 	} else {
 		operation, err = operations.NewWithdrawERC20Content(data)

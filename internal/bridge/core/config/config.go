@@ -82,7 +82,7 @@ var accountHook = figure.Hooks{
 	"core.Account": func(value interface{}) (reflect.Value, error) {
 		switch v := value.(type) {
 		case string:
-			acc, err := core.New(v)
+			acc, err := core.NewAccount(v)
 			if err != nil {
 				return reflect.Value{}, errors.Wrap(err, "failed to create account")
 			}

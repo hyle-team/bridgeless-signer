@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrChainNotSupported      = errors.New("chain not supported")
+	ErrInvalidProxyType       = errors.New("invalid proxy type")
 	ErrTxPending              = errors.New("transaction is pending")
 	ErrTxFailed               = errors.New("transaction failed")
 	ErrTxNotFound             = errors.New("transaction not found")

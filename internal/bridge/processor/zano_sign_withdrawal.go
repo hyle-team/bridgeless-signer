@@ -18,12 +18,9 @@ func (p *Processor) ProcessZanoSignWithdrawalRequest(req WithdrawalRequest) (res
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
-	if proxy.Type() != bridgeTypes.ChainTypeZano {
-		return nil, false, bridgeTypes.ErrChainNotSupported
-	}
 	zanoProxy, ok := proxy.(zano.BridgeProxy)
 	if !ok {
-		return nil, false, bridgeTypes.ErrChainNotSupported
+		return nil, false, bridgeTypes.ErrInvalidProxyType
 	}
 
 	unsignedTx, err := zanoProxy.EmitAssetUnsigned(req.Data)
@@ -37,11 +34,8 @@ func (p *Processor) ProcessZanoSignWithdrawalRequest(req WithdrawalRequest) (res
 		return nil, true, errors.Wrap(err, "failed to sign message")
 	}
 
-	encodedSignature := hexutil.Encode(signature)
-	// stripping redundant hex-prefix and recovery byte (two hex-characters)
-	strippedSignature := encodedSignature[2 : len(encodedSignature)-2]
 	signedTx := zano.SignedTransaction{
-		Signature:           strippedSignature,
+		Signature:           encodeToZanoSignature(signature),
 		UnsignedTransaction: *unsignedTx,
 	}
 
@@ -50,4 +44,16 @@ func (p *Processor) ProcessZanoSignWithdrawalRequest(req WithdrawalRequest) (res
 		Data:        req.Data,
 		Transaction: signedTx,
 	}, false, nil
+}
+
+func encodeToZanoSignature(signature []byte) string {
+	if len(signature) == 0 {
+		return ""
+	}
+
+	encoded := hexutil.Encode(signature)
+	// stripping redundant hex-prefix and recovery byte (two hex-characters)
+	strippedSignature := encoded[2 : len(encoded)-2]
+
+	return strippedSignature
 }

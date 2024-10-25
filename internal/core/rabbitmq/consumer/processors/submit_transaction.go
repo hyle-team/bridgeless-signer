@@ -23,21 +23,14 @@ func (s SubmitTransactionHandler) ProcessBatch(batch []processor.SubmitTransacti
 		return false, nil, nil
 	}
 
-	defer func() {
-		if reprocessable {
-			rprFailCallback = func(ids ...int64) error {
-				return errors.Wrap(
-					s.processor.SetSubmitStatusFailed(ids...),
-					"failed to set submit status failed",
-				)
-			}
-		}
-	}()
-
-	reprocessable, err = s.processor.ProcessSubmitTransactions(batch...)
-	if err != nil {
-		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process submit transaction request")
+	rprFailCallback = func(ids ...int64) error {
+		return errors.Wrap(
+			s.processor.SetSubmitStatusFailed(ids...),
+			"failed to set submit status failed",
+		)
 	}
 
-	return false, nil, nil
+	reprocessable, err = s.processor.ProcessSubmitTransactions(batch...)
+
+	return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process submit transaction request")
 }

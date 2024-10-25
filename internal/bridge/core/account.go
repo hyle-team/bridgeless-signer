@@ -15,7 +15,7 @@ type Account struct {
 	addr    string
 }
 
-func New(privKey string) (*Account, error) {
+func NewAccount(privKey string) (*Account, error) {
 	key := &secp256k1.PrivKey{Key: hexutil.MustDecode(privKey)}
 	address, err := bech32.ConvertAndEncode(hrp, key.PubKey().Address().Bytes())
 	if err != nil {

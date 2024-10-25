@@ -32,12 +32,9 @@ func (p *Processor) ProcessSendBitcoinWithdrawals(reqs ...WithdrawalRequest) (re
 		}
 		return true, errors.Wrap(err, "failed to get proxy")
 	}
-	if proxy.Type() != bridgeTypes.ChainTypeBitcoin {
-		return false, bridgeTypes.ErrChainNotSupported
-	}
 	btcProxy, ok := proxy.(btc.BridgeProxy)
 	if !ok {
-		return false, bridgeTypes.ErrChainNotSupported
+		return false, bridgeTypes.ErrInvalidProxyType
 	}
 
 	hash, err := btcProxy.SendBitcoins(params)

@@ -1,7 +1,7 @@
 package zano
 
 import (
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	zanoTypes "github.com/hyle-team/bridgeless-signer/pkg/zano/types"
 	"github.com/pkg/errors"
@@ -9,7 +9,7 @@ import (
 )
 
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
-	if amount.Cmp(big.NewInt(0)) != 1 {
+	if amount.Cmp(bridge.ZeroAmount) != 1 {
 		return false
 	}
 
@@ -20,7 +20,7 @@ func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*UnsignedTransaction, 
 	destination := zanoTypes.Destination{
 		Address: data.DestinationAddress,
 		Amount:  data.WithdrawalAmount.Uint64(),
-		// leaving empty here
+		// leaving empty here as this field overrides by function asset parameter
 		AssetID: "",
 	}
 
@@ -33,7 +33,7 @@ func (p *proxy) EmitAssetUnsigned(data data.DepositData) (*UnsignedTransaction, 
 	txDetails, err := p.chain.Client.TxDetails(
 		signingData.OutputsAddresses,
 		signingData.UnsignedTx,
-		// leaving empty
+		// leaving empty as only unsignedTx OR txId should be specified, otherwise error
 		"",
 		signingData.TxSecretKey)
 	if err != nil {
@@ -60,5 +60,5 @@ func (p *proxy) EmitAssetSigned(signedTx SignedTransaction) (string, error) {
 		return "", errors.Wrap(err, "failed to emit signed asset")
 	}
 
-	return bridgeTypes.HexPrefix + signedTx.ExpectedTxHash, nil
+	return bridge.HexPrefix + signedTx.ExpectedTxHash, nil
 }

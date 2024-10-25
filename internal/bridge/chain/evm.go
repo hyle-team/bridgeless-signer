@@ -14,19 +14,19 @@ type Evm struct {
 	Confirmations uint64
 }
 
-func (c Chain) Evm() (Evm, error) {
+func (c Chain) Evm() Evm {
 	if c.Type != types.ChainTypeEVM {
-		return Evm{}, errors.New("invalid chain type")
+		panic("invalid chain type")
 	}
 
 	chain := Evm{Confirmations: c.Confirmations}
 
 	if err := figure.Out(&chain.Rpc).FromInterface(c.Rpc).With(figure.EthereumHooks).Please(); err != nil {
-		return Evm{}, errors.Wrap(err, "failed to obtain Ethereum client")
+		panic(errors.Wrap(err, "failed to obtain Ethereum client"))
 	}
 	if err := figure.Out(&chain.BridgeAddress).FromInterface(c.BridgeAddresses).With(figure.EthereumHooks).Please(); err != nil {
-		return Evm{}, errors.Wrap(err, "failed to obtain bridge addresses")
+		panic(errors.Wrap(err, "failed to obtain bridge addresses"))
 	}
 
-	return chain, nil
+	return chain
 }

@@ -30,17 +30,12 @@ func (h *EthereumSignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) 
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
 	}
 
-	defer func() {
-		if reprocessable {
-			rprFailCallback = func() error {
-				return errors.Wrap(
-					h.processor.SetWithdrawStatusFailed(request.DepositDbId),
-					"failed to set withdraw status failed",
-				)
-			}
-		}
-
-	}()
+	rprFailCallback = func() error {
+		return errors.Wrap(
+			h.processor.SetWithdrawStatusFailed(request.DepositDbId),
+			"failed to set withdraw status failed",
+		)
+	}
 
 	submitReq, reprocessable, err := h.processor.ProcessEthSignWithdrawalRequest(request)
 	if err != nil {

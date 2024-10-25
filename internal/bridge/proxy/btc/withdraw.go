@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+var minWithdrawAmount = big.NewInt(minSatoshisPerOutput)
+
 func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 	if len(data) == 0 {
 		return "", errors.New("empty data")
@@ -45,7 +47,7 @@ func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 }
 
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
-	if amount.Cmp(big.NewInt(minSatoshisPerOutput)) == -1 {
+	if amount.Cmp(minWithdrawAmount) == -1 {
 		return false
 	}
 

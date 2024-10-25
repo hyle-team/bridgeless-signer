@@ -30,17 +30,12 @@ func (h *ZanoSignWithdrawalHandler) ProcessDelivery(delivery amqp.Delivery) (rep
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
 	}
 
-	defer func() {
-		if reprocessable {
-			rprFailCallback = func() error {
-				return errors.Wrap(
-					h.processor.SetWithdrawStatusFailed(request.DepositDbId),
-					"failed to set withdraw status failed",
-				)
-			}
-		}
-
-	}()
+	rprFailCallback = func() error {
+		return errors.Wrap(
+			h.processor.SetWithdrawStatusFailed(request.DepositDbId),
+			"failed to set withdraw status failed",
+		)
+	}
 
 	signedWithdrawReq, reprocessable, err := h.processor.ProcessZanoSignWithdrawalRequest(request)
 	if err != nil {

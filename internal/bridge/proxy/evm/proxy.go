@@ -38,17 +38,17 @@ type proxy struct {
 }
 
 // NewBridgeProxy creates a new bridge proxy for the given chain.
-func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (BridgeProxy, error) {
+func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) BridgeProxy {
 	bridgeAbi, err := abi.JSON(strings.NewReader(contracts.BridgeMetaData.ABI))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse bridge ABI")
+		panic(errors.Wrap(err, "failed to parse bridge ABI"))
 	}
 
 	depositEvents := make([]abi.Event, len(events))
 	for i, event := range events {
 		depositEvent, ok := bridgeAbi.Events[event]
 		if !ok {
-			return nil, errors.New("wrong bridge ABI events")
+			panic("wrong bridge ABI events")
 		}
 		depositEvents[i] = depositEvent
 	}
@@ -58,7 +58,7 @@ func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (BridgeProxy, error) {
 		contractABI:   bridgeAbi,
 		depositEvents: depositEvents,
 		logger:        logger,
-	}, nil
+	}
 }
 
 func (p *proxy) Type() bridgeTypes.ChainType {

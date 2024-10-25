@@ -17,12 +17,9 @@ func (p *Processor) ProcessZanoSendWithdrawalRequest(req ZanoSignedWithdrawalReq
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
-	if proxy.Type() != bridgeTypes.ChainTypeZano {
-		return nil, false, bridgeTypes.ErrChainNotSupported
-	}
 	zanoProxy, ok := proxy.(zano.BridgeProxy)
 	if !ok {
-		return nil, false, bridgeTypes.ErrChainNotSupported
+		return nil, false, bridgeTypes.ErrInvalidProxyType
 	}
 
 	hash, err := zanoProxy.EmitAssetSigned(req.Transaction)
@@ -39,7 +36,5 @@ func (p *Processor) ProcessZanoSendWithdrawalRequest(req ZanoSignedWithdrawalReq
 		return nil, false, errors.Wrap(err, "failed to set withdrawal")
 	}
 
-	return &SubmitTransactionRequest{
-		DepositDbId: req.DepositDbId,
-	}, false, nil
+	return &SubmitTransactionRequest{DepositDbId: req.DepositDbId}, false, nil
 }

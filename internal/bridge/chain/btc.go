@@ -19,26 +19,26 @@ type Bitcoin struct {
 	Params        *chaincfg.Params
 }
 
-func (c Chain) Bitcoin() (Bitcoin, error) {
+func (c Chain) Bitcoin() Bitcoin {
 	if c.Type != types.ChainTypeBitcoin {
-		return Bitcoin{}, errors.New("invalid chain type")
+		panic("invalid chain type")
 	}
 
 	chain := Bitcoin{Wallet: c.Wallet, Confirmations: c.Confirmations}
 
 	if chain.Wallet == "" {
-		return chain, errors.New("wallet is not set")
+		panic("wallet is not set")
 	}
 	if err := figure.Out(&chain.Rpc).FromInterface(c.Rpc).With(bitcoinHooks).Please(); err != nil {
-		return chain, errors.Wrap(err, "failed to init bitcoin chain rpc")
+		panic(errors.Wrap(err, "failed to init bitcoin chain rpc"))
 	}
 
 	var receivers []string
 	if err := figure.Out(&receivers).FromInterface(c.BridgeAddresses).With(figure.BaseHooks).Please(); err != nil {
-		return chain, errors.Wrap(err, "failed to decode bitcoin receivers")
+		panic(errors.Wrap(err, "failed to decode bitcoin receivers"))
 	}
 	if len(receivers) == 0 {
-		return chain, errors.New("receivers list is empty")
+		panic("receivers list is empty")
 	}
 
 	if c.Network == NetworkMainnet {
@@ -52,13 +52,13 @@ func (c Chain) Bitcoin() (Bitcoin, error) {
 	for i, raw := range receivers {
 		addr, err := btcutil.DecodeAddress(raw, chain.Params)
 		if err != nil {
-			return Bitcoin{}, errors.Wrap(err, fmt.Sprintf("failed to decode bitcoin receiver %s", raw))
+			panic(errors.Wrap(err, fmt.Sprintf("failed to decode bitcoin receiver %s", raw)))
 		}
 
 		chain.Receivers[i] = addr
 	}
 
-	return chain, nil
+	return chain
 }
 
 var bitcoinHooks = figure.Hooks{

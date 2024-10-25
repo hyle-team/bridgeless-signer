@@ -16,12 +16,9 @@ func (p *Processor) ProcessEthSignWithdrawalRequest(req WithdrawalRequest) (res 
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
-	if proxy.Type() != bridgeTypes.ChainTypeEVM {
-		return nil, false, bridgeTypes.ErrChainNotSupported
-	}
 	evmProxy, ok := proxy.(evm.BridgeProxy)
 	if !ok {
-		return nil, false, bridgeTypes.ErrChainNotSupported
+		return nil, false, bridgeTypes.ErrInvalidProxyType
 	}
 
 	signHash, err := evmProxy.GetSignHash(req.Data)

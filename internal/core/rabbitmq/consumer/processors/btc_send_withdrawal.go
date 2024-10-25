@@ -26,17 +26,12 @@ func (h *BitcoinSendWithdrawalHandler) ProcessBatch(batch []processor.Withdrawal
 		return false, nil, nil
 	}
 
-	defer func() {
-		if reprocessable {
-			rprFailCallback = func(ids ...int64) error {
-				return errors.Wrap(
-					h.processor.SetWithdrawStatusFailed(ids...),
-					"failed to set withdraw status failed",
-				)
-			}
-		}
-
-	}()
+	rprFailCallback = func(ids ...int64) error {
+		return errors.Wrap(
+			h.processor.SetWithdrawStatusFailed(ids...),
+			"failed to set withdraw status failed",
+		)
+	}
 
 	reprocessable, err = h.processor.ProcessSendBitcoinWithdrawals(batch...)
 	if err != nil {

@@ -14,20 +14,20 @@ type Zano struct {
 	Receivers     []string
 }
 
-func (c Chain) Zano() (Zano, error) {
+func (c Chain) Zano() Zano {
 	if c.Type != types.ChainTypeZano {
-		return Zano{}, errors.New("invalid chain type")
+		panic("invalid chain type")
 	}
 
 	chain := Zano{Confirmations: c.Confirmations}
 	if err := figure.Out(&chain.Receivers).FromInterface(c.BridgeAddresses).With(figure.BaseHooks).Please(); err != nil {
-		return chain, errors.Wrap(err, "failed to decode zano receivers")
+		panic(errors.Wrap(err, "failed to decode zano receivers"))
 	}
 	if err := figure.Out(&chain.Client).FromInterface(c.Rpc).With(zanoHooks).Please(); err != nil {
-		return chain, errors.Wrap(err, "failed to decode zano client")
+		panic(errors.Wrap(err, "failed to decode zano client"))
 	}
 
-	return chain, nil
+	return chain
 }
 
 var zanoHooks = figure.Hooks{

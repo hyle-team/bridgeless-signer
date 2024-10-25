@@ -38,3 +38,13 @@ func (p *proxy) AddressValid(addr string) bool {
 func (p *proxy) TransactionHashValid(hash string) bool {
 	return bridge.DefaultTransactionHashPattern.MatchString(hash)
 }
+
+func (p *proxy) bridgeAddr(addr btcutil.Address) bool {
+	for _, receiver := range p.chain.Receivers {
+		if addr.String() == receiver.String() {
+			return true
+		}
+	}
+
+	return false
+}

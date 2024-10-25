@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"fmt"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/btc"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm"
@@ -16,33 +15,18 @@ type proxiesRepository struct {
 }
 
 func NewProxiesRepository(chains []chain.Chain, logger *logan.Entry) (bridgeTypes.ProxiesRepository, error) {
-	proxiesMap := make(map[string]bridgeTypes.Proxy)
+	proxiesMap := make(map[string]bridgeTypes.Proxy, len(chains))
 
 	for _, ch := range chains {
 		var proxy bridgeTypes.Proxy
 
 		switch ch.Type {
 		case bridgeTypes.ChainTypeEVM:
-			evmChain, err := ch.Evm()
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to init evm chain")
-			}
-			proxy, err = evm.NewBridgeProxy(evmChain, logger)
-			if err != nil {
-				return nil, errors.Wrap(err, fmt.Sprintf("failed to create proxy for chain %s", ch.Id))
-			}
+			proxy = evm.NewBridgeProxy(ch.Evm(), logger)
 		case bridgeTypes.ChainTypeBitcoin:
-			bitcoinChain, err := ch.Bitcoin()
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to init bitcoin chain")
-			}
-			proxy = btc.NewBridgeProxy(bitcoinChain, logger)
+			proxy = btc.NewBridgeProxy(ch.Bitcoin(), logger)
 		case bridgeTypes.ChainTypeZano:
-			zanoChain, err := ch.Zano()
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to init zano chain")
-			}
-			proxy = zano.NewBridgeProxy(zanoChain, logger)
+			proxy = zano.NewBridgeProxy(ch.Zano(), logger)
 		default:
 			return nil, errors.Errorf("unknown chain type %s", ch.Type)
 		}
