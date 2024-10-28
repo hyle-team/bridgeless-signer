@@ -12,57 +12,49 @@ import (
 
 type GetDepositHandler struct {
 	processor *processor.Processor
-	producer  rabbitTypes.Producer
+	publisher rabbitTypes.Producer
 }
 
 func NewGetDepositHandler(
 	processor *processor.Processor,
-	producer rabbitTypes.Producer,
+	publisher rabbitTypes.Producer,
 ) rabbitTypes.DeliveryProcessor {
 	return &GetDepositHandler{
 		processor: processor,
-		producer:  producer,
+		publisher: publisher,
 	}
 }
 
 func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
-	var request bridgeTypes.GetDepositRequest
+	var request processor.GetDepositRequest
 	if err = json.Unmarshal(delivery.Body, &request); err != nil {
 		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
 	}
 
-	defer func() {
-		if reprocessable {
-			rprFailCallback = func() error {
-				return errors.Wrap(
-					h.processor.SetWithdrawStatusFailed(request.DepositDbId),
-					"failed to set withdraw status failed",
-				)
-			}
-		}
-
-	}()
+	rprFailCallback = func() error {
+		return errors.Wrap(
+			h.processor.SetWithdrawStatusFailed(request.DepositDbId),
+			"failed to set withdraw status failed",
+		)
+	}
 
 	withdrawReq, reprocessable, err := h.processor.ProcessGetDepositRequest(request)
 	if err != nil {
 		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
 	}
 
+	reprocessable = true
 	switch withdrawReq.Destination {
 	case bridgeTypes.ChainTypeEVM:
-		if err = h.producer.SendSignWithdrawalRequest(*withdrawReq); err != nil {
-			return true, rprFailCallback, errors.Wrap(err, "failed to send form withdraw request")
-		}
+		err = h.publisher.PublishEthereumSignWithdrawalRequest(*withdrawReq)
 	case bridgeTypes.ChainTypeBitcoin:
-		if err = h.producer.SendSubmitBitcoinWithdrawalRequest(bridgeTypes.BitcoinWithdrawalRequest{
-			DepositDbId: request.DepositDbId,
-			Data:        withdrawReq.Data,
-		}); err != nil {
-			return true, rprFailCallback, errors.Wrap(err, "failed to send submit withdraw request")
-		}
+		err = h.publisher.PublishBitcoinSendWithdrawalRequest(*withdrawReq)
+	case bridgeTypes.ChainTypeZano:
+		err = h.publisher.PublishZanoSignWithdrawalRequest(*withdrawReq)
 	default:
-		return false, nil, errors.New(fmt.Sprintf("invalid destination type: %v", withdrawReq.Destination))
+		err = errors.New(fmt.Sprintf("invalid destination type: %v", withdrawReq.Destination))
+		reprocessable = false
 	}
 
-	return false, nil, nil
+	return reprocessable, rprFailCallback, errors.Wrap(err, "failed to send deposit processing request")
 }

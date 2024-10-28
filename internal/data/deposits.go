@@ -2,9 +2,8 @@ package data
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"github.com/hyle-team/bridgeless-signer/resources"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"math/big"
 )
@@ -12,16 +11,16 @@ import (
 const OriginTxIdPattern = "%s-%d-%s"
 
 var ErrAlreadySubmitted = errors.New("transaction already submitted")
-var FinalWithdrawalStatuses = []types.WithdrawalStatus{
+var FinalWithdrawalStatuses = []resources.WithdrawalStatus{
 	// transaction is sent
-	types.WithdrawalStatus_TX_PENDING,
-	types.WithdrawalStatus_TX_SUCCESSFUL,
-	types.WithdrawalStatus_TX_FAILED,
+	resources.WithdrawalStatus_TX_PENDING,
+	resources.WithdrawalStatus_TX_SUCCESSFUL,
+	resources.WithdrawalStatus_TX_FAILED,
 	// ready to be sent
-	types.WithdrawalStatus_WITHDRAWAL_SIGNED,
+	resources.WithdrawalStatus_WITHDRAWAL_SIGNED,
 	// data invalid or something goes wrong
-	types.WithdrawalStatus_INVALID,
-	types.WithdrawalStatus_FAILED,
+	resources.WithdrawalStatus_INVALID,
+	resources.WithdrawalStatus_FAILED,
 }
 
 type DepositsQ interface {
@@ -30,8 +29,8 @@ type DepositsQ interface {
 	Select(selector DepositsSelector) ([]Deposit, error)
 	Get(identifier DepositIdentifier) (*Deposit, error)
 	SetDepositData(data DepositData) error
-	UpdateWithdrawalStatus(status types.WithdrawalStatus, ids ...int64) error
-	UpdateSubmitStatus(status types.SubmitWithdrawalStatus, ids ...int64) error
+	UpdateWithdrawalStatus(status resources.WithdrawalStatus, ids ...int64) error
+	UpdateSubmitStatus(status resources.SubmitWithdrawalStatus, ids ...int64) error
 	SetWithdrawalTxs(txs ...WithdrawalTx) error
 	Transaction(f func() error) error
 	SetDepositSignature(data DepositData) error
@@ -61,7 +60,7 @@ func (d DepositIdentifier) String() string {
 type Deposit struct {
 	Id int64 `structs:"-" db:"id"`
 	DepositIdentifier
-	Status types.WithdrawalStatus `structs:"status" db:"status"`
+	Status resources.WithdrawalStatus `structs:"status" db:"status"`
 
 	Depositor       *string `structs:"depositor" db:"depositor"`
 	DepositAmount   *string `structs:"deposit_amount" db:"deposit_amount"`
@@ -76,19 +75,19 @@ type Deposit struct {
 
 	IsWrappedToken *bool `structs:"is_wrapped_token" db:"is_wrapped_token"`
 
-	SubmitStatus types.SubmitWithdrawalStatus `structs:"submit_status" db:"submit_status"`
-	Signature    *string                      `structs:"signature" db:"signature"`
+	SubmitStatus resources.SubmitWithdrawalStatus `structs:"submit_status" db:"submit_status"`
+	Signature    *string                          `structs:"signature" db:"signature"`
 }
 
 func (d Deposit) Reprocessable() bool {
-	return d.Status == types.WithdrawalStatus_FAILED ||
-		d.Status == types.WithdrawalStatus_TX_FAILED
+	return d.Status == resources.WithdrawalStatus_FAILED ||
+		d.Status == resources.WithdrawalStatus_TX_FAILED
 }
 
-func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
-	result := &types.CheckWithdrawalResponse{
+func (d Deposit) ToStatusResponse() *resources.CheckWithdrawalResponse {
+	result := &resources.CheckWithdrawalResponse{
 		Status: d.Status,
-		DepositData: &types.DepositData{
+		DepositData: &resources.DepositData{
 			EventIndex:       int64(d.TxEventId),
 			Depositor:        d.Depositor,
 			DepositAmount:    d.DepositAmount,
@@ -100,7 +99,7 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 			Signature:        d.Signature,
 			IsWrapped:        d.IsWrappedToken,
 		},
-		DepositTransaction: &types.Transaction{
+		DepositTransaction: &resources.Transaction{
 			Hash:    d.TxHash,
 			ChainId: d.ChainId,
 		},
@@ -108,7 +107,7 @@ func (d Deposit) ToStatusResponse() *types.CheckWithdrawalResponse {
 	}
 
 	if d.WithdrawalTxHash != nil && d.WithdrawalChainId != nil {
-		result.WithdrawalTransaction = &types.Transaction{
+		result.WithdrawalTransaction = &resources.Transaction{
 			Hash:    *d.WithdrawalTxHash,
 			ChainId: *d.WithdrawalChainId,
 		}
@@ -150,8 +149,8 @@ type DepositData struct {
 	DepositAmount    *big.Int
 	WithdrawalAmount *big.Int
 
-	TokenAddress            common.Address
-	DestinationTokenAddress common.Address
+	TokenAddress            string
+	DestinationTokenAddress string
 
 	IsWrappedToken bool
 	Signature      []byte

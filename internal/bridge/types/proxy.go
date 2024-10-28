@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrChainNotSupported      = errors.New("chain not supported")
+	ErrInvalidProxyType       = errors.New("invalid proxy type")
 	ErrTxPending              = errors.New("transaction is pending")
 	ErrTxFailed               = errors.New("transaction failed")
 	ErrTxNotFound             = errors.New("transaction not found")
@@ -15,7 +16,6 @@ var (
 	ErrTxNotConfirmed         = errors.New("transaction not confirmed")
 	ErrInvalidReceiverAddress = errors.New("invalid receiver address")
 	ErrInvalidDepositedAmount = errors.New("invalid deposited amount")
-	ErrNotImplemented         = errors.New("not implemented")
 	ErrInvalidScriptPubKey    = errors.New("invalid script pub key")
 	ErrFailedUnpackLogs       = errors.New("failed to unpack logs")
 	ErrUnsupportedEvent       = errors.New("unsupported event")
@@ -27,12 +27,13 @@ type ChainType string
 const (
 	ChainTypeEVM     ChainType = "evm"
 	ChainTypeBitcoin ChainType = "bitcoin"
+	ChainTypeZano    ChainType = "zano"
 	ChainTypeOther   ChainType = "other"
 )
 
 func (c ChainType) Validate() error {
 	switch c {
-	case ChainTypeEVM, ChainTypeBitcoin, ChainTypeOther:
+	case ChainTypeEVM, ChainTypeBitcoin, ChainTypeZano, ChainTypeOther:
 		return nil
 	default:
 		return errors.New("invalid chain type")
@@ -57,12 +58,6 @@ type Proxy interface {
 	AddressValid(addr string) bool
 	TransactionHashValid(hash string) bool
 	WithdrawalAmountValid(amount *big.Int) bool
-
-	// Ethereum-specific methods
-	GetSignHash(data data.DepositData) ([]byte, error)
-
-	// Bitcoin-specific methods
-	SendBitcoins(map[string]*big.Int) (txHash string, err error)
 }
 
 type ProxiesRepository interface {

@@ -1,4 +1,4 @@
-package types
+package core
 
 import (
 	"github.com/cosmos/cosmos-sdk/crypto/types"

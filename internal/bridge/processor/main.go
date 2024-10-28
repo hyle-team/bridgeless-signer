@@ -4,7 +4,7 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/signer"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"github.com/hyle-team/bridgeless-signer/resources"
 	"github.com/pkg/errors"
 )
 
@@ -26,11 +26,11 @@ func New(
 }
 
 func (p *Processor) SetWithdrawStatusFailed(ids ...int64) error {
-	return errors.Wrap(p.db.UpdateWithdrawalStatus(types.WithdrawalStatus_FAILED, ids...), "failed to update deposit status")
+	return errors.Wrap(p.db.UpdateWithdrawalStatus(resources.WithdrawalStatus_FAILED, ids...), "failed to update deposit status")
 }
 
 func (p *Processor) SetSubmitStatusFailed(ids ...int64) error {
-	return errors.Wrap(p.db.UpdateSubmitStatus(types.SubmitWithdrawalStatus_SUBMIT_FAILED, ids...), "failed to update submit status")
+	return errors.Wrap(p.db.UpdateSubmitStatus(resources.SubmitWithdrawalStatus_SUBMIT_FAILED, ids...), "failed to update submit status")
 }
 
 func (p *Processor) updateInvalidDepositStatus(err error, reprocessable bool, ids ...int64) error {
@@ -38,7 +38,7 @@ func (p *Processor) updateInvalidDepositStatus(err error, reprocessable bool, id
 		return err
 	}
 
-	if tempErr := p.db.UpdateWithdrawalStatus(types.WithdrawalStatus_INVALID, ids...); tempErr != nil {
+	if tempErr := p.db.UpdateWithdrawalStatus(resources.WithdrawalStatus_INVALID, ids...); tempErr != nil {
 		return errors.Wrap(tempErr, "failed to update deposit status")
 	}
 

@@ -1,9 +1,7 @@
 package signer
 
 import (
-	"bytes"
 	"crypto/ecdsa"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -32,15 +30,8 @@ func (s *Signer) SignTx(tx *types.Transaction, chainID *big.Int) (*types.Transac
 	return signedTx, nil
 }
 
-func (s *Signer) setPrefix(message []byte) []byte {
-	lenMessage := []byte(fmt.Sprintf("%d", len(message)))
-	prefix := []byte("\x19Ethereum Signed Message:\n")
-	prefixedMessage := bytes.Join([][]byte{prefix, lenMessage, message}, nil)
-	return crypto.Keccak256(prefixedMessage)
-}
-
 func (s *Signer) SignMessage(message []byte) ([]byte, error) {
-	sig, err := crypto.Sign(s.setPrefix(message)[:], s.privKey)
+	sig, err := crypto.Sign(message, s.privKey)
 	if err != nil {
 		return nil, err
 	}

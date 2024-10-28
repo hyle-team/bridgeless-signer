@@ -2,6 +2,7 @@ package operations
 
 import (
 	"bytes"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
@@ -25,13 +26,17 @@ func NewWithdrawERC20Content(event data.DepositData) (*WithdrawERC20Content, err
 		return nil, errors.New("invalid chain id")
 	}
 
+	if !common.IsHexAddress(event.DestinationTokenAddress) {
+		return nil, errors.New("invalid destination address")
+	}
+
 	return &WithdrawERC20Content{
 		Amount:                  ToBytes32(event.WithdrawalAmount.Bytes()),
 		Receiver:                hexutil.MustDecode(event.DestinationAddress),
 		TxHash:                  hexutil.MustDecode(event.TxHash),
 		TxNonce:                 IntToBytes32(event.TxEventId),
 		ChainID:                 ToBytes32(destinationChainID.Bytes()),
-		DestinationTokenAddress: event.DestinationTokenAddress.Bytes(),
+		DestinationTokenAddress: common.HexToAddress(event.DestinationTokenAddress).Bytes(),
 		IsWrapped:               BoolToBytes(event.IsWrappedToken),
 	}, nil
 }

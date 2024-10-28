@@ -1,6 +1,9 @@
 package operations
 
 import (
+	"bytes"
+	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 )
 
@@ -23,4 +26,12 @@ func BoolToBytes(b bool) []byte {
 	}
 
 	return []byte{0}
+}
+
+func SetSignaturePrefix(message []byte) []byte {
+	lenMessage := []byte(fmt.Sprintf("%d", len(message)))
+	prefix := []byte("\x19Ethereum Signed Message:\n")
+	prefixedMessage := bytes.Join([][]byte{prefix, lenMessage, message}, nil)
+
+	return crypto.Keccak256(prefixedMessage)
 }

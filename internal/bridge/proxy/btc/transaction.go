@@ -3,6 +3,7 @@ package btc
 import (
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 	"strings"
@@ -27,7 +28,7 @@ func (p *proxy) GetTransactionStatus(txHash string) (bridgeTypes.TransactionStat
 }
 
 func (p *proxy) getTransaction(txHash string) (*btcjson.TxRawResult, error) {
-	txHash = strings.TrimPrefix(txHash, "0x")
+	txHash = strings.TrimPrefix(txHash, bridge.HexPrefix)
 	hash, err := chainhash.NewHashFromStr(txHash)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse tx hash")

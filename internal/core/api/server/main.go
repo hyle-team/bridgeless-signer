@@ -7,11 +7,11 @@ import (
 	"github.com/hyle-team/bridgeless-signer/docs"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/ctx"
+	grpcServer "github.com/hyle-team/bridgeless-signer/internal/core/api/grpc"
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/middlewares"
 	api "github.com/hyle-team/bridgeless-signer/internal/core/api/types"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"github.com/ignite/cli/ignite/pkg/openapiconsole"
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/ape"
@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-var _ types.ServiceServer = grpcImplementation{}
+var _ grpcServer.ServiceServer = grpcImplementation{}
 
 type grpcImplementation struct{}
 
@@ -59,13 +59,13 @@ func NewServer(
 }
 
 func (s *server) RunGRPC(ctx context.Context) error {
-	grpcServer := s.grpcServer()
+	srv := s.grpcServer()
 
 	// graceful shutdown
-	go func() { <-ctx.Done(); grpcServer.GracefulStop(); s.logger.Info("grpc serving stopped") }()
+	go func() { <-ctx.Done(); srv.GracefulStop(); s.logger.Info("grpc serving stopped") }()
 
 	s.logger.Info("grpc serving started")
-	return grpcServer.Serve(s.grpc)
+	return srv.Serve(s.grpc)
 }
 
 func (s *server) RunHTTP(ctxt context.Context) error {
@@ -96,7 +96,7 @@ func (s *server) httpRouter(ctxt context.Context) http.Handler {
 
 	// pointing to grpc implementation
 	grpcGatewayRouter := runtime.NewServeMux()
-	_ = types.RegisterServiceHandlerServer(ctxt, grpcGatewayRouter, grpcImplementation{})
+	_ = grpcServer.RegisterServiceHandlerServer(ctxt, grpcGatewayRouter, grpcImplementation{})
 
 	// grpc interceptor not working here
 	router.With(ape.CtxMiddleware(s.ctxExtenders...)).Mount("/", grpcGatewayRouter)
@@ -106,18 +106,24 @@ func (s *server) httpRouter(ctxt context.Context) http.Handler {
 		middlewares.HijackedConnectionCloser(ctxt),
 	).Get("/ws/check/{origin_tx_id}", CheckWithdrawalWs)
 
-	router.Mount("/static/service.swagger.json", http.FileServer(http.FS(docs.Docs)))
-	router.HandleFunc("/api", openapiconsole.Handler("Signer service", "/static/service.swagger.json"))
+	router.Mount("/static/api.swagger.json", http.FileServer(http.FS(docs.Docs)))
+	router.HandleFunc("/api", openapiconsole.Handler("Signer service", "/static/api.swagger.json"))
 
 	return router
 }
 
 func (s *server) grpcServer() *grpc.Server {
-	interceptor := grpc.UnaryInterceptor(api.GRPCContextExtenderInterceptor(s.ctxExtenders...))
-	grpcServer := grpc.NewServer(interceptor)
+	srv := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			ContextExtenderInterceptor(s.ctxExtenders...),
+			LoggerInterceptor(s.logger),
+			// RecoveryInterceptor should be the last one
+			RecoveryInterceptor(s.logger),
+		),
+	)
 
-	types.RegisterServiceServer(grpcServer, grpcImplementation{})
-	reflection.Register(grpcServer)
+	grpcServer.RegisterServiceServer(srv, grpcImplementation{})
+	reflection.Register(srv)
 
-	return grpcServer
+	return srv
 }

@@ -3,11 +3,11 @@ package requests
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"github.com/hyle-team/bridgeless-signer/resources"
 	"github.com/pkg/errors"
 )
 
-func ValidateWithdrawalRequest(request *types.WithdrawalRequest, proxies bridgeTypes.ProxiesRepository) error {
+func ValidateWithdrawalRequest(request *resources.WithdrawalRequest, proxies bridgeTypes.ProxiesRepository) error {
 	if request == nil {
 		return errors.New("request is not provided")
 	}

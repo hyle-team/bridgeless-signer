@@ -1,14 +1,19 @@
 package evm
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm/operations"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"
 )
 
+type Operation interface {
+	CalculateHash() []byte
+}
+
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
-	if amount.Cmp(big.NewInt(0)) != 1 {
+	if amount.Cmp(bridge.ZeroAmount) != 1 {
 		return false
 	}
 
@@ -16,19 +21,20 @@ func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
 }
 
 func (p *proxy) GetSignHash(data data.DepositData) ([]byte, error) {
-	if IsAddressEmpty(data.DestinationTokenAddress) {
-		operation, err := operations.NewWithdrawNativeContent(data)
-		if err != nil {
-			return nil, errors.Wrap(err, "cannot create WithdrawNativeContent operation")
-		}
+	var operation Operation
+	var err error
 
-		return operation.CalculateHash(), nil
+	if data.DestinationTokenAddress == bridge.DefaultNativeTokenAddress {
+		operation, err = operations.NewWithdrawNativeContent(data)
+	} else {
+		operation, err = operations.NewWithdrawERC20Content(data)
 	}
-
-	operation, err := operations.NewWithdrawERC20Content(data)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot create WithdrawERC20Content operation")
+		return nil, errors.Wrap(err, "failed to create operation")
 	}
 
-	return operation.CalculateHash(), nil
+	hash := operation.CalculateHash()
+	prefixedHash := operations.SetSignaturePrefix(hash)
+
+	return prefixedHash, nil
 }

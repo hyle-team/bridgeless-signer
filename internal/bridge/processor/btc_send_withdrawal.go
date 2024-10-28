@@ -1,13 +1,14 @@
 package processor
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/btc"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
 	"math/big"
 )
 
-func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.BitcoinWithdrawalRequest) (reprocessable bool, err error) {
+func (p *Processor) ProcessSendBitcoinWithdrawals(reqs ...WithdrawalRequest) (reprocessable bool, err error) {
 	if len(reqs) == 0 {
 		return false, nil
 	}
@@ -31,11 +32,12 @@ func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.BitcoinWithdrawal
 		}
 		return true, errors.Wrap(err, "failed to get proxy")
 	}
-	if proxy.Type() != bridgeTypes.ChainTypeBitcoin {
-		return false, bridgeTypes.ErrChainNotSupported
+	btcProxy, ok := proxy.(btc.BridgeProxy)
+	if !ok {
+		return false, bridgeTypes.ErrInvalidProxyType
 	}
 
-	hash, err := proxy.SendBitcoins(params)
+	hash, err := btcProxy.SendBitcoins(params)
 	if err != nil {
 		return true, errors.Wrap(err, "failed to send withdrawals")
 	}
@@ -52,5 +54,5 @@ func (p *Processor) SendBitcoinWithdrawals(reqs ...bridgeTypes.BitcoinWithdrawal
 		return false, errors.Wrap(err, "failed to set withdrawals")
 	}
 
-	return true, nil
+	return false, nil
 }

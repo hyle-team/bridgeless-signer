@@ -2,19 +2,17 @@ package evm
 
 import (
 	"bytes"
-	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
-	"gitlab.com/distributed_lab/logan/v3"
-	"math/big"
-	"regexp"
-	"strings"
-	"sync"
-
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hyle-team/bridgeless-signer/contracts"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/chain"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
+	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/logan/v3"
+	"strings"
 )
 
 const (
@@ -27,45 +25,40 @@ var events = []string{
 	EventDepositedERC20,
 }
 
-var txHashPattern = regexp.MustCompile(`^0x[0-9a-fA-F]{64}$`)
+type BridgeProxy interface {
+	bridgeTypes.Proxy
+	GetSignHash(data data.DepositData) ([]byte, error)
+}
 
 type proxy struct {
-	chain          chain.Evm
-	bridgeContract *contracts.Bridge
-	contractABI    abi.ABI
-	depositEvents  []abi.Event
-	nonceM         sync.Mutex
-	logger         *logan.Entry
+	chain         chain.Evm
+	contractABI   abi.ABI
+	depositEvents []abi.Event
+	logger        *logan.Entry
 }
 
 // NewBridgeProxy creates a new bridge proxy for the given chain.
-func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) (bridgeTypes.Proxy, error) {
+func NewBridgeProxy(chain chain.Evm, logger *logan.Entry) BridgeProxy {
 	bridgeAbi, err := abi.JSON(strings.NewReader(contracts.BridgeMetaData.ABI))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse bridge ABI")
+		panic(errors.Wrap(err, "failed to parse bridge ABI"))
 	}
 
 	depositEvents := make([]abi.Event, len(events))
 	for i, event := range events {
 		depositEvent, ok := bridgeAbi.Events[event]
 		if !ok {
-			return nil, errors.New("wrong bridge ABI events")
+			panic("wrong bridge ABI events")
 		}
 		depositEvents[i] = depositEvent
 	}
 
-	bridgeContract, err := contracts.NewBridge(chain.BridgeAddress, chain.Rpc)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create bridge contract")
-	}
-
 	return &proxy{
-		chain:          chain,
-		contractABI:    bridgeAbi,
-		depositEvents:  depositEvents,
-		bridgeContract: bridgeContract,
-		logger:         logger,
-	}, nil
+		chain:         chain,
+		contractABI:   bridgeAbi,
+		depositEvents: depositEvents,
+		logger:        logger,
+	}
 }
 
 func (p *proxy) Type() bridgeTypes.ChainType {
@@ -91,10 +84,6 @@ func (p *proxy) AddressValid(addr string) bool {
 	return common.IsHexAddress(addr)
 }
 
-func (p *proxy) SendBitcoins(_ map[string]*big.Int) (txHash string, err error) {
-	return "", bridgeTypes.ErrNotImplemented
-}
-
 func (p *proxy) TransactionHashValid(hash string) bool {
-	return txHashPattern.MatchString(hash)
+	return bridge.DefaultTransactionHashPattern.MatchString(hash)
 }

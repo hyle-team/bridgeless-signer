@@ -1,12 +1,14 @@
-package types
+package processor
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/zano"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 )
 
 type WithdrawalRequest struct {
 	DepositDbId int64
-	Destination ChainType
+	Destination types.ChainType
 	Data        data.DepositData
 }
 
@@ -15,13 +17,14 @@ type GetDepositRequest struct {
 	DepositIdentifier data.DepositIdentifier
 }
 
-type BitcoinWithdrawalRequest struct {
+type ZanoSignedWithdrawalRequest struct {
 	DepositDbId int64
 	Data        data.DepositData
+	Transaction zano.SignedTransaction
 }
 
-func (b BitcoinWithdrawalRequest) Id() int64 {
-	return b.DepositDbId
+func (r WithdrawalRequest) Id() int64 {
+	return r.DepositDbId
 }
 
 type SubmitTransactionRequest struct {

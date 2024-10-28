@@ -1,11 +1,12 @@
 package processor
 
 import (
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy/evm"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalRequest) (res *bridgeTypes.SubmitTransactionRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessEthSignWithdrawalRequest(req WithdrawalRequest) (res *SubmitTransactionRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.Data.DestinationChainId)
@@ -15,8 +16,12 @@ func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalReque
 		}
 		return nil, true, errors.Wrap(err, "failed to get proxy")
 	}
+	evmProxy, ok := proxy.(evm.BridgeProxy)
+	if !ok {
+		return nil, false, bridgeTypes.ErrInvalidProxyType
+	}
 
-	signHash, err := proxy.GetSignHash(req.Data)
+	signHash, err := evmProxy.GetSignHash(req.Data)
 	if err != nil {
 		return nil, true, errors.Wrap(err, "failed to form withdrawal transaction")
 	}
@@ -31,7 +36,7 @@ func (p *Processor) ProcessSignWithdrawalRequest(req bridgeTypes.WithdrawalReque
 		return nil, true, errors.Wrap(err, "failed to save signature data")
 	}
 
-	return &bridgeTypes.SubmitTransactionRequest{
+	return &SubmitTransactionRequest{
 		DepositDbId: req.DepositDbId,
 	}, false, nil
 }

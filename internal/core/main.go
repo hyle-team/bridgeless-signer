@@ -43,9 +43,17 @@ func RunConsumers(
 				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, producer),
 				prefix:            consumer.GetDepositConsumerPrefix,
 			},
-			rabbitTypes.SignWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewSignWithdrawalHandler(processor, producer),
-				prefix:            consumer.SignWithdrawalConsumerPrefix,
+			rabbitTypes.EthSignWithdrawalQueue: {
+				deliveryProcessor: consumerProcessors.NewEthereumSignWithdrawalHandler(processor, producer),
+				prefix:            consumer.EthSignWithdrawalConsumerPrefix,
+			},
+			rabbitTypes.ZanoSignWithdrawalQueue: {
+				deliveryProcessor: consumerProcessors.NewZanoSignWithdrawalHandler(processor, producer),
+				prefix:            consumer.ZanoSignWithdrawalConsumerPrefix,
+			},
+			rabbitTypes.ZanoSendWithdrawalQueue: {
+				deliveryProcessor: consumerProcessors.NewZanoSendWithdrawalHandler(processor, producer),
+				prefix:            consumer.ZanoSendWithdrawalConsumerPrefix,
 			},
 		}
 	)
@@ -78,7 +86,7 @@ func RunConsumers(
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		cns := consumer.NewBatch[bridgeTypes.SubmitTransactionRequest](
+		cns := consumer.NewBatch[bridgeProcessor.SubmitTransactionRequest](
 			rabbitCfg.NewChannel(),
 			consumer.SubmitTransactionConsumerPrefix,
 			logger.
@@ -94,18 +102,18 @@ func RunConsumers(
 	}()
 	go func() {
 		defer wg.Done()
-		cns := consumer.NewBatch[bridgeTypes.BitcoinWithdrawalRequest](
+		cns := consumer.NewBatch[bridgeProcessor.WithdrawalRequest](
 			rabbitCfg.NewChannel(),
-			consumer.SubmitBitcoinWithdrawalConsumerPrefix,
+			consumer.BitcoinSendWithdrawalConsumerPrefix,
 			logger.
 				WithField(serviceComponent, componentConsumer).
-				WithField(componentPart, consumer.SubmitBitcoinWithdrawalConsumerPrefix),
-			consumerProcessors.NewSubmitBitcoinWithdrawalHandler(processor, producer),
+				WithField(componentPart, consumer.BitcoinSendWithdrawalConsumerPrefix),
+			consumerProcessors.NewBitcoinSendWithdrawalHandler(processor, producer),
 			producer,
 			rabbitCfg.BitcoinSubmitterOpts,
 		)
-		if err := cns.Consume(ctx, rabbitTypes.SubmitBitcoinWithdrawalQueue); err != nil {
-			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.SubmitBitcoinWithdrawalConsumerPrefix))
+		if err := cns.Consume(ctx, rabbitTypes.BtcSendWithdrawalQueue); err != nil {
+			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.BitcoinSendWithdrawalConsumerPrefix))
 		}
 	}()
 

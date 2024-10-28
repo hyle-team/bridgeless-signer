@@ -4,11 +4,11 @@ import (
 	coretypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
+	"github.com/hyle-team/bridgeless-signer/resources"
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) SubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequest) (reprocessable bool, err error) {
+func (p *Processor) ProcessSubmitTransactions(reqs ...SubmitTransactionRequest) (reprocessable bool, err error) {
 	if len(reqs) == 0 {
 		return false, nil
 	}
@@ -32,7 +32,7 @@ func (p *Processor) SubmitTransactions(reqs ...bridgeTypes.SubmitTransactionRequ
 	// rollback if transaction failed to be sent
 	txConn := p.db.New()
 	err = txConn.Transaction(func() error {
-		if tmperr := txConn.UpdateSubmitStatus(types.SubmitWithdrawalStatus_SUCCESSFUL, depositIds...); tmperr != nil {
+		if tmperr := txConn.UpdateSubmitStatus(resources.SubmitWithdrawalStatus_SUCCESSFUL, depositIds...); tmperr != nil {
 			return errors.Wrap(tmperr, "failed to set deposits submitted")
 		}
 

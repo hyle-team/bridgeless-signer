@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/btcutil"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge"
 	"github.com/pkg/errors"
 	"math/big"
 	"strings"
 )
 
-const hexPrefix = "0x"
+var minWithdrawAmount = big.NewInt(minSatoshisPerOutput)
 
 func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 	if len(data) == 0 {
@@ -42,11 +43,11 @@ func (p *proxy) SendBitcoins(data map[string]*big.Int) (string, error) {
 		return "", errors.Wrap(err, "failed to send transaction")
 	}
 
-	return hexPrefix + hash.String(), nil
+	return bridgeTypes.HexPrefix + hash.String(), nil
 }
 
 func (p *proxy) WithdrawalAmountValid(amount *big.Int) bool {
-	if amount.Cmp(big.NewInt(minSatoshisPerOutput)) == -1 {
+	if amount.Cmp(minWithdrawAmount) == -1 {
 		return false
 	}
 

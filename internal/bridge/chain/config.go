@@ -1,7 +1,7 @@
 package chain
 
 import (
-	"github.com/btcsuite/btcd/rpcclient"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/comfig"
 	"gitlab.com/distributed_lab/kit/kv"
@@ -32,7 +32,12 @@ func (c *chainer) Chains() []Chain {
 
 		if err := figure.
 			Out(&cfg).
-			With(figure.BaseHooks, figure.EthereumHooks, bitcoinHooks).
+			With(
+				figure.BaseHooks,
+				figure.EthereumHooks,
+				bitcoinHooks,
+				interfaceHook,
+			).
 			From(kv.MustGetStringMap(c.getter, "chains")).
 			Please(); err != nil {
 			panic(errors.Wrap(err, "failed to figure out chains"))
@@ -46,35 +51,36 @@ func (c *chainer) Chains() []Chain {
 	}).([]Chain)
 }
 
-var bitcoinHooks = figure.Hooks{
-	"*rpcclient.Client": func(value interface{}) (reflect.Value, error) {
-		switch v := value.(type) {
-		case map[string]interface{}:
-			var clientConfig struct {
-				Host       string `fig:"host,required"`
-				User       string `fig:"user,required"`
-				Pass       string `fig:"pass,required"`
-				DisableTLS bool   `fig:"disable_tls"`
-			}
-
-			if err := figure.Out(&clientConfig).With(figure.BaseHooks).From(v).Please(); err != nil {
-				return reflect.Value{}, errors.Wrap(err, "failed to figure out bitcoin rpc client config")
-			}
-
-			client, err := rpcclient.New(&rpcclient.ConnConfig{
-				Host:         clientConfig.Host,
-				User:         clientConfig.User,
-				Pass:         clientConfig.Pass,
-				HTTPPostMode: true,
-				DisableTLS:   clientConfig.DisableTLS,
-			}, nil)
-			if err != nil {
-				return reflect.Value{}, errors.Wrap(err, "failed to create bitcoin rpc client")
-			}
-
-			return reflect.ValueOf(client), nil
-		default:
-			return reflect.Value{}, errors.Errorf("unsupported conversion from %T", value)
-		}
+// simple hook to delay parsing interface details
+var interfaceHook = figure.Hooks{
+	"interface {}": func(value interface{}) (reflect.Value, error) {
+		return reflect.ValueOf(value), nil
 	},
+}
+
+type Network string
+
+const (
+	NetworkMainnet Network = "mainnet"
+	NetworkTestnet Network = "testnet"
+)
+
+func (n Network) Validate() error {
+	switch n {
+	case NetworkMainnet, NetworkTestnet:
+		return nil
+	default:
+		return errors.New("invalid network")
+	}
+}
+
+type Chain struct {
+	Id              string          `fig:"id,required"`
+	Type            types.ChainType `fig:"type,required"`
+	Confirmations   uint64          `fig:"confirmations,required"`
+	Rpc             any             `fig:"rpc,required"`
+	BridgeAddresses any             `fig:"bridge_addresses,required"`
+
+	Wallet  string  `fig:"wallet"`
+	Network Network `fig:"network"`
 }

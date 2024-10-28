@@ -6,14 +6,14 @@ import (
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/ctx"
 	"github.com/hyle-team/bridgeless-signer/internal/core/api/requests"
 	apiTypes "github.com/hyle-team/bridgeless-signer/internal/core/api/types"
+	"github.com/hyle-team/bridgeless-signer/resources"
 
 	"github.com/hyle-team/bridgeless-signer/internal/data"
-	"github.com/hyle-team/bridgeless-signer/pkg/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (grpcImplementation) CheckWithdrawal(ctxt context.Context, request *types.CheckWithdrawalRequest) (*types.CheckWithdrawalResponse, error) {
+func (grpcImplementation) CheckWithdrawal(ctxt context.Context, request *resources.CheckWithdrawalRequest) (*resources.CheckWithdrawalResponse, error) {
 	var (
 		proxies = ctx.Proxies(ctxt)
 		db      = ctx.DB(ctxt)
@@ -40,7 +40,7 @@ func (grpcImplementation) CheckWithdrawal(ctxt context.Context, request *types.C
 		return nil, status.Error(codes.NotFound, "deposit not found")
 	}
 
-	if tx.Status == types.WithdrawalStatus_TX_PENDING && tx.WithdrawalTxHash != nil {
+	if tx.Status == resources.WithdrawalStatus_TX_PENDING && tx.WithdrawalTxHash != nil {
 		proxy, err := proxies.Proxy(*tx.WithdrawalChainId)
 		if err != nil {
 			logger.WithError(err).Error("failed to get proxy")
@@ -56,9 +56,9 @@ func (grpcImplementation) CheckWithdrawal(ctxt context.Context, request *types.C
 		if st != bridgeTypes.TransactionStatusPending {
 			switch st {
 			case bridgeTypes.TransactionStatusFailed:
-				tx.Status = types.WithdrawalStatus_TX_FAILED
+				tx.Status = resources.WithdrawalStatus_TX_FAILED
 			case bridgeTypes.TransactionStatusSuccessful:
-				tx.Status = types.WithdrawalStatus_TX_SUCCESSFUL
+				tx.Status = resources.WithdrawalStatus_TX_SUCCESSFUL
 			}
 			// updating in the db
 			if err = db.UpdateWithdrawalStatus(tx.Status, tx.Id); err != nil {

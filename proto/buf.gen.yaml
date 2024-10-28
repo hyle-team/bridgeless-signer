@@ -1,12 +1,12 @@
 version: v1
 plugins:
   - plugin: go
-    out: ../pkg/types
+    out: ../resources
     opt:
       - paths=source_relative
 
   - plugin: go-grpc
-    out: ../pkg/types
+    out: ../internal/core/api/grpc
     opt:
       - paths=source_relative
       - require_unimplemented_servers=false
@@ -15,6 +15,6 @@ plugins:
     out: ../docs/static
 
   - plugin: buf.build/grpc-ecosystem/gateway
-    out: ../pkg/types
+    out: ../internal/core/api/grpc
     opt:
       - paths=source_relative

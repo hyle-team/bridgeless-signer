@@ -2,8 +2,8 @@ package types
 
 import (
 	"context"
+	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 
-	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -24,19 +24,26 @@ const (
 	HeaderDelayKey      = "delay"
 	HeaderRetryCountKey = "x-retry-count"
 
-	GetDepositQueue              = "get-deposit-queue"
-	SignWithdrawalQueue          = "sign-withdrawal-queue"
-	SubmitBitcoinWithdrawalQueue = "submit-bitcoin-withdrawal-queue"
-	SubmitTransactionQueue       = "submit-transaction-queue"
+	GetDepositQueue         = "get-deposit-queue"
+	EthSignWithdrawalQueue  = "eth-sign-withdrawal-queue"
+	BtcSendWithdrawalQueue  = "btc-send-withdrawal-queue"
+	ZanoSignWithdrawalQueue = "zano-sign-withdrawal-queue"
+	ZanoSendWithdrawalQueue = "zano-send-withdrawal-queue"
+	SubmitTransactionQueue  = "submit-transaction-queue"
 )
 
 var ErrorMaxResendReached = errors.New("max resend count reached")
 
 type Producer interface {
-	SendGetDepositRequest(request bridgeTypes.GetDepositRequest) error
-	SendSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
-	SendSubmitBitcoinWithdrawalRequest(request bridgeTypes.BitcoinWithdrawalRequest) error
-	SendSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
+	PublishGetDepositRequest(request bridgeTypes.GetDepositRequest) error
+	PublishSubmitTransactionRequest(request bridgeTypes.SubmitTransactionRequest) error
+
+	PublishEthereumSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+
+	PublishBitcoinSendWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+
+	PublishZanoSignWithdrawalRequest(request bridgeTypes.WithdrawalRequest) error
+	PublishZanoSendWithdrawalRequest(request bridgeTypes.ZanoSignedWithdrawalRequest) error
 	DeliveryResender
 }
 

@@ -6,6 +6,8 @@ VIPER_FILE="${GOPATH}/src/github.com/hyle-team/bridgeless-signer/config.local.ya
 
 gen-proto:
 	cd proto && buf generate
+	rm ./resources/api.pb.go
+
 
 build:
 	rm -f $(GOPATH)/bin/signer

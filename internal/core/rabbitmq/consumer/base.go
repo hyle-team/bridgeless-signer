@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	GetDepositConsumerPrefix       = "get_deposit_consumer"
-	FormWithdrawalConsumerPrefix   = "form_withdrawal_consumer"
-	SignWithdrawalConsumerPrefix   = "sign_withdrawal_consumer"
-	SubmitWithdrawalConsumerPrefix = "submit_withdrawal_consumer"
+	GetDepositConsumerPrefix         = "get_deposit_consumer"
+	EthSignWithdrawalConsumerPrefix  = "eth_sign_withdrawal_consumer"
+	ZanoSignWithdrawalConsumerPrefix = "zano_sign_withdrawal_consumer"
+	ZanoSendWithdrawalConsumerPrefix = "zano_send_withdrawal_consumer"
 )
 
 type BaseConsumer struct {

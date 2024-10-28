@@ -4,9 +4,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/btcsuite/btcd/btcjson"
-	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/hyle-team/bridgeless-signer/internal/bridge"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/pkg/errors"
@@ -18,6 +19,16 @@ import (
 const (
 	defaultDecimals                  = 8
 	defaultDepositorAddressOutputIdx = 0
+
+	minOpReturnCodeLen = 3
+
+	dstSeparator   = "-"
+	dstParamsCount = 2
+	dstAddrIdx     = 0
+	dstChainIdIdx  = 1
+
+	dstEthAddrLen  = 42
+	dstZanoAddrLen = 71
 )
 
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
@@ -71,8 +82,9 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		DestinationAddress: addr,
 		SourceAddress:      depositor,
 		DepositAmount:      amount,
-		// no token address here
-		Block: block.Height,
+		// as Bitcoin does not have any other currencies
+		TokenAddress: bridge.DefaultNativeTokenAddress,
+		Block:        block.Height,
 	}, nil
 }
 
@@ -108,19 +120,50 @@ func (p *proxy) parseDestinationOutput(out btcjson.Vout) (addr, chainId string, 
 	}
 
 	scriptRaw, err := hex.DecodeString(out.ScriptPubKey.Hex)
-	if scriptRaw[0] != txscript.OP_RETURN && len(scriptRaw) <= 3 {
-		return addr, chainId, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "destination data missing")
+	if err != nil {
+		return addr, chainId, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, err.Error())
 	}
 
-	// Omitting: OP_RETURN OP_PUSH [return data length] (first three bytes)
-	dstData := scriptRaw[3:]
+	dstData, err := retrieveEncodedDestinationData(scriptRaw)
+	if err != nil {
+		return addr, chainId, err
+	}
 
-	params := strings.Split(string(dstData), "-")
-	if len(params) != 2 {
+	return decodeDestinationData(dstData)
+}
+
+func retrieveEncodedDestinationData(raw []byte) (string, error) {
+	if raw[0] != txscript.OP_RETURN {
+		return "", errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "invalid script type")
+	}
+	if len(raw) <= minOpReturnCodeLen {
+		return "", errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "destination data missing")
+	}
+
+	// Stripping: OP_RETURN OP_PUSH [return data length] (first three bytes)
+	return string(raw[3:]), nil
+}
+
+func decodeDestinationData(data string) (addr, chainId string, err error) {
+	params := strings.Split(data, dstSeparator)
+	if len(params) != dstParamsCount {
 		return addr, chainId, errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "invalid destination params count")
 	}
 
-	return params[0], params[1], nil
+	addr, chainId = params[dstAddrIdx], params[dstChainIdIdx]
+
+	switch len(addr) {
+	case dstEthAddrLen:
+		// nothing to decode
+		addr = params[0]
+	case dstZanoAddrLen:
+		// decoding from base58 to get proper user addr representation
+		addr = base58.Encode([]byte(params[0]))
+	default:
+		err = errors.Wrap(bridgeTypes.ErrInvalidScriptPubKey, "invalid destination address parameter")
+	}
+
+	return
 }
 
 var supportedScriptTypes = []txscript.ScriptClass{
@@ -150,29 +193,4 @@ func (p *proxy) parseDepositOutput(out btcjson.Vout) (*big.Int, error) {
 	}
 
 	return toBigint(out.Value, defaultDecimals), nil
-}
-
-func (p *proxy) bridgeAddr(addr btcutil.Address) bool {
-	for _, receiver := range p.chain.Receivers {
-		if addr.String() == receiver.String() {
-			return true
-		}
-	}
-
-	return false
-}
-
-func toBigint(val float64, decimals int64) *big.Int {
-	bigval := new(big.Float)
-	bigval.SetFloat64(val)
-
-	coin := new(big.Float)
-	coin.SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(decimals), nil))
-
-	bigval.Mul(bigval, coin)
-
-	result := new(big.Int)
-	bigval.Int(result)
-
-	return result
 }

@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	coretypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/pkg/errors"
 )
@@ -15,7 +14,7 @@ var (
 type TokenPairer interface {
 	GetDestinationTokenInfo(
 		srcChainId string,
-		srcTokenAddr common.Address,
+		srcTokenAddr string,
 		dstChainId string,
 	) (coretypes.TokenInfo, error)
 }

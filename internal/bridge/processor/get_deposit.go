@@ -2,12 +2,11 @@ package processor
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
 )
 
-func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) (data *bridgeTypes.WithdrawalRequest, reprocessable bool, err error) {
+func (p *Processor) ProcessGetDepositRequest(req GetDepositRequest) (data *WithdrawalRequest, reprocessable bool, err error) {
 	defer func() { err = p.updateInvalidDepositStatus(err, reprocessable, req.DepositDbId) }()
 
 	proxy, err := p.proxies.Proxy(req.DepositIdentifier.ChainId)
@@ -44,7 +43,7 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 		return data, false, errors.Wrap(bridgeTypes.ErrInvalidReceiverAddress, depositData.DestinationAddress)
 	}
 
-	srcTokenInfo, err := p.core.GetTokenInfo(depositData.ChainId, depositData.TokenAddress.String())
+	srcTokenInfo, err := p.core.GetTokenInfo(depositData.ChainId, depositData.TokenAddress)
 	if err != nil {
 		reprocessable = true
 		if errors.Is(err, bridgeTypes.ErrTokenInfoNotFound) {
@@ -70,14 +69,14 @@ func (p *Processor) ProcessGetDepositRequest(req bridgeTypes.GetDepositRequest) 
 		return nil, false, bridgeTypes.ErrInvalidDepositedAmount
 	}
 
-	depositData.DestinationTokenAddress = common.HexToAddress(dstTokenInfo.Address)
+	depositData.DestinationTokenAddress = dstTokenInfo.Address
 	depositData.IsWrappedToken = dstTokenInfo.IsWrapped
 
 	if err = p.db.New().SetDepositData(*depositData); err != nil {
 		return nil, true, errors.Wrap(err, "failed to save deposit data")
 	}
 
-	return &bridgeTypes.WithdrawalRequest{
+	return &WithdrawalRequest{
 		DepositDbId: req.DepositDbId,
 		Data:        *depositData,
 		Destination: dstProxy.Type(),
