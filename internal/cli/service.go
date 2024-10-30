@@ -4,7 +4,9 @@ import (
 	"context"
 	coreConnector "github.com/hyle-team/bridgeless-signer/internal/bridge/core"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	bridgeProcessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
@@ -14,8 +16,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func RunService(ctx context.Context, cfg config.Config) error {
+func RunService(cfg config.Config) error {
 	var (
+		ctx, _    = signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 		wg        = sync.WaitGroup{}
 		coreCfg   = cfg.CoreConnectorConfig()
 		coreConn  = coreConnector.NewConnector(coreCfg.Connection, coreCfg.Settings)

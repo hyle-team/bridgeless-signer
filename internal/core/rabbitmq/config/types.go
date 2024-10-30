@@ -9,11 +9,11 @@ import (
 )
 
 type Config struct {
-	Connection           *amqp.Connection   `fig:"url,required"`
-	ConsumerInstances    uint               `fig:"consumer_instances,required"`
-	ResendParams         ResendParams       `fig:"resend_params,required"`
-	TxSubmitterOpts      BatchConsumingOpts `fig:"tx_submitter,required"`
-	BitcoinSubmitterOpts BatchConsumingOpts `fig:"bitcoin_submitter,required"`
+	Connection            *amqp.Connection   `fig:"url,required"`
+	BaseConsumerInstances uint               `fig:"base_consumer_instances,required"`
+	ResendParams          ResendParams       `fig:"resend_params,required"`
+	TxSubmitterOpts       BatchConsumingOpts `fig:"tx_submitter,required"`
+	BitcoinSubmitterOpts  BatchConsumingOpts `fig:"bitcoin_submitter,required"`
 }
 
 type BatchConsumingOpts struct {
@@ -31,8 +31,8 @@ func (c *Config) Validate() error {
 		return errors.New("delays should not be empty")
 	}
 
-	if c.ConsumerInstances == 0 {
-		c.ConsumerInstances = uint(runtime.NumCPU())
+	if c.BaseConsumerInstances == 0 {
+		c.BaseConsumerInstances = uint(runtime.NumCPU())
 	}
 
 	if c.ResendParams.MaxRetryCount == 0 {

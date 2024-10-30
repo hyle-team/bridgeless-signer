@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"encoding/json"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -15,22 +16,22 @@ const (
 	ZanoSendWithdrawalConsumerPrefix = "zano_send_withdrawal_consumer"
 )
 
-type BaseConsumer struct {
+type BaseConsumer[T rabbitTypes.Identifiable] struct {
 	channel           *amqp.Channel
 	name              string
 	logger            *logan.Entry
-	deliveryProcessor rabbitTypes.DeliveryProcessor
+	deliveryProcessor rabbitTypes.RequestProcessor[T]
 	deliveryResender  rabbitTypes.DeliveryResender
 }
 
-func NewBase(
+func NewBase[T rabbitTypes.Identifiable](
 	channel *amqp.Channel,
 	name string,
 	logger *logan.Entry,
-	deliveryProcessor rabbitTypes.DeliveryProcessor,
+	deliveryProcessor rabbitTypes.RequestProcessor[T],
 	deliveryResender rabbitTypes.DeliveryResender,
 ) rabbitTypes.Consumer {
-	return &BaseConsumer{
+	return &BaseConsumer[T]{
 		channel:           channel,
 		name:              name,
 		logger:            logger,
@@ -39,7 +40,7 @@ func NewBase(
 	}
 }
 
-func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
+func (c *BaseConsumer[T]) Consume(ctx context.Context, queue string) error {
 	deliveries, err := c.channel.Consume(queue, c.name, false, false, false, false, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to get consumer channel")
@@ -50,25 +51,33 @@ func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
 	for {
 		select {
 		case <-ctx.Done():
-			c.logger.Info("consuming stopped")
+			c.logger.Info("consuming stopped: context canceled")
 			return errors.Wrap(c.channel.Close(), "failed to close channel")
 		case delivery, ok := <-deliveries:
 			if !ok {
+				c.logger.Info("consuming stopped: delivery channel closed")
 				return nil
 			}
 
 			logger := c.logger.WithField("delivery_tag", delivery.DeliveryTag)
 			logger.Debug("delivery received")
 
-			reprocessable, callback, err := c.deliveryProcessor.ProcessDelivery(delivery)
+			var request T
+			if err = json.Unmarshal(delivery.Body, &request); err != nil {
+				logger.WithError(err).Error("failed to unmarshal delivery body")
+				nack(logger, delivery, false)
+				continue
+			}
+
+			reprocessable, err := c.deliveryProcessor.ProcessRequest(request)
 			if err == nil {
 				ack(logger, delivery)
 				continue
 			}
 
-			logger.WithError(err).Error("failed to process delivery")
+			logger.WithError(err).Error("failed to process request")
 			if !reprocessable {
-				logger.Debug("delivery is not reprocessable")
+				logger.Debug("request is not reprocessable")
 				nack(logger, delivery, false)
 				continue
 			}
@@ -78,13 +87,10 @@ func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
 				ack(logger, delivery)
 				continue
 			}
-
 			if errors.Is(err, rabbitTypes.ErrorMaxResendReached) {
 				logger.Debug(err.Error())
-				if callback != nil {
-					if err := callback(); err != nil {
-						logger.WithError(err).Error("failed to call reprocess fail callback")
-					}
+				if err := c.deliveryProcessor.ReprocessFailedCallback(request); err != nil {
+					logger.WithError(err).Error("failed to call reprocess fail callback")
 				}
 
 				nack(logger, delivery, false)
@@ -94,4 +100,8 @@ func (c *BaseConsumer) Consume(ctx context.Context, queue string) error {
 			}
 		}
 	}
+}
+
+func (c *BaseConsumer[T]) Name() string {
+	return c.name
 }

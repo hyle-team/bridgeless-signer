@@ -20,7 +20,6 @@ func New(
 	db data.DepositsQ,
 	signer *signer.Signer,
 	core bridgeTypes.Bridger,
-
 ) *Processor {
 	return &Processor{proxies: proxies, db: db, signer: signer, core: core}
 }

@@ -2,12 +2,9 @@ package cli
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"os/signal"
-	"syscall"
-
 	"github.com/alecthomas/kingpin"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
+	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/kit/kv"
 	"gitlab.com/distributed_lab/logan/v3"
 )
@@ -41,16 +38,13 @@ func Run(args []string) bool {
 		return false
 	}
 
-	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-
 	switch cmd {
 	case serviceCmd.FullCommand():
-		err = RunService(ctx, cfg)
+		err = RunService(cfg)
 	case migrateUpCmd.FullCommand():
 		err = MigrateUp(cfg)
 	case migrateDownCmd.FullCommand():
 		err = MigrateDown(cfg)
-	// handle any custom commands here in the same way
 	default:
 		log.Errorf("unknown command %s", cmd)
 		return false

@@ -123,7 +123,7 @@ func (c *BatchConsumer[T]) processBatch(queue string) {
 		entryBatch[i] = entry.Entry
 	}
 
-	reprocessable, callback, err := c.batchProcessor.ProcessBatch(entryBatch)
+	reprocessable, err := c.batchProcessor.ProcessBatch(entryBatch)
 	if err == nil {
 		logger.Debug("batch processed")
 		return
@@ -135,7 +135,7 @@ func (c *BatchConsumer[T]) processBatch(queue string) {
 		return
 	}
 
-	var callbackIds []int64
+	var callbackRequests []T
 	for _, entry := range c.batch {
 		// shadowing original logger
 		logger := logger.WithField("delivery_tag", entry.Delivery.DeliveryTag)
@@ -148,13 +148,17 @@ func (c *BatchConsumer[T]) processBatch(queue string) {
 
 		logger.WithError(err).Error("failed to resend delivery")
 		if errors.Is(err, rabbitTypes.ErrorMaxResendReached) {
-			callbackIds = append(callbackIds, entry.Entry.Id())
+			callbackRequests = append(callbackRequests, entry.Entry)
 		}
 	}
 
-	if callback != nil && len(callbackIds) > 0 {
-		if err = callback(callbackIds...); err != nil {
-			logger.WithField("callback_ids", callbackIds).WithError(err).Error("failed to set batch status failed")
+	if len(callbackRequests) > 0 {
+		if err = c.batchProcessor.ReprocessFailedCallback(callbackRequests); err != nil {
+			logger.WithError(err).Error("failed to execute failed reprocessing callback")
 		}
 	}
+}
+
+func (c *BatchConsumer[T]) Name() string {
+	return c.name
 }

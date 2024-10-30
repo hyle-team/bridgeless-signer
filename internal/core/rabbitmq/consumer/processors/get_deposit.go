@@ -1,13 +1,11 @@
 package processors
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
 	"github.com/pkg/errors"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type GetDepositHandler struct {
@@ -18,29 +16,17 @@ type GetDepositHandler struct {
 func NewGetDepositHandler(
 	processor *processor.Processor,
 	publisher rabbitTypes.Producer,
-) rabbitTypes.DeliveryProcessor {
+) rabbitTypes.RequestProcessor[processor.GetDepositRequest] {
 	return &GetDepositHandler{
 		processor: processor,
 		publisher: publisher,
 	}
 }
 
-func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error) {
-	var request processor.GetDepositRequest
-	if err = json.Unmarshal(delivery.Body, &request); err != nil {
-		return false, nil, errors.Wrap(err, "failed to unmarshal delivery body")
-	}
-
-	rprFailCallback = func() error {
-		return errors.Wrap(
-			h.processor.SetWithdrawStatusFailed(request.DepositDbId),
-			"failed to set withdraw status failed",
-		)
-	}
-
+func (h GetDepositHandler) ProcessRequest(request processor.GetDepositRequest) (reprocessable bool, err error) {
 	withdrawReq, reprocessable, err := h.processor.ProcessGetDepositRequest(request)
 	if err != nil {
-		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process get deposit request")
+		return reprocessable, errors.Wrap(err, "failed to process get deposit request")
 	}
 
 	reprocessable = true
@@ -56,5 +42,12 @@ func (h *GetDepositHandler) ProcessDelivery(delivery amqp.Delivery) (reprocessab
 		reprocessable = false
 	}
 
-	return reprocessable, rprFailCallback, errors.Wrap(err, "failed to send deposit processing request")
+	return reprocessable, errors.Wrap(err, "failed to send deposit processing request")
+}
+
+func (h GetDepositHandler) ReprocessFailedCallback(request processor.GetDepositRequest) error {
+	return errors.Wrap(
+		h.processor.SetWithdrawStatusFailed(request.DepositDbId),
+		"failed to set withdraw status failed",
+	)
 }
