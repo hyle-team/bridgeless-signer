@@ -88,7 +88,7 @@ func (c *BaseConsumer[T]) Consume(ctx context.Context, queue string) error {
 				logger.Debug("delivery resent")
 				continue
 			}
-			if errors.Is(err, rabbitTypes.ErrorMaxResendReached) {
+			if errors.Is(err, rabbitTypes.ErrMaxResendReached) {
 				logger.Debug(err.Error())
 			} else {
 				logger.WithError(err).Error("failed to resend delivery")

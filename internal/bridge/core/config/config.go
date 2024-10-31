@@ -63,7 +63,7 @@ func (c *configurer) CoreConnectorConfig() ConnectorConfig {
 			connectSecurityOptions = grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
 		}
 
-		client, err := grpc.Dial(cfg.Connection.Addr, connectSecurityOptions, grpc.WithKeepaliveParams(keepalive.ClientParameters{
+		client, err := grpc.NewClient(cfg.Connection.Addr, connectSecurityOptions, grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:    10 * time.Second, // wait time before ping if no activity
 			Timeout: 20 * time.Second, // ping timeout
 		}))

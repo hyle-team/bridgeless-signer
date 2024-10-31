@@ -32,7 +32,10 @@ const (
 	SubmitTransactionQueue  = "submit-transaction-queue"
 )
 
-var ErrorMaxResendReached = errors.New("max resend count reached")
+var (
+	ErrMaxResendReached = errors.New("max resend count reached")
+	ErrConnectionClosed = errors.New("RabbitMQ connection was closed")
+)
 
 type Producer interface {
 	PublishGetDepositRequest(request bridgeTypes.GetDepositRequest) error

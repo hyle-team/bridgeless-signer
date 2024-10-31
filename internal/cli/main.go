@@ -51,12 +51,13 @@ func Run(args []string) bool {
 	}
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			log.Info("service stopped: context was canceled")
+			log.Info("service got signal to stop")
 			return true
 		}
 
-		log.WithError(err).Error("failed to exec cmd")
+		log.Error(err)
 		return false
 	}
+
 	return true
 }
