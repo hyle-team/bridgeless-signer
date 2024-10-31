@@ -52,10 +52,12 @@ func (c *BaseConsumer[T]) Consume(ctx context.Context, queue string) error {
 		select {
 		case <-ctx.Done():
 			c.logger.Info("consuming stopped: context canceled")
+
 			return errors.Wrap(c.channel.Close(), "failed to close channel")
 		case delivery, ok := <-deliveries:
 			if !ok {
 				c.logger.Info("consuming stopped: delivery channel closed")
+
 				return nil
 			}
 
@@ -75,28 +77,25 @@ func (c *BaseConsumer[T]) Consume(ctx context.Context, queue string) error {
 				continue
 			}
 
+			nack(logger, delivery, false)
 			logger.WithError(err).Error("failed to process request")
 			if !reprocessable {
 				logger.Debug("request is not reprocessable")
-				nack(logger, delivery, false)
 				continue
 			}
 
 			if err = c.deliveryResender.ResendDelivery(queue, delivery); err == nil {
 				logger.Debug("delivery resent")
-				ack(logger, delivery)
 				continue
 			}
 			if errors.Is(err, rabbitTypes.ErrorMaxResendReached) {
 				logger.Debug(err.Error())
-				if err := c.deliveryProcessor.ReprocessFailedCallback(request); err != nil {
-					logger.WithError(err).Error("failed to call reprocess fail callback")
-				}
-
-				nack(logger, delivery, false)
 			} else {
 				logger.WithError(err).Error("failed to resend delivery")
-				nack(logger, delivery, true)
+			}
+
+			if err = c.deliveryProcessor.ReprocessFailedCallback(request); err != nil {
+				logger.WithError(err).Error("failed to execute failed reprocessing callback")
 			}
 		}
 	}

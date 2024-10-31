@@ -92,10 +92,8 @@ func RunConsumers(
 		}
 	}
 
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		cns := consumer.NewBatch[bridgeProcessor.SubmitTransactionRequest](
+	batchConsumers := map[string]rabbitTypes.Consumer{
+		rabbitTypes.SubmitTransactionQueue: consumer.NewBatch[bridgeProcessor.SubmitTransactionRequest](
 			rabbitCfg.NewChannel(),
 			consumer.SubmitTransactionConsumerPrefix,
 			logger.
@@ -104,14 +102,8 @@ func RunConsumers(
 			consumerProcessors.NewSubmitTransactionHandler(processor),
 			producer,
 			rabbitCfg.TxSubmitterOpts,
-		)
-		if err := cns.Consume(ctx, rabbitTypes.SubmitTransactionQueue); err != nil {
-			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.SubmitTransactionConsumerPrefix))
-		}
-	}()
-	go func() {
-		defer wg.Done()
-		cns := consumer.NewBatch[bridgeProcessor.WithdrawalRequest](
+		),
+		rabbitTypes.BtcSendWithdrawalQueue: consumer.NewBatch[bridgeProcessor.WithdrawalRequest](
 			rabbitCfg.NewChannel(),
 			consumer.BitcoinSendWithdrawalConsumerPrefix,
 			logger.
@@ -120,12 +112,21 @@ func RunConsumers(
 			consumerProcessors.NewBitcoinSendWithdrawalHandler(processor, producer),
 			producer,
 			rabbitCfg.BitcoinSubmitterOpts,
-		)
-		if err := cns.Consume(ctx, rabbitTypes.BtcSendWithdrawalQueue); err != nil {
-			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.BitcoinSendWithdrawalConsumerPrefix))
-		}
-	}()
+		),
+	}
 
+	wg.Add(len(batchConsumers))
+
+	for queue, cns := range batchConsumers {
+		go func(cns rabbitTypes.Consumer, queue string) {
+			defer wg.Done()
+
+			if err := cns.Consume(ctx, queue); err != nil {
+				logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", cns.Name()))
+			}
+
+		}(cns, queue)
+	}
 }
 
 func RunServer(

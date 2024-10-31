@@ -68,20 +68,15 @@ func (c *BatchConsumer[T]) Consume(ctx context.Context, queue string) error {
 	for {
 		select {
 		case <-ctx.Done():
-			if len(c.batch) != 0 {
-				// return ack-ed deliveries to the sender in case of context cancellation
-				c.logger.Info("resending ack-ed deliveries")
-				for _, entry := range c.batch {
-					_ = c.deliveryResender.ResendDelivery(queue, entry.Delivery)
-				}
-			}
-
-			c.logger.Info("consuming stopped")
-			c.batch = c.batch[:0]
+			c.logger.Info("consuming stopped: context canceled")
+			c.processBatch(queue)
 
 			return errors.Wrap(c.channel.Close(), "failed to close channel")
 		case delivery, ok := <-deliveries:
 			if !ok {
+				c.logger.Info("consuming stopped: delivery channel closed")
+				c.processBatch(queue)
+
 				return nil
 			}
 
@@ -145,11 +140,13 @@ func (c *BatchConsumer[T]) processBatch(queue string) {
 			logger.Debug("delivery resent")
 			continue
 		}
-
-		logger.WithError(err).Error("failed to resend delivery")
 		if errors.Is(err, rabbitTypes.ErrorMaxResendReached) {
-			callbackRequests = append(callbackRequests, entry.Entry)
+			logger.Debug(err.Error())
+		} else {
+			logger.WithError(err).Error("failed to resend delivery")
 		}
+
+		callbackRequests = append(callbackRequests, entry.Entry)
 	}
 
 	if len(callbackRequests) > 0 {
