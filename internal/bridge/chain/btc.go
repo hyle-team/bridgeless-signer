@@ -2,6 +2,7 @@ package chain
 
 import (
 	"fmt"
+	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/rpcclient"
@@ -9,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure/v3"
 	"reflect"
+	"strings"
 )
 
 type Bitcoin struct {
@@ -31,6 +33,19 @@ func (c Chain) Bitcoin() Bitcoin {
 	}
 	if err := figure.Out(&chain.Rpc).FromInterface(c.Rpc).With(bitcoinHooks).Please(); err != nil {
 		panic(errors.Wrap(err, "failed to init bitcoin chain rpc"))
+	}
+
+	// ensuring wallet is properly configured
+	_, err := chain.Rpc.GetWalletInfo()
+	if err != nil {
+		if strings.HasPrefix(err.Error(), fmt.Sprintf("%v", btcjson.ErrRPCWalletNotFound)) {
+			if _, err := chain.Rpc.LoadWallet(chain.Wallet); err != nil {
+				panic(errors.Wrap(err, "failed to load wallet"))
+			}
+		}
+		if strings.HasPrefix(err.Error(), fmt.Sprintf("%v", btcjson.ErrRPCWalletNotSpecified)) {
+			panic("wallet not specified in the URL")
+		}
 	}
 
 	var receivers []string
