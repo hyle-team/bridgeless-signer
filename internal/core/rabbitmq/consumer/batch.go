@@ -141,7 +141,7 @@ func (c *BatchConsumer[T]) processBatch(queue string) {
 			continue
 		}
 		if errors.Is(err, rabbitTypes.ErrMaxResendReached) {
-			logger.Debug(err.Error())
+			logger.Debug(rabbitTypes.ErrMaxResendReached)
 		} else {
 			logger.WithError(err).Error("failed to resend delivery")
 		}
