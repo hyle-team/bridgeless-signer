@@ -36,7 +36,13 @@ func (p *Processor) ProcessSubmitTransactions(reqs ...SubmitTransactionRequest) 
 			return errors.Wrap(tmperr, "failed to set deposits submitted")
 		}
 
-		return errors.Wrap(p.core.SubmitDeposits(depositTxs...), "failed to submit deposits")
+		err = p.core.SubmitDeposits(depositTxs...)
+		// ignoring already submitted transaction
+		if errors.Is(err, bridgeTypes.ErrTransactionAlreadySubmitted) {
+			err = nil
+		}
+
+		return errors.Wrap(err, "failed to submit deposits")
 	})
 	if errors.Is(err, bridgeTypes.ErrTransactionAlreadySubmitted) {
 		return false, err

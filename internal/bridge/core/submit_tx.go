@@ -4,6 +4,7 @@ import (
 	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 func (c *Connector) SubmitDeposits(depositTxs ...bridgetypes.Transaction) error {
@@ -13,7 +14,10 @@ func (c *Connector) SubmitDeposits(depositTxs ...bridgetypes.Transaction) error 
 
 	msg := bridgetypes.NewMsgSubmitTransactions(c.settings.Account.CosmosAddress(), depositTxs...)
 	err := c.submitMsgs(msg)
-	if errors.Is(err, bridgetypes.ErrTranscationAlreadySubmitted.GRPCStatus().Err()) {
+	if err == nil {
+		return nil
+	}
+	if strings.Contains(err.Error(), bridgetypes.ErrTranscationAlreadySubmitted.Error()) {
 		return types.ErrTransactionAlreadySubmitted
 	}
 
