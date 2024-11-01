@@ -12,11 +12,10 @@ func (c *Connector) SubmitDeposits(depositTxs ...bridgetypes.Transaction) error 
 	}
 
 	msg := bridgetypes.NewMsgSubmitTransactions(c.settings.Account.CosmosAddress(), depositTxs...)
-	if err := c.submitMsgs(msg); err != nil {
-		if errors.Is(err, bridgetypes.ErrTranscationAlreadySubmitted.GRPCStatus().Err()) {
-			return types.ErrTransactionAlreadySubmitted
-		}
+	err := c.submitMsgs(msg)
+	if errors.Is(err, bridgetypes.ErrTranscationAlreadySubmitted.GRPCStatus().Err()) {
+		return types.ErrTransactionAlreadySubmitted
 	}
 
-	return nil
+	return errors.Wrap(err, "failed to submit deposits")
 }
