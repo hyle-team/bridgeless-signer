@@ -6,18 +6,8 @@ import (
 )
 
 const (
-	// wallet methods
-	searchForTransactionsMethod = "search_for_transactions"
-	deployAssetMethod           = "deploy_asset"
-	emitAssetMethod             = "emit_asset"
-	burnAssetMethod             = "burn_asset"
-	transferMethod              = "transfer"
-
-	sendExtSignedAssetTxMethod = "send_ext_signed_asset_tx"
-	// node methods
-	decryptTxDetailsMethod = "decrypt_tx_details"
-
 	defaultMixin = 15
+	defaultFee   = "10000000000"
 )
 
 type Sdk struct {
@@ -44,7 +34,7 @@ func (z Sdk) Transfer(comment string, service []types.ServiceEntry, destinations
 		Comment:                 comment,
 		Destinations:            destinations,
 		ServiceEntries:          service,
-		Fee:                     "10000000000",
+		Fee:                     defaultFee,
 		HideReceiver:            true,
 		Mixin:                   defaultMixin,
 		PaymentID:               "",
@@ -53,7 +43,7 @@ func (z Sdk) Transfer(comment string, service []types.ServiceEntry, destinations
 	}
 
 	resp := new(types.TransferResponse)
-	if err := z.client.Call(transferMethod, resp, req, true); err != nil {
+	if err := z.client.Call(types.TransferMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -75,7 +65,7 @@ func (z Sdk) GetTransactions(txid string) (*types.GetTxResponse, error) {
 		TxID:           txid,
 	}
 	resp := new(types.GetTxResponse)
-	if err := z.client.Call(searchForTransactionsMethod, resp, req, true); err != nil {
+	if err := z.client.Call(types.SearchForTransactionsMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -97,7 +87,7 @@ func (z Sdk) EmitAsset(assetId string, destinations ...types.Destination) (*type
 	}
 
 	resp := new(types.EmitAssetResponse)
-	if err := z.client.Call(emitAssetMethod, resp, req, true); err != nil {
+	if err := z.client.Call(types.EmitAssetMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -115,7 +105,7 @@ func (z Sdk) BurnAsset(assetId string, amount string) (*types.BurnAssetResponse,
 	}
 
 	resp := new(types.BurnAssetResponse)
-	if err := z.client.Call(burnAssetMethod, resp, req, true); err != nil {
+	if err := z.client.Call(types.BurnAssetMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -134,7 +124,7 @@ func (z Sdk) DeployAsset(assetDescriptor types.AssetDescriptor, destinations []t
 	}
 
 	resp := new(types.DeployAssetResponse)
-	if err := z.client.Call(deployAssetMethod, resp, req, true); err != nil {
+	if err := z.client.Call(types.DeployAssetMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
@@ -152,7 +142,7 @@ func (z Sdk) TxDetails(outputAddress []string, txBlob, txID, txSecretKey string)
 	}
 
 	resp := new(types.DecryptTxDetailsResponse)
-	if err := z.client.Call(decryptTxDetailsMethod, resp, req, false); err != nil {
+	if err := z.client.Call(types.DecryptTxDetailsMethod, resp, req, false); err != nil {
 		return nil, err
 	}
 
@@ -171,9 +161,16 @@ func (z Sdk) SendExtSignedAssetTX(ethSig, expectedTXID, finalizedTx, unsignedTx 
 	}
 
 	resp := new(types.SendExtSignedAssetTXResult)
-	if err := z.client.Call(sendExtSignedAssetTxMethod, resp, req, true); err != nil {
+	if err := z.client.Call(types.SendExtSignedAssetTxMethod, resp, req, true); err != nil {
 		return nil, err
 	}
 
 	return resp, nil
+}
+
+func (z Sdk) CurrentHeight() (uint64, error) {
+	resp := new(types.GetHeightResponse)
+	err := z.client.CallRaw(types.GetHeightMethod, resp)
+
+	return resp.Height, err
 }
