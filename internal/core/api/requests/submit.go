@@ -7,14 +7,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ValidateWithdrawalRequest(request *resources.WithdrawalRequest, proxies bridgeTypes.ProxiesRepository) error {
+func ValidateWithdrawalRequest(request *resources.WithdrawalRequest, proxies bridgeTypes.ProxiesRepository) (bridgeTypes.ChainType, error) {
 	if request == nil {
-		return errors.New("request is not provided")
+		return "", errors.New("request is not provided")
 	}
 
 	deposit := request.Deposit
 	if deposit == nil {
-		return errors.New("deposit is not provided")
+		return "", errors.New("deposit is not provided")
 	}
 
 	err := validation.Errors{
@@ -22,19 +22,22 @@ func ValidateWithdrawalRequest(request *resources.WithdrawalRequest, proxies bri
 		"tx_event_index": validation.Validate(deposit.TxEventIndex, validation.Min(0)),
 		"chain_id":       validation.Validate(deposit.ChainId, validation.Required),
 	}.Filter()
+	if err != nil {
+		return "", err
+	}
 
 	proxy, err := proxies.Proxy(deposit.ChainId)
 	if err != nil {
 		if errors.Is(err, bridgeTypes.ErrChainNotSupported) {
-			return err
+			return "", err
 		}
 
-		return errors.Wrap(err, "failed to get proxy")
+		return "", errors.Wrap(err, "failed to get proxy")
 	}
 
 	if !proxy.TransactionHashValid(deposit.TxHash) {
-		return validation.Errors{"tx_hash": errors.New("invalid transaction hash")}
+		return "", validation.Errors{"tx_hash": errors.New("invalid transaction hash")}
 	}
 
-	return nil
+	return proxy.Type(), nil
 }
