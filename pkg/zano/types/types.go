@@ -1,5 +1,7 @@
 package types
 
+import "math/big"
+
 const (
 	AssetBurnOperationType = 4
 )
@@ -194,10 +196,11 @@ type TxOutput struct {
 }
 
 type AssetDescriptorOperation struct {
-	OperationType       uint64  `json:"operation_type"`
-	OptAmountCommitment *string `json:"opt_amount_commitment"`
-	OptAssetId          *string `json:"opt_asset_id"`
-	Version             uint64  `json:"version"`
+	OperationType       uint64   `json:"operation_type"`
+	OptAmount           *big.Int `json:"opt_amount"`
+	OptAmountCommitment *string  `json:"opt_amount_commitment"`
+	OptAssetId          *string  `json:"opt_asset_id"`
+	Version             uint64   `json:"version"`
 }
 
 func (o *AssetDescriptorOperation) IsValidAssetBurn() bool {
@@ -205,7 +208,7 @@ func (o *AssetDescriptorOperation) IsValidAssetBurn() bool {
 		return false
 	}
 
-	return o.IsAssetBurnOperation() && o.OptAmountCommitment != nil && o.OptAssetId != nil
+	return o.IsAssetBurnOperation() && o.OptAmount != nil && o.OptAssetId != nil
 }
 
 func (o *AssetDescriptorOperation) IsAssetBurnOperation() bool {

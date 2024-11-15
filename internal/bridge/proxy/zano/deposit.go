@@ -1,18 +1,17 @@
 package zano
 
 import (
-	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	zanoTypes "github.com/hyle-team/bridgeless-signer/pkg/zano/types"
 	"github.com/pkg/errors"
-	"math/big"
 )
 
 type destinationData struct {
-	Address string `json:"destination_address"`
-	ChainId string `json:"destination_chain_id"`
+	Address string `json:"dst_add"`
+	ChainId string `json:"dst_net_id"`
 }
 
 func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
@@ -50,10 +49,9 @@ func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, er
 		DestinationChainId: chainId,
 		DestinationAddress: addr,
 		SourceAddress:      depositor,
-		// FIXME: find real deposit (burn) amount
-		DepositAmount: new(big.Int).SetUint64(transaction.Amount),
-		TokenAddress:  *transaction.Ado.OptAssetId,
-		Block:         int64(transaction.Height),
+		DepositAmount:      transaction.Ado.OptAmount,
+		TokenAddress:       *transaction.Ado.OptAssetId,
+		Block:              int64(transaction.Height),
 	}, nil
 }
 
@@ -75,9 +73,9 @@ func (p *proxy) validateConfirmations(txHeight uint64) error {
 }
 
 func parseDestinationData(entry zanoTypes.ServiceEntry) (addr, chainId string, err error) {
-	raw, err := base64.StdEncoding.DecodeString(entry.Body)
+	raw, err := hex.DecodeString(entry.Body)
 	if err != nil {
-		return "", "", errors.Wrap(err, "failed to decode base64 body")
+		return "", "", errors.Wrap(err, "failed to decode hex body")
 	}
 
 	var dstData destinationData
