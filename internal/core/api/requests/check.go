@@ -19,7 +19,11 @@ func CheckWithdrawalRequest(request *resources.CheckWithdrawalRequest, proxies b
 		return nil, err
 	}
 
-	return result, ValidateWithdrawalRequest(result, proxies)
+	if _, err = ValidateWithdrawalRequest(result, proxies); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func ToWithdrawRequest(originTxId string) (*resources.WithdrawalRequest, error) {

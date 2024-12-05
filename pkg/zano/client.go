@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"io"
+	"net/url"
 	"sync/atomic"
 
 	"fmt"
@@ -33,15 +34,22 @@ type RPCError struct {
 }
 
 type Client struct {
-	walletRPC string
-	nodeRPC   string
-	idCounter atomic.Uint32
+	walletRPC  string
+	nodeRPC    string
+	rawNodeRPC string
+	idCounter  atomic.Uint32
 }
 
 func NewClient(walletRPC, nodeRPC string) *Client {
+	nodeUrl, err := url.Parse(nodeRPC)
+	if err != nil {
+		panic(err)
+	}
+
 	return &Client{
-		walletRPC: walletRPC,
-		nodeRPC:   nodeRPC,
+		walletRPC:  walletRPC,
+		nodeRPC:    nodeRPC,
+		rawNodeRPC: fmt.Sprintf("%s://%s", nodeUrl.Scheme, nodeUrl.Host),
 	}
 }
 
@@ -97,6 +105,25 @@ func (c *Client) prepareMessage(method string, params interface{}) (*bytes.Buffe
 	}
 
 	return bytes.NewBuffer(requestBody), err
+}
+
+func (c *Client) CallRaw(method string, res interface{}) error {
+	resp, err := http.Get(c.rawNodeRPC + "/" + method)
+	if err != nil {
+		return errors.Wrap(err, "failed to send request")
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrap(err, "failed to read response body")
+	}
+
+	if err = json.Unmarshal(responseBody, res); err != nil {
+		return errors.Wrap(err, "failed to unmarshal response body")
+	}
+
+	return nil
 }
 
 func (c *Client) nextID() uint32 {

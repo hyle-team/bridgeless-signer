@@ -26,11 +26,6 @@ func (p *proxy) Type() bridgeTypes.ChainType {
 	return bridgeTypes.ChainTypeZano
 }
 
-func (p *proxy) GetDepositData(id data.DepositIdentifier) (*data.DepositData, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (p *proxy) AddressValid(addr string) bool {
 	return addressPattern.MatchString(addr)
 }
