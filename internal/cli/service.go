@@ -4,7 +4,12 @@ import (
 	"context"
 	coreConnector "github.com/hyle-team/bridgeless-signer/internal/bridge/core"
 	"github.com/hyle-team/bridgeless-signer/internal/bridge/proxy"
+	rabbitTypes "github.com/hyle-team/bridgeless-signer/internal/core/rabbitmq/types"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	bridgeProcessor "github.com/hyle-team/bridgeless-signer/internal/bridge/processor"
 	"github.com/hyle-team/bridgeless-signer/internal/config"
@@ -14,12 +19,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-func RunService(ctx context.Context, cfg config.Config) error {
+func RunService(cfg config.Config) error {
 	var (
 		wg        = sync.WaitGroup{}
 		coreCfg   = cfg.CoreConnectorConfig()
 		coreConn  = coreConnector.NewConnector(coreCfg.Connection, coreCfg.Settings)
 		rabbitCfg = cfg.RabbitMQConfig()
+
+		rabbitConnChan = rabbitCfg.Connection.NotifyClose(make(chan *amqp.Error, 1))
+		ctx            = appContext(rabbitConnChan)
 	)
 
 	proxiesRepo, err := proxy.NewProxiesRepository(cfg.Chains(), cfg.Log())
@@ -39,5 +47,27 @@ func RunService(ctx context.Context, cfg config.Config) error {
 
 	wg.Wait()
 
-	return ctx.Err()
+	return context.Cause(ctx)
+}
+
+func appContext(rabbit <-chan *amqp.Error) context.Context {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+
+	ctx, cancel := context.WithCancelCause(context.Background())
+
+	go func() {
+		select {
+		case <-sig:
+			cancel(nil)
+		case err, ok := <-rabbit:
+			if ok {
+				cancel(rabbitTypes.ErrConnectionClosed)
+			} else {
+				cancel(err)
+			}
+		}
+	}()
+
+	return ctx
 }

@@ -32,7 +32,10 @@ const (
 	SubmitTransactionQueue  = "submit-transaction-queue"
 )
 
-var ErrorMaxResendReached = errors.New("max resend count reached")
+var (
+	ErrMaxResendReached = errors.New("max resend count reached")
+	ErrConnectionClosed = errors.New("RabbitMQ connection was closed")
+)
 
 type Producer interface {
 	PublishGetDepositRequest(request bridgeTypes.GetDepositRequest) error
@@ -52,21 +55,6 @@ type DeliveryResender interface {
 }
 
 type Consumer interface {
+	Name() string
 	Consume(ctx context.Context, queue string) error
-}
-
-type DeliveryProcessor interface {
-	// ProcessDelivery processes the delivery and returns whether the delivery should be reprocessed,
-	// a callback to be called if the reprocessing fails, and an error.
-	ProcessDelivery(delivery amqp.Delivery) (reprocessable bool, rprFailCallback func() error, err error)
-}
-
-type Identifiable interface {
-	Id() int64
-}
-
-type BatchProcessor[T Identifiable] interface {
-	// ProcessBatch processes the batch and returns whether the batch should be reprocessed,
-	// a callback to be called if the reprocessing fails, and an error.
-	ProcessBatch(batch []T) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error)
 }

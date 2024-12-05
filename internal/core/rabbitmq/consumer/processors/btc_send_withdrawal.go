@@ -21,29 +21,34 @@ func NewBitcoinSendWithdrawalHandler(
 	}
 }
 
-func (h *BitcoinSendWithdrawalHandler) ProcessBatch(batch []processor.WithdrawalRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
+func (h BitcoinSendWithdrawalHandler) ProcessBatch(batch []processor.WithdrawalRequest) (reprocessable bool, err error) {
 	if len(batch) == 0 {
-		return false, nil, nil
-	}
-
-	rprFailCallback = func(ids ...int64) error {
-		return errors.Wrap(
-			h.processor.SetWithdrawStatusFailed(ids...),
-			"failed to set withdraw status failed",
-		)
+		return false, nil
 	}
 
 	reprocessable, err = h.processor.ProcessSendBitcoinWithdrawals(batch...)
 	if err != nil {
-		return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process send bitcoin withdrawal request")
+		return reprocessable, errors.Wrap(err, "failed to process send bitcoin withdrawal request")
 	}
 
 	for _, entry := range batch {
 		submitTxReq := processor.SubmitTransactionRequest{DepositDbId: entry.DepositDbId}
 		if err = h.publisher.PublishSubmitTransactionRequest(submitTxReq); err != nil {
-			return true, rprFailCallback, errors.Wrap(err, "failed to send submit transaction request")
+			return true, errors.Wrap(err, "failed to send submit transaction request")
 		}
 	}
 
-	return false, nil, nil
+	return false, nil
+}
+
+func (h BitcoinSendWithdrawalHandler) ReprocessFailedCallback(batch []processor.WithdrawalRequest) error {
+	ids := make([]int64, len(batch))
+	for i, req := range batch {
+		ids[i] = req.DepositDbId
+	}
+
+	return errors.Wrap(
+		h.processor.SetWithdrawStatusFailed(ids...),
+		"failed to set withdraw status failed",
+	)
 }

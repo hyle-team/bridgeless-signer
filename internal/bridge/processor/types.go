@@ -12,10 +12,16 @@ type WithdrawalRequest struct {
 	Data        data.DepositData
 }
 
+func (r WithdrawalRequest) Id() int64 {
+	return r.DepositDbId
+}
+
 type GetDepositRequest struct {
 	DepositDbId       int64
 	DepositIdentifier data.DepositIdentifier
 }
+
+func (r GetDepositRequest) Id() int64 { return r.DepositDbId }
 
 type ZanoSignedWithdrawalRequest struct {
 	DepositDbId int64
@@ -23,9 +29,7 @@ type ZanoSignedWithdrawalRequest struct {
 	Transaction zano.SignedTransaction
 }
 
-func (r WithdrawalRequest) Id() int64 {
-	return r.DepositDbId
-}
+func (r ZanoSignedWithdrawalRequest) Id() int64 { return r.DepositDbId }
 
 type SubmitTransactionRequest struct {
 	DepositDbId int64

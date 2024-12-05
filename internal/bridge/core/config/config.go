@@ -62,11 +62,13 @@ func (c *configurer) CoreConnectorConfig() ConnectorConfig {
 			}
 			connectSecurityOptions = grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
 		}
+		keepaliveOptions := grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                20 * time.Second, // wait time before ping if no activity
+			Timeout:             5 * time.Second,  // ping timeout
+			PermitWithoutStream: true,
+		})
 
-		client, err := grpc.Dial(cfg.Connection.Addr, connectSecurityOptions, grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:    10 * time.Second, // wait time before ping if no activity
-			Timeout: 20 * time.Second, // ping timeout
-		}))
+		client, err := grpc.NewClient(cfg.Connection.Addr, connectSecurityOptions, keepaliveOptions)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to connect to core via gRPC"))
 		}

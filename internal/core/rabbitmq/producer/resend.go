@@ -8,7 +8,7 @@ import (
 func (p *Producer) ResendDelivery(queue string, msg amqp.Delivery) error {
 	retryCount := p.getCurrentRetryNumber(msg)
 	if retryCount >= int32(p.maxRetryCount) {
-		return rabbitTypes.ErrorMaxResendReached
+		return rabbitTypes.ErrMaxResendReached
 	}
 
 	retryCount++

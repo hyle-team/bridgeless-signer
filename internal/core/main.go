@@ -22,11 +22,6 @@ const (
 	componentConsumer = "consumer"
 )
 
-type baseConsumer struct {
-	deliveryProcessor rabbitTypes.DeliveryProcessor
-	prefix            string
-}
-
 // RunConsumers runs consumers for all queues.
 func RunConsumers(
 	ctx context.Context,
@@ -36,57 +31,69 @@ func RunConsumers(
 	processor *bridgeProcessor.Processor,
 ) {
 	var (
-		logger       = cfg.Log()
-		rabbitCfg    = cfg.RabbitMQConfig()
-		consumersMap = map[string]baseConsumer{
-			rabbitTypes.GetDepositQueue: {
-				deliveryProcessor: consumerProcessors.NewGetDepositHandler(processor, producer),
-				prefix:            consumer.GetDepositConsumerPrefix,
-			},
-			rabbitTypes.EthSignWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewEthereumSignWithdrawalHandler(processor, producer),
-				prefix:            consumer.EthSignWithdrawalConsumerPrefix,
-			},
-			rabbitTypes.ZanoSignWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewZanoSignWithdrawalHandler(processor, producer),
-				prefix:            consumer.ZanoSignWithdrawalConsumerPrefix,
-			},
-			rabbitTypes.ZanoSendWithdrawalQueue: {
-				deliveryProcessor: consumerProcessors.NewZanoSendWithdrawalHandler(processor, producer),
-				prefix:            consumer.ZanoSendWithdrawalConsumerPrefix,
-			},
-		}
+		logger    = cfg.Log()
+		rabbitCfg = cfg.RabbitMQConfig()
 	)
 
-	for i := uint(0); i < rabbitCfg.ConsumerInstances; i++ {
+	for i := uint(0); i < rabbitCfg.BaseConsumerInstances; i++ {
 		idx := i + 1
-		for queue, consumerCfg := range consumersMap {
-			wg.Add(1)
-			go func(id uint, queue string, consumerCfg baseConsumer) {
+
+		// initializing new instances per loop
+		baseConsumers := map[string]rabbitTypes.Consumer{
+			rabbitTypes.GetDepositQueue: consumer.NewBase[bridgeProcessor.GetDepositRequest](
+				rabbitCfg.NewChannel(),
+				consumer.GetName(consumer.GetDepositConsumerPrefix, idx),
+				logger.
+					WithField(serviceComponent, componentConsumer).
+					WithField(componentPart, consumer.GetName(consumer.GetDepositConsumerPrefix, idx)),
+				consumerProcessors.NewGetDepositHandler(processor, producer),
+				producer,
+			),
+			rabbitTypes.EthSignWithdrawalQueue: consumer.NewBase[bridgeProcessor.WithdrawalRequest](
+				rabbitCfg.NewChannel(),
+				consumer.GetName(consumer.EthSignWithdrawalConsumerPrefix, idx),
+				logger.
+					WithField(serviceComponent, componentConsumer).
+					WithField(componentPart, consumer.GetName(consumer.EthSignWithdrawalConsumerPrefix, idx)),
+				consumerProcessors.NewEthereumSignWithdrawalHandler(processor, producer),
+				producer,
+			),
+			rabbitTypes.ZanoSignWithdrawalQueue: consumer.NewBase[bridgeProcessor.WithdrawalRequest](
+				rabbitCfg.NewChannel(),
+				consumer.GetName(consumer.ZanoSignWithdrawalConsumerPrefix, idx),
+				logger.
+					WithField(serviceComponent, componentConsumer).
+					WithField(componentPart, consumer.GetName(consumer.ZanoSignWithdrawalConsumerPrefix, idx)),
+				consumerProcessors.NewZanoSignWithdrawalHandler(processor, producer),
+				producer,
+			),
+			rabbitTypes.ZanoSendWithdrawalQueue: consumer.NewBase[bridgeProcessor.ZanoSignedWithdrawalRequest](
+				rabbitCfg.NewChannel(),
+				consumer.GetName(consumer.ZanoSendWithdrawalConsumerPrefix, idx),
+				logger.
+					WithField(serviceComponent, componentConsumer).
+					WithField(componentPart, consumer.GetName(consumer.ZanoSendWithdrawalConsumerPrefix, idx)),
+				consumerProcessors.NewZanoSendWithdrawalHandler(processor, producer),
+				producer,
+			),
+		}
+
+		wg.Add(len(baseConsumers))
+
+		for queue, cns := range baseConsumers {
+			go func(cns rabbitTypes.Consumer, queue string) {
 				defer wg.Done()
 
-				consumerName := consumer.GetName(consumerCfg.prefix, id)
-				cns := consumer.NewBase(
-					rabbitCfg.NewChannel(),
-					consumerName,
-					logger.
-						WithField(serviceComponent, componentConsumer).
-						WithField(componentPart, consumerName),
-					consumerCfg.deliveryProcessor,
-					producer,
-				)
-
 				if err := cns.Consume(ctx, queue); err != nil {
-					logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumerName))
+					logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", cns.Name()))
 				}
-			}(idx, queue, consumerCfg)
+
+			}(cns, queue)
 		}
 	}
 
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		cns := consumer.NewBatch[bridgeProcessor.SubmitTransactionRequest](
+	batchConsumers := map[string]rabbitTypes.Consumer{
+		rabbitTypes.SubmitTransactionQueue: consumer.NewBatch[bridgeProcessor.SubmitTransactionRequest](
 			rabbitCfg.NewChannel(),
 			consumer.SubmitTransactionConsumerPrefix,
 			logger.
@@ -95,14 +102,8 @@ func RunConsumers(
 			consumerProcessors.NewSubmitTransactionHandler(processor),
 			producer,
 			rabbitCfg.TxSubmitterOpts,
-		)
-		if err := cns.Consume(ctx, rabbitTypes.SubmitTransactionQueue); err != nil {
-			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.SubmitTransactionConsumerPrefix))
-		}
-	}()
-	go func() {
-		defer wg.Done()
-		cns := consumer.NewBatch[bridgeProcessor.WithdrawalRequest](
+		),
+		rabbitTypes.BtcSendWithdrawalQueue: consumer.NewBatch[bridgeProcessor.WithdrawalRequest](
 			rabbitCfg.NewChannel(),
 			consumer.BitcoinSendWithdrawalConsumerPrefix,
 			logger.
@@ -111,12 +112,21 @@ func RunConsumers(
 			consumerProcessors.NewBitcoinSendWithdrawalHandler(processor, producer),
 			producer,
 			rabbitCfg.BitcoinSubmitterOpts,
-		)
-		if err := cns.Consume(ctx, rabbitTypes.BtcSendWithdrawalQueue); err != nil {
-			logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", consumer.BitcoinSendWithdrawalConsumerPrefix))
-		}
-	}()
+		),
+	}
 
+	wg.Add(len(batchConsumers))
+
+	for queue, cns := range batchConsumers {
+		go func(cns rabbitTypes.Consumer, queue string) {
+			defer wg.Done()
+
+			if err := cns.Consume(ctx, queue); err != nil {
+				logger.WithError(err).Error(fmt.Sprintf("failed to consume for %s", cns.Name()))
+			}
+
+		}(cns, queue)
+	}
 }
 
 func RunServer(

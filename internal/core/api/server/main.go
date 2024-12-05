@@ -62,7 +62,7 @@ func (s *server) RunGRPC(ctx context.Context) error {
 	srv := s.grpcServer()
 
 	// graceful shutdown
-	go func() { <-ctx.Done(); srv.GracefulStop(); s.logger.Info("grpc serving stopped") }()
+	go func() { <-ctx.Done(); srv.GracefulStop(); s.logger.Info("grpc serving stopped: context canceled") }()
 
 	s.logger.Info("grpc serving started")
 	return srv.Serve(s.grpc)
@@ -79,7 +79,7 @@ func (s *server) RunHTTP(ctxt context.Context) error {
 		if err := srv.Shutdown(shutdownDeadline); err != nil {
 			s.logger.WithError(err).Error("failed to shutdown http server")
 		}
-		s.logger.Info("http serving stopped")
+		s.logger.Info("http serving stopped: context canceled")
 	}()
 
 	s.logger.Info("http serving started")

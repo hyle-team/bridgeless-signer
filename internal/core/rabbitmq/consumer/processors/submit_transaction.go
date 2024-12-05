@@ -18,19 +18,24 @@ func NewSubmitTransactionHandler(
 	}
 }
 
-func (s SubmitTransactionHandler) ProcessBatch(batch []processor.SubmitTransactionRequest) (reprocessable bool, rprFailCallback func(ids ...int64) error, err error) {
+func (s SubmitTransactionHandler) ProcessBatch(batch []processor.SubmitTransactionRequest) (reprocessable bool, err error) {
 	if len(batch) == 0 {
-		return false, nil, nil
-	}
-
-	rprFailCallback = func(ids ...int64) error {
-		return errors.Wrap(
-			s.processor.SetSubmitStatusFailed(ids...),
-			"failed to set submit status failed",
-		)
+		return false, nil
 	}
 
 	reprocessable, err = s.processor.ProcessSubmitTransactions(batch...)
 
-	return reprocessable, rprFailCallback, errors.Wrap(err, "failed to process submit transaction request")
+	return reprocessable, errors.Wrap(err, "failed to process submit transaction request")
+}
+
+func (s SubmitTransactionHandler) ReprocessFailedCallback(batch []processor.SubmitTransactionRequest) error {
+	ids := make([]int64, len(batch))
+	for i, req := range batch {
+		ids[i] = req.DepositDbId
+	}
+
+	return errors.Wrap(
+		s.processor.SetSubmitStatusFailed(ids...),
+		"failed to set submit status failed",
+	)
 }
