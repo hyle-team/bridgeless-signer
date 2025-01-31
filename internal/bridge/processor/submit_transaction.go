@@ -1,7 +1,7 @@
 package processor
 
 import (
-	coretypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
+	coretypes "github.com/hyle-team/bridgeless-core/v12/x/bridge/types"
 	bridgeTypes "github.com/hyle-team/bridgeless-signer/internal/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/internal/data"
 	"github.com/hyle-team/bridgeless-signer/resources"
