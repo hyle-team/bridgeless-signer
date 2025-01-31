@@ -2,7 +2,7 @@ package data
 
 import (
 	"fmt"
-	bridgetypes "github.com/hyle-team/bridgeless-core/x/bridge/types"
+	bridgetypes "github.com/hyle-team/bridgeless-core/v12/x/bridge/types"
 	"github.com/hyle-team/bridgeless-signer/resources"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"math/big"
@@ -118,13 +118,13 @@ func (d Deposit) ToStatusResponse() *resources.CheckWithdrawalResponse {
 
 func (d Deposit) ToTransaction() bridgetypes.Transaction {
 	tx := bridgetypes.Transaction{
-		DepositTxHash:    d.TxHash,
-		DepositTxIndex:   uint64(d.TxEventId),
-		DepositChainId:   d.ChainId,
-		WithdrawalTxHash: stringOrEmpty(d.WithdrawalTxHash),
-		Depositor:        stringOrEmpty(d.Depositor),
-		// TODO: separate for deposit/withdrawal amount when added to bridge core
-		Amount:            stringOrEmpty(d.WithdrawalAmount),
+		DepositTxHash:     d.TxHash,
+		DepositTxIndex:    uint64(d.TxEventId),
+		DepositChainId:    d.ChainId,
+		WithdrawalTxHash:  stringOrEmpty(d.WithdrawalTxHash),
+		Depositor:         stringOrEmpty(d.Depositor),
+		DepositAmount:     stringOrEmpty(d.DepositAmount),
+		WithdrawalAmount:  stringOrEmpty(d.WithdrawalAmount),
 		DepositToken:      stringOrEmpty(d.DepositToken),
 		Receiver:          stringOrEmpty(d.Receiver),
 		WithdrawalToken:   stringOrEmpty(d.WithdrawalToken),
