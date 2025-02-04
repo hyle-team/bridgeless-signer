@@ -27,7 +27,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/gorilla/websocket v1.5.0
-	github.com/hyle-team/bridgeless-core/v12 v12.1.8-0.20250131090418-e99cf29959ed
+	github.com/hyle-team/bridgeless-core/v12 v12.1.16-rc1
 	github.com/lib/pq v1.10.9
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/cast v1.6.0
